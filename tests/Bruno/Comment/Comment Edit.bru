@@ -1,0 +1,21 @@
+meta {
+  name: Comment Edit
+  type: http
+  seq: 3
+}
+
+put {
+  url: /posts/{{POST_ID}}/comment/{{COMMENT_ID}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "content": "Bad Muffin"
+  }
+}
+
+vars:post-response {
+  COMMENT_ID: res.body.id
+}

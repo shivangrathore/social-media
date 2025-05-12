@@ -1,0 +1,21 @@
+meta {
+  name: Comment
+  type: http
+  seq: 1
+}
+
+post {
+  url: /posts/{{POST_ID}}/comment
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "content": "Nice muffin"
+  }
+}
+
+vars:post-response {
+  COMMENT_ID: res.body.id
+}

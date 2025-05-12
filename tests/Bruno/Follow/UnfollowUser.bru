@@ -1,0 +1,11 @@
+meta {
+  name: UnfollowUser
+  type: http
+  seq: 2
+}
+
+delete {
+  url: /users/3/follow
+  body: none
+  auth: inherit
+}

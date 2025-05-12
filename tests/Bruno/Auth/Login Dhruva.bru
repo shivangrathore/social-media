@@ -1,0 +1,18 @@
+meta {
+  name: Login Dhruva
+  type: http
+  seq: 7
+}
+
+post {
+  url: /auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "deadshot@gmail.com",
+    "password": "bad-password"
+  }
+}

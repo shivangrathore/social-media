@@ -1,0 +1,20 @@
+meta {
+  name: Edit Post
+  type: http
+  seq: 4
+}
+
+put {
+  url: /posts/{{POST_ID}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "I Love Gujiya very much yes",
+    "content":"new content",
+    "attachments":"new attachment"
+    
+  }
+}

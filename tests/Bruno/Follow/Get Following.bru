@@ -1,0 +1,15 @@
+meta {
+  name: Get Following
+  type: http
+  seq: 4
+}
+
+get {
+  url: /users/1/connections?type=following
+  body: none
+  auth: none
+}
+
+params:query {
+  type: following
+}

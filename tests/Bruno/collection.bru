@@ -1,0 +1,11 @@
+vars:pre-request {
+  BASE: http://localhost:3000
+}
+
+script:pre-request {
+  const BASE_URL = "http://localhost:3000/api/v1"
+  
+  if (!req.url.startsWith("http"))
+    req.setUrl(BASE_URL + req.url)
+  
+}

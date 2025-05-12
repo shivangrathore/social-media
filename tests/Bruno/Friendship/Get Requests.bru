@@ -1,0 +1,15 @@
+meta {
+  name: Get Requests
+  type: http
+  seq: 2
+}
+
+get {
+  url: /friends/requests/?type=received
+  body: none
+  auth: none
+}
+
+params:query {
+  type: received
+}

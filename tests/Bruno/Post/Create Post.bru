@@ -1,0 +1,29 @@
+meta {
+  name: Create Post
+  type: http
+  seq: 1
+}
+
+post {
+  url: /posts
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "I Love Gujiya",
+    "content": "Is bar maine khoye ki gujiya banwayi, par mujhe sirf 15 khane ko mili.",
+    "hashtags": [
+      "Gujiya",
+      "foodie",
+      "happy_holi",
+      "mawa-wali-gujiya"
+    ],
+  "mentioned_users": []
+  }
+}
+
+vars:post-response {
+  POST_ID: res.body.id
+}

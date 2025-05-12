@@ -1,0 +1,18 @@
+meta {
+  name: Login_muffin
+  type: http
+  seq: 6
+}
+
+post {
+  url: /auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "lalithunter@gmail.com",
+    "password": "bad-password"
+  }
+}

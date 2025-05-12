@@ -1,0 +1,18 @@
+meta {
+  name: Upload File
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://api.cloudinary.com/v1_1/dhpcuj6sw/image/upload
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  signature: {{UPLOAD_SIG}}
+  timestamp: {{UPLOAD_TS}}
+  api_key: 796779171933484
+  file: @file(/home/shivang/Documents/Untitled.png)
+}
