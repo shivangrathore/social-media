@@ -7,6 +7,7 @@ import {
   bigserial,
   boolean,
   bigint,
+  text,
 } from "drizzle-orm/pg-core";
 
 export const userTable = pgTable("user", {
@@ -36,7 +37,7 @@ export const accountTable = pgTable("account", {
 
 export const sessionTable = pgTable("session", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
-  userId: integer("user_id")
+  userId: bigint("user_id", { mode: "number" })
     .notNull()
     .references(() => userTable.id),
   token: varchar("token", { length: 255 }).notNull(),
@@ -57,3 +58,15 @@ export const accountUserRelation = relations(accountTable, ({ one }) => ({
     references: [userTable.id],
   }),
 }));
+
+export const postTable = pgTable("post", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  userId: bigint("user_id", { mode: "number" })
+    .notNull()
+    .references(() => userTable.id),
+  content: text("content"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").default(sql`NULL`),
+  numLikes: integer("num_likes").default(0),
+  numComments: integer("num_comments").default(0),
+});
