@@ -14,5 +14,6 @@ export const LoginSchema = z.object({
 });
 
 export const CreatePostSchema = z.object({
+  title: z.string().optional(),
   content: z.string().optional(),
 });

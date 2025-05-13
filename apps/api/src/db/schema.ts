@@ -64,9 +64,18 @@ export const postTable = pgTable("post", {
   userId: bigint("user_id", { mode: "number" })
     .notNull()
     .references(() => userTable.id),
+  title: text("title"),
   content: text("content"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").default(sql`NULL`),
   numLikes: integer("num_likes").default(0),
   numComments: integer("num_comments").default(0),
+});
+
+export const attachmentTable = pgTable("attachment", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  postId: bigint("post_id", { mode: "number" }).references(() => userTable.id),
+  public_url: text("public_url"),
+  url: text("url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });

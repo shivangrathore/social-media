@@ -11,7 +11,7 @@ export default router;
 
 router.post("/", async (req, res) => {
   const body = await CreatePostSchema.parseAsync(req.body);
-  const post = await db
+  const [post] = await db
     .insert(postTable)
     .values({
       content: body.content,
@@ -19,6 +19,19 @@ router.post("/", async (req, res) => {
     })
     .returning();
   res.status(201).json(post);
+});
+
+router.get("/:postId", async (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const post = await db.query.postTable.findFirst({
+    where: (fields, { eq }) => eq(fields.id, postId),
+  });
+  if (!post) {
+    res.status(404).json({ message: "Post not found" });
+    return;
+  }
+
+  res.json(post);
 });
 
 router.delete("/:postId", async (req, res) => {
