@@ -154,8 +154,8 @@ export const friendRequestTable = pgTable(
   ],
 );
 
-export const friendShipTable = pgTable(
-  "friendship",
+export const friendTable = pgTable(
+  "friend",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
     user1Id: bigint("user_1_id", { mode: "number" })
