@@ -5,7 +5,7 @@ import authMiddleware from "../../middlewares/auth";
 const router: Router = Router();
 export default router;
 
-router.get("/signature", authMiddleware, async (req, res) => {
-  const data = await generateSignature(res.locals["userId"]);
+router.post("/signature", authMiddleware, async (req, res) => {
+  const data = await generateSignature(res.locals["userId"], req.body);
   res.json(data);
 });

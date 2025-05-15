@@ -9,7 +9,7 @@ export abstract class Provider {
   }
   get redirectUri(): string {
     // TODO: make this configurable
-    return `http://localhost:5000/api/v1/auth/provider/${this.id}/callback`;
+    return `http://localhost:3000/api/v1/auth/provider/${this.id}/callback`;
   }
   abstract oAuthUrl(state?: Record<string, any>): string;
   abstract exchangeCodeForTokenUrl(): string;

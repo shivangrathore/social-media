@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { CreatePostSchema } from "../../types";
 import { db } from "../../db";
-import { postTable } from "../../db/schema";
+import { commentTable, likeTable, postTable } from "../../db/schema";
 import authMiddleware from "../../middlewares/auth";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 const router: Router = Router();
 router.use(authMiddleware);
@@ -47,4 +47,70 @@ router.delete("/:postId", async (req, res) => {
     return;
   }
   res.json({ message: "Post deleted successfully" });
+});
+
+router.post("/:postId/comments", async (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const { content } = req.body;
+  const userId = res.locals["userId"];
+
+  const [comment] = await db
+    .insert(commentTable)
+    .values({
+      content,
+      userId,
+      postId,
+    })
+    .returning();
+
+  res.status(201).json(comment);
+});
+
+router.post("/:postId/likes", async (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const userId = res.locals["userId"];
+
+  const like = await db.transaction(async (tx) => {
+    const [like] = await tx
+      .insert(likeTable)
+      .values({
+        targetId: postId,
+        userId,
+        targetType: "post",
+      })
+      .returning();
+    await tx
+      .update(postTable)
+      .set({ numLikes: sql`${postTable.numLikes} + 1` })
+      .where(eq(postTable.id, postId));
+    return like;
+  });
+
+  res.status(201).json(like);
+});
+
+router.delete("/:postId/likes", async (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const userId = res.locals["userId"];
+
+  const like = await db.transaction(async (tx) => {
+    const [like] = await tx
+      .delete(likeTable)
+      .where(
+        and(
+          eq(likeTable.userId, userId),
+          eq(likeTable.targetId, postId),
+          eq(likeTable.targetType, "post"),
+        ),
+      )
+      .returning();
+    if (!like) return;
+    await tx
+      .update(postTable)
+      .set({ numLikes: sql`${postTable.numLikes} - 1` })
+      .where(eq(postTable.id, postId));
+    return like;
+  });
+
+  res.status(201).json(like);
 });

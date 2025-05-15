@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { db } from "../../db";
-import { userTable } from "../../db/schema";
+import { friendRequestTable, userTable } from "../../db/schema";
 import { verifyJWT } from "../../utils/jwt";
+import authMiddleware from "../../middlewares/auth";
 
 const router: Router = Router();
 
@@ -22,5 +23,21 @@ router.get("/:userId", async (req, res) => {
   }
   res.json(user);
 });
+
+router.post<string, { userId: string }>(
+  "/:userId/friend-requests",
+  authMiddleware,
+  async (req, res) => {
+    const userId = res.locals["userId"];
+    const t_userId = parseInt(req.params.userId);
+    const result = await db.insert(friendRequestTable).values({
+      senderId: userId,
+      recipientId: t_userId,
+    });
+    if (result && result.rowCount && result.rowCount > 0)
+      res.json({ message: "Friend request sent successfully" });
+    else res.json({ message: "Request already pending" });
+  },
+);
 
 export default router;

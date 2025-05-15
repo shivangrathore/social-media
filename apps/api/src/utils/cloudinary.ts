@@ -37,5 +37,6 @@ export async function generateSignature(
     signature,
     apiKey: config.CLOUDINARY_API_KEY,
     folder,
+    context: s_context,
   } as const;
 }
