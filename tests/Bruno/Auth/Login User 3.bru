@@ -1,0 +1,18 @@
+meta {
+  name: Login User 3
+  type: http
+  seq: 6
+}
+
+post {
+  url: /auth/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "username": "dhruva",
+    "password": "simple-password"
+  }
+}

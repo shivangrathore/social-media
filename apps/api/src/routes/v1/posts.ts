@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { CreatePostSchema } from "../../types";
 import { db } from "../../db";
-import { commentTable, likeTable, postTable } from "../../db/schema";
+import { commentTable, likeTable, postTable, userTable } from "../../db/schema";
 import authMiddleware from "../../middlewares/auth";
-import { and, eq, sql } from "drizzle-orm";
+import { and, asc, eq, gt, isNull, lt, sql } from "drizzle-orm";
+import { z } from "zod";
 
 const router: Router = Router();
 router.use(authMiddleware);
@@ -21,6 +22,26 @@ router.post("/", async (req, res) => {
   res.status(201).json(post);
 });
 
+const postPaginationCusor = z.number().optional();
+
+// FIXME: Remove later on, we will implement a recommendation system
+router.get("/", async (req, res) => {
+  const cursor = await postPaginationCusor.parseAsync(req.query.cursor);
+  const limit = 10;
+  const posts = await db
+    .select()
+    .from(postTable)
+    .where(cursor ? gt(postTable.id, cursor) : undefined)
+    .limit(limit + 1)
+    .innerJoin(userTable, eq(userTable.id, postTable.userId))
+    .orderBy(asc(postTable.id));
+  const data = posts.slice(0, limit);
+  res.json({
+    data,
+    nextCursor: posts.length > limit ? data.at(-1)?.post.id : null,
+  });
+});
+
 router.get("/:postId", async (req, res) => {
   const postId = parseInt(req.params.postId);
   const post = await db.query.postTable.findFirst({
@@ -30,7 +51,6 @@ router.get("/:postId", async (req, res) => {
     res.status(404).json({ message: "Post not found" });
     return;
   }
-
   res.json(post);
 });
 
@@ -53,6 +73,11 @@ router.post("/:postId/comments", async (req, res) => {
   const postId = parseInt(req.params.postId);
   const { content } = req.body;
   const userId = res.locals["userId"];
+  const parentId = await z.coerce
+    .number()
+    .nullish()
+    .default(null)
+    .parseAsync(req.query.parentId);
 
   const [comment] = await db
     .insert(commentTable)
@@ -60,10 +85,52 @@ router.post("/:postId/comments", async (req, res) => {
       content,
       userId,
       postId,
+      parentId,
     })
     .returning();
 
   res.status(201).json(comment);
+});
+
+router.get("/:postId/comments", async (req, res) => {
+  const limit = 10;
+  const postId = parseInt(req.params.postId);
+  const cursor = await z.coerce
+    .number()
+    .optional()
+    .parseAsync(req.query.cursor);
+  const parentId = await z.coerce
+    .number()
+    .optional()
+    .parseAsync(req.query.parentId);
+  const post = await db
+    .select({})
+    .from(postTable)
+    .where(eq(postTable.id, postId));
+  if (post.length == 0) {
+    res.status(400).json({ message: "Post not found" });
+    return;
+  }
+
+  const comments = await db
+    .select()
+    .from(commentTable)
+    .where(
+      and(
+        eq(commentTable.postId, postId),
+        parentId
+          ? eq(commentTable.parentId, parentId)
+          : isNull(commentTable.parentId),
+        cursor ? lt(commentTable.id, cursor) : undefined,
+      ),
+    )
+    .innerJoin(userTable, eq(userTable.id, commentTable.userId))
+    .limit(limit + 1);
+  const data = comments.slice(0, limit);
+  res.json({
+    data,
+    nextCursor: comments.length > limit ? data.at(-1)?.comment.id : null,
+  });
 });
 
 router.post("/:postId/likes", async (req, res) => {

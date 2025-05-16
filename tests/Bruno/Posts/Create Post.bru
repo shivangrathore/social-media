@@ -1,0 +1,17 @@
+meta {
+  name: Create Post
+  type: http
+  seq: 1
+}
+
+post {
+  url: /posts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "content": "Are is bar gujiya khane ko nahi mili"
+  }
+}

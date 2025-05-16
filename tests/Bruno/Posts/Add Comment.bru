@@ -1,0 +1,21 @@
+meta {
+  name: Add Comment
+  type: http
+  seq: 3
+}
+
+post {
+  url: /posts/1/comments?parentId=1
+  body: json
+  auth: inherit
+}
+
+params:query {
+  parentId: 1
+}
+
+body:json {
+  {
+    "content": "Hello bro muffin"
+  }
+}

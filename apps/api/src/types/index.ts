@@ -17,3 +17,7 @@ export const CreatePostSchema = z.object({
   title: z.string().optional(),
   content: z.string().optional(),
 });
+
+export const EditCommentSchema = z.object({
+  content: z.string(),
+});
