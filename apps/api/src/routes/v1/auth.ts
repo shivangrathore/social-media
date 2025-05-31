@@ -12,6 +12,14 @@ import { JWT_EXPIRE_TIME } from "../../data/constants";
 
 const router: Router = Router();
 
+router.get("/logout", async (req, res) => {
+  res.cookie("token", "", {
+    expires: new Date(0),
+    httpOnly: true,
+  });
+  res.redirect("http://localhost:3000");
+});
+
 router.post("/register", async (req, res) => {
   const body = await RegisterSchema.parseAsync(req.body);
   const hashedPassword = await hashPassword(body.password);
@@ -36,13 +44,9 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const body = await LoginSchema.parseAsync(req.body);
-  if (!body.username && !body.email) {
-    res.status(400).json({ message: "Username or email is required" });
-    return;
-  }
-  let matcher = (body.username || body.email)!;
   const user = await db.query.userTable.findFirst({
-    where: (fields, { eq }) => eq(fields.username, matcher),
+    where: (fields, { eq, or }) =>
+      or(eq(fields.username, body.id), eq(fields.email, body.id)),
     with: {
       accounts: {
         limit: 1,
@@ -178,7 +182,10 @@ router.get("/provider/:provider/callback", async (req, res) => {
     userId: user.id,
     expires,
   });
-  res.cookie("token", token, { expires, httpOnly: true });
+  res.cookie("token", token, {
+    expires,
+    httpOnly: true,
+  });
   res.redirect(state.redirectUrl || "http://localhost:3000");
 });
 

@@ -6,7 +6,14 @@ export default async function authMiddleware(
   res: Response,
   next: NextFunction,
 ) {
-  const token = req.cookies["token"];
+  let token = req.headers["authorization"];
+  if (Array.isArray(token)) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+  if (token && token.startsWith("Bearer ")) {
+    token = token.slice(7, token.length);
+  }
   if (token) {
     try {
       const result = await verifyJWT(token);
