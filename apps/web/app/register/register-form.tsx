@@ -10,12 +10,23 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { RegisterFormSchema } from "@/lib/types";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 
 export function RegisterForm() {
-  const form = useForm({});
-
+  const form = useForm({
+    resolver: zodResolver(RegisterFormSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      dob: new Date(),
+      agreeToTerms: false,
+    },
+  });
   return (
     <Form {...form}>
       <form className="space-y-4 w-full">
@@ -54,6 +65,7 @@ export function RegisterForm() {
             </FormItem>
           )}
         />
+        {/* TODO: Add toggle for password visibility */}
         <FormField
           name="password"
           render={({ field }) => (

@@ -11,10 +11,15 @@ import Link from "next/link";
 import { LoginForm } from "./login-form";
 import { SocialLoginButtons } from "./social-login-buttons";
 
+export const metadata = {
+  title: "Login",
+  description: "Login to access your account",
+};
+
 export default function LoginPage() {
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-500 to-indigo-500 overflow-auto items-center justify-center">
-      <div className="grid lg:grid-cols-2 w-full max-w-7xl mx-auto h-fit relative items-center gap-4 p-10">
+      <div className="grid lg:grid-cols-2 w-full max-w-7xl mx-auto h-fit relative items-center gap-10 p-10">
         <div className="size-30 bg-sky-300/20 rounded-full left-[600px] absolute bottom-2" />
         <div className="size-10 bg-sky-300/20 rounded-full right-10 absolute top-72" />
         <div className="size-16 bg-indigo-400/60 rounded-full right-[540px] absolute top-16" />

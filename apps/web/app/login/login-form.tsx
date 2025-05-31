@@ -12,10 +12,12 @@ import { apiClient } from "@/lib/apiClient";
 import { loadUser } from "@/lib/store/auth";
 import { LoginFormSchema } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 export function LoginForm() {
+  const router = useRouter();
   const form = useForm({
     resolver: zodResolver(LoginFormSchema),
     defaultValues: { id: "", password: "" },
@@ -23,7 +25,9 @@ export function LoginForm() {
 
   async function handleSubmit(data: z.infer<typeof LoginFormSchema>) {
     await apiClient.post("/auth/login", data);
-    loadUser();
+    await loadUser();
+    const next = new URLSearchParams(window.location.search).get("next") || "/";
+    router.push(next);
   }
   return (
     <Form {...form}>
@@ -43,6 +47,7 @@ export function LoginForm() {
             </FormItem>
           )}
         />
+        {/* TODO: Add toggle for password visibility */}
         <FormField
           name="password"
           control={form.control}
@@ -50,7 +55,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} type="password" />
               </FormControl>
             </FormItem>
           )}
