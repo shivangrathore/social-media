@@ -9,6 +9,9 @@ import { eq } from "drizzle-orm";
 import { randomChars } from "../../utils/random";
 import { signJWT } from "../../utils/jwt";
 import { JWT_EXPIRE_TIME } from "../../data/constants";
+import { usernameFromName } from "../../utils/db";
+
+// TODO: Handle database errors and validation errors properly
 
 const router: Router = Router();
 
@@ -21,21 +24,26 @@ router.get("/logout", async (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
+  console.log(req.body);
   const body = await RegisterSchema.parseAsync(req.body);
+  console.log(body)
   const hashedPassword = await hashPassword(body.password);
+  const username = usernameFromName(body.firstName);
   await db.transaction(async (tx) => {
     const [user] = await tx
       .insert(userTable)
       .values({
         email: body.email,
-        name: body.name,
-        username: body.username,
+        firstName: body.firstName,
+        lastName: body.lastName,
+        dob: body.dob,
+        username,
       })
       .returning({ id: userTable.id });
     await tx.insert(accountTable).values({
       userId: user!.id,
       provider: "credentials",
-      providerAccountId: body.username,
+      providerAccountId: username,
       password: hashedPassword,
     });
   });
@@ -122,12 +130,14 @@ router.get("/provider/:provider/callback", async (req, res) => {
     where: (fields, { eq }) => eq(fields.email, providerUser.email),
   });
   if (!user) {
+    const [firstName, lastName] = providerUser.name.split(" ");
     const newUser = await db.transaction(async (tx) => {
       const [user] = await tx
         .insert(userTable)
         .values({
           email: providerUser.email,
-          name: providerUser.name,
+          firstName: firstName || "Unknown",
+          lastName: lastName || "User",
           username: "user-" + randomChars(10),
         })
         .returning();

@@ -23,11 +23,13 @@ export const friendRequestStatusEnum = pgEnum("friend_request_status", [
 
 export const userTable = pgTable("user", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
+  firstName: varchar("first_name", { length: 255 }).notNull(),
+  lastName: varchar("last_name", { length: 255 }).notNull(),
   username: varchar("username", { length: 255 }).notNull().unique(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   emailVerified: boolean("email_verified").default(false),
   avatar: varchar("avatar", { length: 255 }).default(sql`NULL`),
+  dob: timestamp("dob").default(sql`NULL`),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
