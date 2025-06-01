@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
     console.log("Not logged in");
 
     // Allow unauthenticated access to the login page
-    if (pathname === "/login") {
+    if (pathname === "/login" || pathname === "/register") {
       return NextResponse.next();
     }
 
