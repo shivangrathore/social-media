@@ -33,12 +33,12 @@ export function RegisterForm() {
     mode: "onTouched",
   });
   const watchedValues = form.watch();
-  const { errors, touchedFields } = form.formState
+  const { errors, touchedFields } = form.formState;
 
   function getFieldStatus(fieldName: keyof z.infer<typeof RegisterFormSchema>) {
     const hasError = errors[fieldName];
     const isTouched = touchedFields[fieldName];
-    const hasValue = watchedValues[fieldName]
+    const hasValue = watchedValues[fieldName];
 
     if (hasError && isTouched) {
       return "error";
@@ -61,18 +61,19 @@ export function RegisterForm() {
   }
   async function handleSubmit(data: z.infer<typeof RegisterFormSchema>) {
     try {
-
-      const res = await apiClient.post("/auth/register", data)
-    }
-    catch {
+      await apiClient.post("/auth/register", data);
+    } catch {
       form.setError("root", {
         message: "An error occurred while registering. Please try again.",
-      })
+      });
     }
   }
   return (
     <Form {...form}>
-      <form className="space-y-4 w-full" onSubmit={form.handleSubmit(handleSubmit)}>
+      <form
+        className="space-y-4 w-full"
+        onSubmit={form.handleSubmit(handleSubmit)}
+      >
         <div className="flex gap-4 w-full">
           <FormField
             name="firstName"
@@ -80,7 +81,10 @@ export function RegisterForm() {
               <FormItem className="w-full">
                 <FormLabel>Firstname</FormLabel>
                 <FormControl>
-                  <Input {...field} className={cn(getFieldStyle(getFieldStatus("firstName")))} />
+                  <Input
+                    {...field}
+                    className={cn(getFieldStyle(getFieldStatus("firstName")))}
+                  />
                 </FormControl>
                 {errors["firstName"] && (
                   <p className="text-red-500 text-sm" role="alert">
@@ -97,7 +101,10 @@ export function RegisterForm() {
               <FormItem className="w-full">
                 <FormLabel>Lastname</FormLabel>
                 <FormControl>
-                  <Input {...field} className={cn(getFieldStyle(getFieldStatus("lastName")))} />
+                  <Input
+                    {...field}
+                    className={cn(getFieldStyle(getFieldStatus("lastName")))}
+                  />
                 </FormControl>
                 {errors["lastName"] && (
                   <p className="text-red-500 text-sm" role="alert">
@@ -115,7 +122,11 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input {...field} className={cn(getFieldStyle(getFieldStatus("email")))} type="email" />
+                <Input
+                  {...field}
+                  className={cn(getFieldStyle(getFieldStatus("email")))}
+                  type="email"
+                />
               </FormControl>
               {errors["email"] && (
                 <p className="text-red-500 text-sm" role="alert">
@@ -133,7 +144,11 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input {...field} className={cn(getFieldStyle(getFieldStatus("password")))} type="password" />
+                <Input
+                  {...field}
+                  className={cn(getFieldStyle(getFieldStatus("password")))}
+                  type="password"
+                />
               </FormControl>
               {errors["password"] && (
                 <p className="text-red-500 text-sm" role="alert">
@@ -151,7 +166,11 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Date of Birth</FormLabel>
               <FormControl>
-                <Input {...field} className={cn(getFieldStyle(getFieldStatus("dob")))} type="date" />
+                <Input
+                  {...field}
+                  className={cn(getFieldStyle(getFieldStatus("dob")))}
+                  type="date"
+                />
               </FormControl>
               {errors["dob"] && (
                 <p className="text-red-500 text-sm" role="alert">
@@ -167,7 +186,11 @@ export function RegisterForm() {
           render={({ field }) => (
             <FormItem className="flex items-center space-x-0.5 !my-2">
               <FormControl>
-                <Checkbox {...field} checked={field.value} onCheckedChange={field.onChange} />
+                <Checkbox
+                  {...field}
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
               <FormLabel className="text-sm font-normal">
                 I agree to the
