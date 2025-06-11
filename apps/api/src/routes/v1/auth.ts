@@ -2,11 +2,15 @@ import { Router } from "express";
 import dateFns from "date-fns";
 import { LoginSchema, RegisterSchema } from "../../types";
 import { db } from "../../db";
-import { accountTable, sessionTable, userTable } from "../../db/schema";
+import {
+  accountTable,
+  profileTable,
+  sessionTable,
+  userTable,
+} from "../../db/schema";
 import { comparePassword, hashPassword } from "../../utils/crypto";
 import { providers } from "../../auth_providers";
 import { eq } from "drizzle-orm";
-import { randomChars } from "../../utils/random";
 import { signJWT } from "../../utils/jwt";
 import { JWT_EXPIRE_TIME } from "../../data/constants";
 import { usernameFromName } from "../../utils/db";
@@ -26,7 +30,7 @@ router.get("/logout", async (req, res) => {
 router.post("/register", async (req, res) => {
   console.log(req.body);
   const body = await RegisterSchema.parseAsync(req.body);
-  console.log(body)
+  console.log(body);
   const hashedPassword = await hashPassword(body.password);
   const username = usernameFromName(body.firstName);
   await db.transaction(async (tx) => {
@@ -37,7 +41,6 @@ router.post("/register", async (req, res) => {
         firstName: body.firstName,
         lastName: body.lastName,
         dob: body.dob,
-        username,
       })
       .returning({ id: userTable.id });
     await tx.insert(accountTable).values({
@@ -46,6 +49,14 @@ router.post("/register", async (req, res) => {
       providerAccountId: username,
       password: hashedPassword,
     });
+    await tx.insert(profileTable).values({
+      userId: user!.id,
+      username,
+      bio: null,
+      location: null,
+      type: "user",
+      name: body.firstName + " " + body.lastName,
+    });
   });
   res.status(201).json({ message: "User registered successfully" });
 });
@@ -53,8 +64,7 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   const body = await LoginSchema.parseAsync(req.body);
   const user = await db.query.userTable.findFirst({
-    where: (fields, { eq, or }) =>
-      or(eq(fields.username, body.id), eq(fields.email, body.id)),
+    where: (fields, { eq }) => eq(fields.email, body.id),
     with: {
       accounts: {
         limit: 1,
@@ -138,7 +148,6 @@ router.get("/provider/:provider/callback", async (req, res) => {
           email: providerUser.email,
           firstName: firstName || "Unknown",
           lastName: lastName || "User",
-          username: "user-" + randomChars(10),
         })
         .returning();
       if (!user) {
@@ -153,6 +162,14 @@ router.get("/provider/:provider/callback", async (req, res) => {
           accessToken: providerUserToken,
         })
         .returning({ id: accountTable.id });
+      await tx.insert(profileTable).values({
+        userId: user.id,
+        username: usernameFromName(user.firstName),
+        bio: null,
+        location: null,
+        type: "user",
+        name: user.firstName + " " + user.lastName,
+      });
       return user;
     });
     if (!newUser) {

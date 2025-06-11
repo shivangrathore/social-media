@@ -1,6 +1,8 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
+
+const url = new URL("/api/v1", process.env.NEXT_PUBLIC_API_URL);
 
 export const apiClient = axios.create({
-  baseURL: "http://localhost:3000/api/v1",
+  baseURL: url.toString(),
   adapter: "fetch",
 });

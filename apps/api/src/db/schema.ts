@@ -20,18 +20,32 @@ export const friendRequestStatusEnum = pgEnum("friend_request_status", [
   "accepted",
   "rejected",
 ]);
+export const profileTypeEnum = pgEnum("profile_type", ["user", "page"]);
 
 export const userTable = pgTable("user", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
-  username: varchar("username", { length: 255 }).notNull().unique(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   emailVerified: boolean("email_verified").default(false),
   avatar: varchar("avatar", { length: 255 }).default(sql`NULL`),
   dob: timestamp("dob").default(sql`NULL`),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const profileTable = pgTable("profile", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  username: varchar("username", { length: 255 }).notNull().unique(),
+  userId: bigint("user_id", { mode: "number" })
+    .notNull()
+    .references(() => userTable.id),
+  bio: text("bio").default(sql`NULL`),
+  location: varchar("location", { length: 255 }).default(sql`NULL`),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  name: varchar("name", { length: 255 }).default(sql`NULL`),
+  type: profileTypeEnum("type").notNull().default("user"),
 });
 
 export const accountTable = pgTable(
