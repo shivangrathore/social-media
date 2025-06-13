@@ -9,3 +9,9 @@ router.post("/signature", authMiddleware, async (req, res) => {
   const data = await generateSignature(res.locals["userId"], req.body);
   res.json(data);
 });
+
+// Cloudinary webhook notification endpoint
+router.post("/cloudinary-notification", async (req, res) => {
+  console.log("Cloudinary notification received:", req.query);
+  console.log(req.body);
+});

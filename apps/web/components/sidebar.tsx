@@ -11,7 +11,6 @@ export function Sidebar({ children }: PropsWithChildren) {
       >
         Social Connect
       </Link>
-      <hr />
       <div>{children}</div>
     </aside>
   );

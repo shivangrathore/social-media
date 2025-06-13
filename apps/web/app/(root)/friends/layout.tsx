@@ -1,23 +1,16 @@
 import NavigationTopbar from "@/components/navigation-topbar";
 import { Sidebar } from "@/components/sidebar";
 
-import {
-  CompassIcon,
-  FileIcon,
-  HomeIcon,
-  ThumbsUpIcon,
-  UserPlusIcon,
-  UsersIcon,
-} from "lucide-react";
+import { HomeIcon, UserIcon, UserPlusIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { PropsWithChildren } from "react";
 
-export default function PagesLayout({ children }: PropsWithChildren) {
+export default function FriendsLayout({ children }: PropsWithChildren) {
   const sidebarItems = [
-    { name: "Pages", href: "/pages", icon: FileIcon },
-    { name: "Discover", href: "/pages/discover", icon: CompassIcon },
-    { name: "Liked Pages", href: "/pages/liked", icon: ThumbsUpIcon },
-    { name: "Invitations", href: "/pages/invitations", icon: UserPlusIcon },
+    { name: "Home", href: "/friends", icon: HomeIcon },
+    { name: "Friend requests", href: "/friends/requests", icon: UserIcon },
+    { name: "Suggestions", href: "/friends/suggestions", icon: UserPlusIcon },
+    { name: "All Friends", href: "/friends/all", icon: UsersIcon },
   ];
   return (
     <div className="flex min-h-screen">

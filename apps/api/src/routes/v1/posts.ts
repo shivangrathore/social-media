@@ -1,7 +1,13 @@
 import { Router } from "express";
-import { CreatePostSchema } from "../../types";
+import { CreatePostSchema, UpdatePostSchema } from "../../types";
 import { db } from "../../db";
-import { commentTable, likeTable, postTable, userTable } from "../../db/schema";
+import {
+  attachmentTable,
+  commentTable,
+  likeTable,
+  postTable,
+  userTable,
+} from "../../db/schema";
 import authMiddleware from "../../middlewares/auth";
 import { and, asc, eq, gt, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -20,6 +26,54 @@ router.post("/", async (req, res) => {
     })
     .returning();
   res.status(201).json(post);
+});
+
+router.patch("/:postId", async (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const body = await UpdatePostSchema.parseAsync(req.body);
+  if (Object.keys(body).length == 0) {
+    res.status(400).json({ message: "No fields to update" });
+    return;
+  }
+  const post = await db.query.postTable.findFirst({
+    where: (fields, { eq, and }) => eq(fields.id, postId),
+  });
+  if (!post) {
+    res.status(404).json({ message: "Post not found" });
+    return;
+  }
+
+  if (post.userId !== res.locals["userId"]) {
+    res
+      .status(403)
+      .json({ message: "You are not allowed to update this post" });
+    return;
+  }
+  await db
+    .update(postTable)
+    .set({
+      content: body.content,
+    })
+    .where(
+      and(eq(postTable.id, postId), eq(postTable.userId, res.locals["userId"])),
+    );
+  res.json({ message: "Post updated successfully" });
+});
+
+router.post("/:postId/attachments", async (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const userId = res.locals["userId"];
+  const body = req.body;
+  await db.insert(attachmentTable).values({
+    postId,
+    userId,
+    url: body.secure_url,
+    asset_id: body.asset_id,
+    public_id: body.public_id,
+    width: body.width,
+    height: body.height,
+  });
+  res.status(201).json({ message: "Attachment added successfully" });
 });
 
 const postPaginationCusor = z.number().optional();

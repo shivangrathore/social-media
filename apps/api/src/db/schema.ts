@@ -97,20 +97,23 @@ export const postTable = pgTable("post", {
   userId: bigint("user_id", { mode: "number" })
     .notNull()
     .references(() => userTable.id),
-  title: text("title"),
   content: text("content"),
+  published: boolean("published").default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").default(sql`NULL`),
   numLikes: integer("num_likes").notNull().default(0),
   numComments: integer("num_comments").notNull().default(0),
-  published: boolean("published").default(false),
 });
+
+export const attachments = relations(postTable, ({ many }) => ({
+  attachments: many(attachmentTable),
+}));
 
 export const likeTable = pgTable(
   "like",
   {
     id: bigserial("id", { mode: "number" }),
-    targetId: bigint("post_id", { mode: "number" }).notNull(),
+    targetId: bigint("target_id", { mode: "number" }).notNull(),
     userId: bigint("user_id", { mode: "number" })
       .notNull()
       .references(() => userTable.id),
@@ -142,12 +145,18 @@ export const commentTable = pgTable(
   ],
 );
 
+// cloudinary uploads
 export const attachmentTable = pgTable("attachment", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
   postId: bigint("post_id", { mode: "number" }).references(() => userTable.id),
-  publicUrl: text("public_url"),
-  url: text("url"),
+  url: text("url").notNull(),
+  asset_id: text("asset_id"),
+  public_id: text("public_id"),
+  width: integer("width"),
+  height: integer("height"),
+  userId: bigint("user_id", { mode: "number" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  // TODO: add more fields like public_id, format, etc.
 });
 
 export const friendRequestTable = pgTable(

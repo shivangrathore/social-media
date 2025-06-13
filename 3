@@ -1,0 +1,98 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { ChartBarIcon, ImageIcon, SmileIcon, VideoIcon } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+// Try https://frimousse.liveblocks.io/ emoji picker
+export function NewPost() {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  function updateTextareaHeight() {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }
+  const [body, setBody] = useState("");
+  function textAreaChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setBody(e.target.value);
+    updateTextareaHeight();
+  }
+
+  const [files, setFiles] = useState<{ file: File; src: string }[]>([]);
+
+  function uploadFile() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.multiple = true;
+    input.accept = "image/*,video/*";
+    input.click();
+    input.onchange = (e) => {
+      e.preventDefault();
+      const target = e.target as HTMLInputElement;
+      if (target.files) {
+        const selectedFiles = Array.from(target.files);
+        const selectedFileObjects = selectedFiles.map((file) => {
+          const src = URL.createObjectURL(file);
+          return { file, src };
+        });
+        setFiles((prevFiles) => [...prevFiles, ...selectedFileObjects]);
+      }
+      input.remove();
+    };
+  }
+
+  const isEmpty = useMemo(() => {
+    return body.trim().length === 0;
+  }, [body]);
+
+  return (
+    <div className="my-6 p-4 bg-white">
+      <div className="relative">
+        <textarea
+          value={body}
+          onChange={textAreaChange}
+          ref={textareaRef}
+          className="p-4 rounded-lg border border-border w-full resize-none overflow-hidden text-base"
+          placeholder="What's on your mind?"
+          rows={1}
+        />
+        <div className="grid grid-cols-3">
+          {files.map((file) => (
+            <img
+              src={file.src}
+              key={file.file.name}
+              className="object-cover size-36"
+            />
+          ))}
+        </div>
+        <div className="flex items-center mt-2 mx-2">
+          <div className="">
+            <button
+              className="rounded-full text-primary p-2 cursor-pointer hover:bg-primary/5 transition-colors"
+              onClick={uploadFile}
+            >
+              <ImageIcon className="size-5" />
+            </button>
+            {[{ icon: SmileIcon }, { icon: ChartBarIcon }].map((i, idx) => (
+              <button
+                className="rounded-full text-primary p-2 cursor-pointer hover:bg-primary/5 transition-colors"
+                key={idx}
+              >
+                <i.icon className="size-5" />
+              </button>
+            ))}
+          </div>
+          <Button
+            size="sm"
+            variant="default"
+            className="ml-auto"
+            disabled={isEmpty}
+          >
+            <span>Post</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

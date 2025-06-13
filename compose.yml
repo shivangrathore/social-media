@@ -3,12 +3,12 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    networks: 
+    networks:
       - social-media-network
     env_file:
       - ./secrets/.env.api
     depends_on:
-      db: 
+      db:
         condition: service_healthy
   web:
     build:
