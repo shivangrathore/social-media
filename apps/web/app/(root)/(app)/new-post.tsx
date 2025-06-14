@@ -1,28 +1,62 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { ChartBarIcon, ImageIcon, SmileIcon, XIcon } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+
+// Image Modal
+// FIX: Prevent reloads when not needed
+// TODO: Revoke file URLs when not needed
+function ImageModal({
+  image,
+  isOpen,
+  onToggle,
+}: {
+  image: string;
+  isOpen: boolean;
+  onToggle: (v: boolean) => void;
+}) {
+  return (
+    <Dialog open={isOpen} onOpenChange={onToggle}>
+      <DialogContent
+        className="!max-w-2xl max-h-[calc(100vh-2rem)] h-full p-4 pt-10"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        <DialogTitle className="hidden">{image}</DialogTitle>
+        <img
+          src={image}
+          className="max-w-full max-h-[calc(100vh-10rem)] object-contain mx-auto my-auto rounded-md ring-4 ring-blue-500"
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // TODO: Use carousel for images and videos upload view
 function ImageUploadView({
   files,
   removeFile,
 }: {
-  files: File[];
+  files: FileWithUrl[];
   removeFile: (idx: number) => void;
 }) {
   if (files.length === 0) {
     return null;
   }
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+
+  const handleModalToggle = useCallback((open: boolean) => {
+    setImageModalOpen(open);
+    if (!open) {
+      setSelectedImage(null);
+    }
+  }, []);
+
   return (
     <div
       className={cn("grid mt-2 items-center gap-2", {
@@ -31,40 +65,42 @@ function ImageUploadView({
       })}
     >
       {files.map((file, idx) => {
-        const src = URL.createObjectURL(file);
         return (
           <div
             className={cn(
               "relative rounded-md overflow-hidden group h-full w-full cursor-pointer",
             )}
-            key={src}
+            key={file.url}
+            onClick={() => {
+              setSelectedImage(file.url);
+              setImageModalOpen(true);
+            }}
           >
-            {file.type.startsWith("image/") && (
-              <Dialog>
-                <DialogTrigger className="absolute inset-0" />
-                <DialogContent>
-                  <DialogTitle className="hidden">{file.name}</DialogTitle>
-                  <DialogDescription>
-                    <img src={src} />
-                  </DialogDescription>
-                </DialogContent>
-              </Dialog>
+            {selectedImage && (
+              <ImageModal
+                image={selectedImage}
+                isOpen={imageModalOpen}
+                onToggle={handleModalToggle}
+              />
             )}
             <Button
               variant="secondary"
               className="rounded-full absolute top-2 right-2 z-10 size-6"
-              onClick={() => removeFile(idx)}
+              onClick={(e) => {
+                removeFile(idx);
+                e.stopPropagation();
+              }}
             >
               <XIcon className="size-4" />
             </Button>
-            {file.type.startsWith("image/") ? (
+            {file.file.type.startsWith("image/") ? (
               <img
-                src={src}
+                src={file.url}
                 className="object-cover w-full h-full rounded-md"
               />
             ) : (
               <video
-                src={src}
+                src={file.url}
                 className="object-cover w-full h-full rounded-md"
                 controls={true}
               />
@@ -75,6 +111,11 @@ function ImageUploadView({
     </div>
   );
 }
+
+type FileWithUrl = {
+  file: File;
+  url: string;
+};
 
 // Try https://frimousse.liveblocks.io/ emoji picker
 export function NewPost() {
@@ -91,7 +132,7 @@ export function NewPost() {
     updateTextareaHeight();
   }
 
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<FileWithUrl[]>([]);
   function removeFile(idx: number) {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== idx));
   }
@@ -107,7 +148,11 @@ export function NewPost() {
       const target = e.target as HTMLInputElement;
       if (target.files) {
         const selectedFiles = Array.from(target.files);
-        setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+        const fileWithUrls = selectedFiles.map((file) => ({
+          file,
+          url: URL.createObjectURL(file),
+        }));
+        setFiles((prevFiles) => [...prevFiles, ...fileWithUrls]);
       }
       input.remove();
     };
