@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { apiClient } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
+import { postAttachmentStore, UploadFile } from "@/store/attachmentUpload";
 import { ChartBarIcon, ImageIcon, SmileIcon, XIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useStore } from "zustand";
 
 // Image Modal
 // TODO: Revoke file URLs when not needed
@@ -38,18 +40,11 @@ function ImageModal({
 }
 
 // TODO: Use carousel for images and videos upload view
-function ImageUploadView({
-  files,
-  removeFile,
-}: {
-  files: FileWithObjectURL[];
-  removeFile: (idx: number) => void;
-}) {
-  if (files.length === 0) {
-    return null;
-  }
+function ImageUploadView() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [previewModalState, setPreviewModalState] = useState(false);
+  const files = useStore(postAttachmentStore, (state) => state.files);
+  const removeFile = useStore(postAttachmentStore, (state) => state.removeFile);
 
   const handleModalToggle = useCallback(
     (open: boolean) => {
@@ -76,12 +71,10 @@ function ImageUploadView({
         "grid-cols-2": files.length >= 2,
       })}
     >
-      {files.map((file, idx) => (
+      {files.map((file) => (
         <FileItem
-          key={file.url}
-          file={file.file}
-          url={file.url}
-          index={idx}
+          key={file.id}
+          file={file}
           onRemove={removeFile}
           onImageClick={handleImageClick}
         />
@@ -99,75 +92,33 @@ function ImageUploadView({
 
 function FileItem({
   file,
-  url,
   onRemove,
   onImageClick,
-  index,
 }: {
-  file: File;
-  url: string;
-  index: number;
-  onRemove: (idx: number) => void;
+  file: UploadFile;
+  onRemove: (id: string) => void;
   onImageClick: (url: string) => void;
 }) {
   const handleRemove = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      onRemove(index);
+      onRemove(file.id);
     },
-    [onRemove, index],
+    [onRemove, file.id],
   );
   const handleImageClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      onImageClick(url);
+      onImageClick(file.url);
     },
-    [onImageClick, url],
+    [onImageClick, file.url],
   );
-  const uploadStartRef = useRef<boolean>(false);
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [uploaded, setUploaded] = useState(false);
-  const uploadFile = useCallback(async () => {
-    if (uploadStartRef.current || uploading || uploaded) {
-      return;
-    }
-    uploadStartRef.current = true;
-    setUploading(true);
-    setUploaded(false);
-    const res = await apiClient.post("/upload/signature", {});
-    const data = res.data;
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("signature", data.signature);
-    formData.append("timestamp", data.timestamp);
-    formData.append("folder", data.folder);
-    formData.append("api_key", data.apiKey);
-    formData.append("context", data.context);
-    await apiClient.post(data.uploadUrl, formData, {
-      onUploadProgress: (event) => {
-        if (event.total) {
-          const percent = Math.round((event.loaded * 100) / event.total);
-          setProgress(percent);
-        }
-      },
-      adapter: "xhr",
-    });
-    setUploading(false);
-    setProgress(100);
-    setUploaded(true);
-  }, [file, uploading, uploaded]);
-
-  useEffect(() => {
-    uploadFile();
-  }, []);
-
   return (
     <div
       className={cn(
         "relative rounded-md overflow-hidden group h-full w-full cursor-pointer",
       )}
-      key={url}
+      key={file.id}
       onClick={handleImageClick}
     >
       <Button
@@ -177,21 +128,25 @@ function FileItem({
       >
         <XIcon className="size-4" />
       </Button>
-      {file.type.startsWith("image/") ? (
-        <img src={url} className="object-cover w-full h-full rounded-md" />
+      {file.file.type.startsWith("image/") ? (
+        <img src={file.url} className="object-cover w-full h-full rounded-md" />
       ) : (
         <video
-          src={url}
+          src={file.url}
           className="object-cover w-full h-full rounded-md"
           controls={true}
         />
       )}
-      {uploading && !uploaded && (
+      {!file.uploaded && file.progress > 0 && (
         <div className="absolute inset-0 bg-black/30 flex flex-col gap-4 items-center justify-center text-accent">
           <div className="relative">
-            <CircularProgress progress={progress} strokeWidth={4} size={72} />
+            <CircularProgress
+              progress={file.progress}
+              strokeWidth={4}
+              size={72}
+            />
             <div className="left-1/2 -translate-x-1/2 font-semibold text-sm absolute top-1/2 -translate-y-1/2 text-nowrap">
-              <span className="text-2xl">{progress}</span>
+              <span className="text-2xl">{file.progress}</span>
               <span className="text-xs">%</span>
             </div>
           </div>
@@ -200,11 +155,6 @@ function FileItem({
     </div>
   );
 }
-
-type FileWithObjectURL = {
-  file: File;
-  url: string;
-};
 
 // Try https://frimousse.liveblocks.io/ emoji picker
 export function NewPost() {
@@ -215,15 +165,12 @@ export function NewPost() {
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }
+  const files = useStore(postAttachmentStore, (state) => state.files);
+  const addFiles = useStore(postAttachmentStore, (state) => state.addFiles);
   const [body, setBody] = useState("");
   function textAreaChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     setBody(e.target.value);
     updateTextareaHeight();
-  }
-
-  const [files, setFiles] = useState<FileWithObjectURL[]>([]);
-  function removeFile(idx: number) {
-    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== idx));
   }
 
   function uploadFile() {
@@ -236,12 +183,7 @@ export function NewPost() {
       e.preventDefault();
       const target = e.target as HTMLInputElement;
       if (target.files) {
-        const selectedFiles = Array.from(target.files);
-        const selectedFilesWithUrls = selectedFiles.map((file) => ({
-          file,
-          url: URL.createObjectURL(file),
-        }));
-        setFiles((prevFiles) => [...prevFiles, ...selectedFilesWithUrls]);
+        addFiles(Array.from(target.files));
       }
       input.remove();
     };
@@ -262,7 +204,7 @@ export function NewPost() {
           placeholder="What's on your mind?"
           rows={1}
         />
-        <ImageUploadView files={files} removeFile={removeFile} />
+        <ImageUploadView />
         <div className="flex items-center mt-2 mx-2">
           <div className="">
             <button
