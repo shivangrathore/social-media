@@ -1,13 +1,14 @@
 "use client";
 
+import { CircularProgress } from "@/components/circular-progress";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { apiClient } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import { ChartBarIcon, ImageIcon, SmileIcon, XIcon } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // Image Modal
-// FIX: Prevent reloads when not needed
 // TODO: Revoke file URLs when not needed
 function ImageModal({
   image,
@@ -41,21 +42,32 @@ function ImageUploadView({
   files,
   removeFile,
 }: {
-  files: FileWithUrl[];
+  files: FileWithObjectURL[];
   removeFile: (idx: number) => void;
 }) {
   if (files.length === 0) {
     return null;
   }
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [previewModalState, setPreviewModalState] = useState(false);
 
-  const handleModalToggle = useCallback((open: boolean) => {
-    setImageModalOpen(open);
-    if (!open) {
-      setSelectedImage(null);
-    }
-  }, []);
+  const handleModalToggle = useCallback(
+    (open: boolean) => {
+      setPreviewModalState(open);
+      if (!open) {
+        setSelectedImage(null);
+      }
+    },
+    [setPreviewModalState],
+  );
+
+  const handleImageClick = useCallback(
+    (url: string) => {
+      setSelectedImage(url);
+      handleModalToggle(true);
+    },
+    [handleModalToggle, setSelectedImage],
+  );
 
   return (
     <div
@@ -64,55 +76,132 @@ function ImageUploadView({
         "grid-cols-2": files.length >= 2,
       })}
     >
-      {files.map((file, idx) => {
-        return (
-          <div
-            className={cn(
-              "relative rounded-md overflow-hidden group h-full w-full cursor-pointer",
-            )}
-            key={file.url}
-            onClick={() => {
-              setSelectedImage(file.url);
-              setImageModalOpen(true);
-            }}
-          >
-            {selectedImage && (
-              <ImageModal
-                image={selectedImage}
-                isOpen={imageModalOpen}
-                onToggle={handleModalToggle}
-              />
-            )}
-            <Button
-              variant="secondary"
-              className="rounded-full absolute top-2 right-2 z-10 size-6"
-              onClick={(e) => {
-                removeFile(idx);
-                e.stopPropagation();
-              }}
-            >
-              <XIcon className="size-4" />
-            </Button>
-            {file.file.type.startsWith("image/") ? (
-              <img
-                src={file.url}
-                className="object-cover w-full h-full rounded-md"
-              />
-            ) : (
-              <video
-                src={file.url}
-                className="object-cover w-full h-full rounded-md"
-                controls={true}
-              />
-            )}
-          </div>
-        );
-      })}
+      {files.map((file, idx) => (
+        <FileItem
+          key={file.url}
+          file={file.file}
+          url={file.url}
+          index={idx}
+          onRemove={removeFile}
+          onImageClick={handleImageClick}
+        />
+      ))}
+      {selectedImage && (
+        <ImageModal
+          image={selectedImage}
+          isOpen={previewModalState}
+          onToggle={setPreviewModalState}
+        />
+      )}
     </div>
   );
 }
 
-type FileWithUrl = {
+function FileItem({
+  file,
+  url,
+  onRemove,
+  onImageClick,
+  index,
+}: {
+  file: File;
+  url: string;
+  index: number;
+  onRemove: (idx: number) => void;
+  onImageClick: (url: string) => void;
+}) {
+  const handleRemove = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onRemove(index);
+    },
+    [onRemove, index],
+  );
+  const handleImageClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onImageClick(url);
+    },
+    [onImageClick, url],
+  );
+  const uploadStartRef = useRef<boolean>(false);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [uploaded, setUploaded] = useState(false);
+  const uploadFile = useCallback(async () => {
+    if (uploadStartRef.current || uploading || uploaded) {
+      return;
+    }
+    uploadStartRef.current = true;
+    setUploading(true);
+    setUploaded(false);
+    const res = await apiClient.post("/upload/signature", {});
+    const data = res.data;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("signature", data.signature);
+    formData.append("timestamp", data.timestamp);
+    formData.append("folder", data.folder);
+    formData.append("api_key", data.apiKey);
+    formData.append("context", data.context);
+    await apiClient.post(data.uploadUrl, formData, {
+      onUploadProgress: (event) => {
+        if (event.total) {
+          const percent = Math.round((event.loaded * 100) / event.total);
+          setProgress(percent);
+        }
+      },
+      adapter: "xhr",
+    });
+    setUploading(false);
+    setProgress(100);
+    setUploaded(true);
+  }, [file, uploading, uploaded]);
+
+  useEffect(() => {
+    uploadFile();
+  }, []);
+
+  return (
+    <div
+      className={cn(
+        "relative rounded-md overflow-hidden group h-full w-full cursor-pointer",
+      )}
+      key={url}
+      onClick={handleImageClick}
+    >
+      <Button
+        variant="secondary"
+        className="rounded-full absolute top-2 right-2 z-10 size-6"
+        onClick={handleRemove}
+      >
+        <XIcon className="size-4" />
+      </Button>
+      {file.type.startsWith("image/") ? (
+        <img src={url} className="object-cover w-full h-full rounded-md" />
+      ) : (
+        <video
+          src={url}
+          className="object-cover w-full h-full rounded-md"
+          controls={true}
+        />
+      )}
+      {uploading && !uploaded && (
+        <div className="absolute inset-0 bg-black/30 flex flex-col gap-4 items-center justify-center text-accent">
+          <div className="relative">
+            <CircularProgress progress={progress} strokeWidth={4} size={72} />
+            <div className="left-1/2 -translate-x-1/2 font-semibold text-sm absolute top-1/2 -translate-y-1/2 text-nowrap">
+              <span className="text-2xl">{progress}</span>
+              <span className="text-xs">%</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+type FileWithObjectURL = {
   file: File;
   url: string;
 };
@@ -132,7 +221,7 @@ export function NewPost() {
     updateTextareaHeight();
   }
 
-  const [files, setFiles] = useState<FileWithUrl[]>([]);
+  const [files, setFiles] = useState<FileWithObjectURL[]>([]);
   function removeFile(idx: number) {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== idx));
   }
@@ -148,11 +237,11 @@ export function NewPost() {
       const target = e.target as HTMLInputElement;
       if (target.files) {
         const selectedFiles = Array.from(target.files);
-        const fileWithUrls = selectedFiles.map((file) => ({
+        const selectedFilesWithUrls = selectedFiles.map((file) => ({
           file,
           url: URL.createObjectURL(file),
         }));
-        setFiles((prevFiles) => [...prevFiles, ...fileWithUrls]);
+        setFiles((prevFiles) => [...prevFiles, ...selectedFilesWithUrls]);
       }
       input.remove();
     };
