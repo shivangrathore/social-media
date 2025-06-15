@@ -3,9 +3,11 @@
 import { CircularProgress } from "@/components/circular-progress";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { apiClient } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import { postAttachmentStore, UploadFile } from "@/store/attachmentUpload";
+import { createPostStore } from "@/store/createPost";
 import { ChartBarIcon, ImageIcon, SmileIcon, XIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
@@ -165,12 +167,28 @@ export function NewPost() {
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }
+  useEffect(() => {
+    loadDraftPost();
+  }, []);
+
   const files = useStore(postAttachmentStore, (state) => state.files);
   const addFiles = useStore(postAttachmentStore, (state) => state.addFiles);
+  const post = useStore(createPostStore, (state) => state.post);
+  const setPost = useStore(createPostStore, (state) => state.setPost);
+
+  const loadDraftPost = useStore(
+    createPostStore,
+    (state) => state.loadDraftPost,
+  );
+
+  useEffect(() => {
+    setBody(post?.content || "");
+  }, [post]);
+
   const [body, setBody] = useState("");
+
   function textAreaChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     setBody(e.target.value);
-    updateTextareaHeight();
   }
 
   function uploadFile() {
@@ -189,49 +207,97 @@ export function NewPost() {
     };
   }
 
+  useEffect(() => {
+    updateTextareaHeight();
+  }, [body]);
+
+  const updateDraftPost = useCallback(
+    async (body: string) => {
+      if (!post) {
+        return;
+      }
+      await apiClient.patch(`/posts/${post.id}`, {
+        content: body,
+      });
+      console.log("Draft post updated", body);
+    },
+    [post],
+  );
+  useEffect(() => {
+    const timeout = setTimeout(async () => {
+      await updateDraftPost(body);
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [body, updateDraftPost]);
+
   const isEmpty = useMemo(() => {
     return body.trim().length === 0 && files.length === 0;
   }, [body, files]);
 
+  const createDraftPost = useCallback(async () => {
+    const res = await apiClient.post("/posts", {});
+    setPost(res.data);
+  }, []);
+
+  const isPostLoading = useStore(
+    createPostStore,
+    (state) => state.isPostLoading,
+  );
+
   return (
     <div className="my-6 p-4 bg-white">
-      <div className="relative">
-        <textarea
-          value={body}
-          onChange={textAreaChange}
-          ref={textareaRef}
-          className="p-4 rounded-lg border border-border w-full resize-none overflow-hidden text-base"
-          placeholder="What's on your mind?"
-          rows={1}
-        />
-        <ImageUploadView />
-        <div className="flex items-center mt-2 mx-2">
-          <div className="">
-            <button
-              className="rounded-full text-primary p-2 cursor-pointer hover:bg-primary/5 transition-colors"
-              onClick={uploadFile}
-            >
-              <ImageIcon className="size-5" />
-            </button>
-            {[{ icon: SmileIcon }, { icon: ChartBarIcon }].map((i, idx) => (
+      {isPostLoading ? (
+        <div>
+          <Skeleton className="h-14 w-full mb-4" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {[...Array(3)].map((_, idx) => (
+                <Skeleton key={idx} className="size-8 rounded-full" />
+              ))}
+            </div>
+            <Skeleton className="h-8 w-14 rounded-md" />
+          </div>
+        </div>
+      ) : (
+        <div className="relative">
+          <textarea
+            value={body}
+            onChange={textAreaChange}
+            ref={textareaRef}
+            className="p-4 rounded-lg border border-border w-full resize-none overflow-hidden text-base"
+            placeholder="What's on your mind?"
+            rows={1}
+            onFocus={createDraftPost}
+          />
+          <ImageUploadView />
+          <div className="flex items-center mt-2 mx-2">
+            <div className="">
               <button
                 className="rounded-full text-primary p-2 cursor-pointer hover:bg-primary/5 transition-colors"
-                key={idx}
+                onClick={uploadFile}
               >
-                <i.icon className="size-5" />
+                <ImageIcon className="size-5" />
               </button>
-            ))}
+              {[{ icon: SmileIcon }, { icon: ChartBarIcon }].map((i, idx) => (
+                <button
+                  className="rounded-full text-primary p-2 cursor-pointer hover:bg-primary/5 transition-colors"
+                  key={idx}
+                >
+                  <i.icon className="size-5" />
+                </button>
+              ))}
+            </div>
+            <Button
+              size="sm"
+              variant="default"
+              className="ml-auto"
+              disabled={isEmpty}
+            >
+              <span>Post</span>
+            </Button>
           </div>
-          <Button
-            size="sm"
-            variant="default"
-            className="ml-auto"
-            disabled={isEmpty}
-          >
-            <span>Post</span>
-          </Button>
         </div>
-      </div>
+      )}
     </div>
   );
 }

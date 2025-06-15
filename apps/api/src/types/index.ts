@@ -29,3 +29,7 @@ export const EditCommentSchema = z.object({
 });
 
 export const AddAttachmentSchema = z.object({});
+
+export const PostAttachmentSignatureSchema = z.object({
+  postId: z.string(),
+});

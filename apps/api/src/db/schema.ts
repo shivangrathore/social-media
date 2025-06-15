@@ -105,9 +105,9 @@ export const postTable = pgTable("post", {
   numComments: integer("num_comments").notNull().default(0),
 });
 
-export const attachments = relations(postTable, ({ many }) => ({
-  attachments: many(attachmentTable),
-}));
+// export const attachments = relations(postTable, ({ many }) => ({
+//   attachments: many(attachmentTable),
+// }));
 
 export const likeTable = pgTable(
   "like",
@@ -148,13 +148,17 @@ export const commentTable = pgTable(
 // cloudinary uploads
 export const attachmentTable = pgTable("attachment", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
-  postId: bigint("post_id", { mode: "number" }).references(() => userTable.id),
+  postId: bigint("post_id", { mode: "number" })
+    .notNull()
+    .references(() => postTable.id),
   url: text("url").notNull(),
   asset_id: text("asset_id"),
   public_id: text("public_id"),
   width: integer("width"),
   height: integer("height"),
-  userId: bigint("user_id", { mode: "number" }),
+  userId: bigint("user_id", { mode: "number" })
+    .notNull()
+    .references(() => userTable.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   // TODO: add more fields like public_id, format, etc.
 });

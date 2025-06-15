@@ -1,1 +1,0 @@
-ALTER TABLE "profile" ADD COLUMN "name" varchar(255) DEFAULT NULL;

@@ -6,6 +6,7 @@ import config from "../../config";
 const router: Router = Router();
 export default router;
 
+// TODO: Export context function for client
 router.post("/signature", authMiddleware, async (req, res) => {
   const data = await generateSignature(res.locals["userId"], req.body);
   const uploadUrl = `https://api.cloudinary.com/v1_1/${config.CLOUDINARY_CLOUD_NAME}/image/upload`;
@@ -14,6 +15,5 @@ router.post("/signature", authMiddleware, async (req, res) => {
 
 // Cloudinary webhook notification endpoint
 router.post("/cloudinary-notification", async (req, res) => {
-  console.log("Cloudinary notification received:", req.query);
-  console.log(req.body);
+  const body = req.body;
 });

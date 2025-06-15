@@ -16,16 +16,34 @@ const router: Router = Router();
 router.use(authMiddleware);
 export default router;
 
-router.post("/", async (req, res) => {
-  const body = await CreatePostSchema.parseAsync(req.body);
+router.post("/", async (_req, res) => {
+  const draftPost = await db.query.postTable.findFirst({
+    where: (fields, { eq }) =>
+      and(eq(fields.userId, res.locals["userId"]), eq(fields.published, false)),
+  });
+  if (draftPost) {
+    res.status(200).json(draftPost);
+    return;
+  }
   const [post] = await db
     .insert(postTable)
     .values({
-      content: body.content,
       userId: res.locals["userId"],
     })
     .returning();
   res.status(201).json(post);
+});
+
+router.get("/draft", async (req, res) => {
+  const post = await db.query.postTable.findFirst({
+    where: (fields, { eq }) =>
+      and(eq(fields.userId, res.locals["userId"]), eq(fields.published, false)),
+  });
+  if (!post) {
+    res.status(404).json({ message: "Draft post not found" });
+    return;
+  }
+  res.json(post);
 });
 
 router.patch("/:postId", async (req, res) => {
@@ -36,7 +54,7 @@ router.patch("/:postId", async (req, res) => {
     return;
   }
   const post = await db.query.postTable.findFirst({
-    where: (fields, { eq, and }) => eq(fields.id, postId),
+    where: (fields, { eq }) => eq(fields.id, postId),
   });
   if (!post) {
     res.status(404).json({ message: "Post not found" });
