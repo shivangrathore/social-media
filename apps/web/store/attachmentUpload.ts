@@ -12,10 +12,11 @@ export type UploadFile = {
 
 type AttachmentUploadStore = {
   files: UploadFile[];
-  addFiles: (files: File[]) => Promise<void>;
+  addFiles: (postId: string, files: File[]) => Promise<void>;
   removeFile: (id: string) => void;
   updateProgress: (id: string, progress: number) => void;
   markUploaded: (id: string) => void;
+  setFiles?: (files: UploadFile[]) => void;
 };
 
 export const postAttachmentStore = create<AttachmentUploadStore>(
@@ -29,7 +30,10 @@ export const postAttachmentStore = create<AttachmentUploadStore>(
         return { files };
       });
     },
-    addFiles: async (files: File[]) => {
+    setFiles: (files: UploadFile[]) => {
+      set({ files });
+    },
+    addFiles: async (postId: string, files: File[]) => {
       const newUploads = files.map((file) => {
         return {
           id: crypto.randomUUID(),
@@ -39,7 +43,9 @@ export const postAttachmentStore = create<AttachmentUploadStore>(
           progress: 0,
         };
       });
-      const signatureRequest = await apiClient.post("/upload/signature", {});
+      const signatureRequest = await apiClient.post("/upload/signature", {
+        postId,
+      });
       const data = signatureRequest.data;
       set((state) => {
         return { files: [...state.files, ...newUploads] };

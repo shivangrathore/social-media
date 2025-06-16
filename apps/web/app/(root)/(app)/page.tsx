@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { NewPost } from "./new-post";
 import { PostCard } from "@/components/post-card";
 import { UserProfile } from "@/components/user-profile";
 import { Input } from "@/components/ui/input";
+import { CreateNewPost } from "@/components/create-new-post";
 
 export const metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME || "Home",
@@ -13,7 +13,7 @@ export default function FeedPage() {
   return (
     <div className="flex gap-36 mb-10">
       <div className="ml-20 space-y-4 max-w-lg w-full">
-        <NewPost />
+        <CreateNewPost />
         <div className="space-y-4">
           <PostCard showContent={false} />
           <PostCard showImage={false} />

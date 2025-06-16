@@ -8,6 +8,13 @@
       "when": 1749905184050,
       "tag": "0000_magical_spiral",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1750057360638,
+      "tag": "0001_robust_chimera",
+      "breakpoints": true
     }
   ]
 }

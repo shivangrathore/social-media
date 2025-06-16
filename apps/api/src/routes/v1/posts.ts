@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { CreatePostSchema, UpdatePostSchema } from "../../types";
+import { UpdatePostSchema } from "../../types";
 import { db } from "../../db";
 import {
   attachmentTable,
@@ -43,7 +43,10 @@ router.get("/draft", async (req, res) => {
     res.status(404).json({ message: "Draft post not found" });
     return;
   }
-  res.json(post);
+  const attachments = await db.query.attachmentTable.findMany({
+    where: (fields, { eq }) => eq(fields.postId, post.id),
+  });
+  res.json({ ...post, attachments });
 });
 
 router.patch("/:postId", async (req, res) => {

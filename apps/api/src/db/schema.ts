@@ -146,6 +146,7 @@ export const commentTable = pgTable(
 );
 
 // cloudinary uploads
+// TODO: Settle with naming convention
 export const attachmentTable = pgTable("attachment", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
   postId: bigint("post_id", { mode: "number" })
@@ -159,6 +160,7 @@ export const attachmentTable = pgTable("attachment", {
   userId: bigint("user_id", { mode: "number" })
     .notNull()
     .references(() => userTable.id),
+  resource_type: varchar("resource_type", { length: 50 }).default("image"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   // TODO: add more fields like public_id, format, etc.
 });
