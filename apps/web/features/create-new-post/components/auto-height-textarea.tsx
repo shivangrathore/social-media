@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 
 type AutoHeightTextareaProps =
   React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
@@ -20,10 +20,20 @@ const AutoHeightTextarea = React.forwardRef<
     }
     textareaRef.current = el;
   };
-  const handleInput = () => {
+  const adjustHeight = useCallback(() => {
     const target = textareaRef.current;
-    target.style.height = "auto";
-    target.style.height = `${target.scrollHeight}px`;
+    if (target) {
+      target.style.height = "auto";
+      target.style.height = `${target.scrollHeight}px`;
+    }
+  }, []);
+
+  useEffect(() => {
+    adjustHeight();
+  }, [props.value]);
+
+  const handleInput = () => {
+    adjustHeight();
   };
   return <textarea {...props} ref={multipleRefs} onInput={handleInput} />;
 });

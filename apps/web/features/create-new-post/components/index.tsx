@@ -6,6 +6,7 @@ import { ChangeEvent, useCallback } from "react";
 import AutoHeightTextarea from "./auto-height-textarea";
 import { FileUploadGrid } from "./file-upload-grid";
 import PostToolbar from "./post-toolbar";
+import { useAutosave } from "../hooks/use-auto-save";
 
 export function CreateNewPost() {
   const content = useStore(postStore, (state) => state.post.content);
@@ -17,6 +18,7 @@ export function CreateNewPost() {
     },
     [setContent],
   );
+  useAutosave(content, 1000);
   if (isPostLoading) {
     return <PostLoadingSkeleton />;
   }

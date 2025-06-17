@@ -46,6 +46,7 @@ export const postStore = create(
       const post = get().post;
       try {
         await apiClient.patch<Post>(`/drafts/${post.id}`, post);
+        console.log("Draft saved successfully");
       } finally {
         set({ isSaving: false });
       }
