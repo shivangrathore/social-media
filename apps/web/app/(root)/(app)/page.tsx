@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { PostCard } from "@/components/post-card";
-import { CreateNewPost } from "@/features/compose-post/components";
+import { ComposePost } from "@/features/compose-post/components";
 import { Input } from "@/components/ui/input";
 import { UserProfile } from "@/components/user-profile";
 
@@ -13,7 +13,7 @@ export default function FeedPage() {
   return (
     <div className="flex gap-36 mb-10">
       <div className="ml-20 space-y-4 max-w-lg w-full">
-        <CreateNewPost />
+        <ComposePost />
         <div className="space-y-4">
           <PostCard showContent={false} />
           <PostCard showImage={false} />

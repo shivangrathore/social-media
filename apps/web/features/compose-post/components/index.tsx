@@ -8,7 +8,7 @@ import { FileUploadGrid } from "./file-upload-grid";
 import PostToolbar from "./post-toolbar";
 import { useAutosave } from "../hooks/use-auto-save";
 
-export function CreateNewPost() {
+export function ComposePost() {
   const content = useStore(postStore, (state) => state.post.content);
   const isPostLoading = useStore(postStore, (state) => state.isLoading);
   const setContent = useStore(postStore, (state) => state.setContent);
