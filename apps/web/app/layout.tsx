@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import "./globals.css";
-import { loadUser } from "../lib/store/auth";
+import { loadUser } from "@/store/auth";
 
 export default function RootLayout({
   children,

@@ -16,6 +16,9 @@ export async function generateSignature(
   context = { ...context, userId };
 
   const s_context = Object.entries(context)
+    .sort((a, b) => {
+      return a[0].localeCompare(b[0]);
+    })
     .map(([k, v]) => {
       k = k.replaceAll("=", "\=");
       v = `${v}`.replaceAll("=", "\=");

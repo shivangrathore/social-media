@@ -3,7 +3,6 @@ import v1Router from "./routes/v1";
 import cookieParser from "cookie-parser";
 
 const app = express();
-app.use(express.json());
 app.use(cookieParser());
 app.use("/api/v1", v1Router);
 

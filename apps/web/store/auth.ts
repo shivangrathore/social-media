@@ -1,6 +1,6 @@
 "use client";
 import { create, useStore } from "zustand";
-import { apiClient } from "../apiClient";
+import { apiClient } from "@/lib/apiClient";
 import { useShallow } from "zustand/shallow";
 
 type User = {

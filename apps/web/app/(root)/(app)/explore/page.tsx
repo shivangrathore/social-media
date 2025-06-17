@@ -4,45 +4,59 @@ export const metadata = {
   title: "Explore",
 };
 
-function TodaysNews() {
-  const news = [
-    {
-      headline: "Russia launches one of war's largest air attacks on Kyiv",
-      description:
-        "Russia has carried out one of its largest airstrike campaigns on Kyiv in over three years of conflict, according to authorities. Among the targets hit was a maternity ward in Odesa, underscoring the serious humanitarian impact of the strikes.",
-      date: "2023-10-01",
-    },
-    {
-      headline: "Tragic school shooting in Graz, Austria",
-      description:
-        "A devastating shooting at a secondary school in Graz resulted in 10 deaths—including the shooter, a 21-year-old former student—and 12 injuries. The incident is being investigated as the deadliest school shooting in the country’s history. Austria has declared three days of national mourning and is organizing vigils in response.",
-      date: "2023-10-01",
-    },
-    {
-      headline: "RBI makes bold interest rate cut to fuel growth in India",
-      description:
-        "India’s central bank, the RBI, has implemented its most significant rate cut in five years, aiming for a growth target of 7–8%. While this is seen as a proactive measure to boost employment and GDP, analysts warn it may reduce flexibility in managing future inflation pressures.",
-      date: "2023-10-01",
-    },
+function WhoToFollow() {
+  const users = [
+    { username: "user1", name: "User One" },
+    { username: "user2", name: "User Two" },
+    { username: "user3", name: "User Three" },
+    { username: "user4", name: "User Four" },
   ];
-
   return (
     <div className="p-4 mt-4 bg-white rounded-md w-full">
-      <h3 className="text-lg font-semibold">Today's News</h3>
-      <p className="text-sm text-gray-500">
-        Explore the latest news and updates
-      </p>
+      <h3 className="text-lg font-semibold">Who to follow</h3>
+      <ul className="mt-4 space-y-2">
+        {users.map((user, index) => (
+          <li key={index} className="flex items-center space-x-2">
+            <img
+              src={`https://i.pravatar.cc/150?u=${user.username}`}
+              alt={user.name}
+              className="w-10 h-10 rounded-full"
+            />
+            <div>
+              <Link href={`/profile/${user.username}`}>
+                <h4 className="font-semibold">{user.name}</h4>
+                <p className="text-sm text-gray-600">@{user.username}</p>
+              </Link>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Trending() {
+  const trendingTags = [
+    { tag: "#India", count: 1200 },
+    { tag: "#Technology", count: 800 },
+    { tag: "#Health", count: 600 },
+    { tag: "#Finance", count: 500 },
+  ];
+  return (
+    <div className="p-4 mt-4 bg-white rounded-md w-full">
+      <h3 className="text-lg font-semibold">Trending</h3>
+      <p className="text-sm text-gray-500">Explore what's tending in India</p>
       <div>
         <ul className="mt-4 space-y-2 grid">
-          {news.map((item, index) => (
-            <Link href={`/news/${item.date}`} key={index}>
+          {trendingTags.map((item, index) => (
+            <Link href={`/trending/${item.tag}`} key={index}>
               <li
                 key={index}
                 className="p-2 bg-gray-100 rounded-md hover:bg-gray-200"
               >
-                <h4 className="font-semibold">{item.headline}</h4>
-                <p className="text-sm text-gray-600 line-clamp-2">
-                  {item.description}
+                <h4 className="font-semibold">{item.tag}</h4>
+                <p className="text-sm text-gray-600">
+                  {item.count.toLocaleString()} mentions
                 </p>
               </li>
             </Link>
@@ -52,38 +66,40 @@ function TodaysNews() {
     </div>
   );
 }
-
-function Trending() {
+function SuggestedCommunities() {
+  const communities = [
+    { name: "Tech Enthusiasts", description: "Discuss the latest in tech" },
+    { name: "Health & Wellness", description: "Share health tips and advice" },
+    { name: "Travel Lovers", description: "Explore travel stories and tips" },
+    {
+      name: "Foodies",
+      description: "Share your favorite recipes and restaurants",
+    },
+  ];
   return (
     <div className="p-4 mt-4 bg-white rounded-md w-full">
-      <h3 className="text-lg font-semibold">Trending</h3>
-      <p className="text-sm text-gray-500">Explore what's tending in India</p>
-      <div>
-        <ul className="mt-4 space-y-2 grid">
-          {/* {news.map((item, index) => ( */}
-          {/*   <Link href={`/news/${item.date}`} key={index}> */}
-          {/*     <li */}
-          {/*       key={index} */}
-          {/*       className="p-2 bg-gray-100 rounded-md hover:bg-gray-200" */}
-          {/*     > */}
-          {/*       <h4 className="font-semibold">{item.headline}</h4> */}
-          {/*       <p className="text-sm text-gray-600 line-clamp-2"> */}
-          {/*         {item.description} */}
-          {/*       </p> */}
-          {/*     </li> */}
-          {/*   </Link> */}
-          {/* ))} */}
-        </ul>
-      </div>
+      <h3 className="text-lg font-semibold">Suggested Communities</h3>
+      <ul className="mt-4 space-y-2">
+        {communities.map((community, index) => (
+          <li
+            key={index}
+            className="p-2 bg-gray-100 rounded-md hover:bg-gray-200"
+          >
+            <h4 className="font-semibold">{community.name}</h4>
+            <p className="text-sm text-gray-600">{community.description}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
 export default function ExplorePage() {
   return (
-    <div className="w-2xl">
-      <TodaysNews />
+    <div className="w-2xl my-4">
       <Trending />
+      <WhoToFollow />
+      <SuggestedCommunities />
     </div>
   );
 }

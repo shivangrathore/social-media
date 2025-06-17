@@ -16,8 +16,19 @@ export const LoginSchema = z.object({
 export const CreatePostSchema = z.object({
   title: z.string().optional(),
   content: z.string().optional(),
+  attachments: z.array(z.string().url()).optional(),
+});
+
+export const UpdateDraftSchema = z.object({
+  content: z.string().optional(),
 });
 
 export const EditCommentSchema = z.object({
   content: z.string(),
+});
+
+export const AddAttachmentSchema = z.object({});
+
+export const PostAttachmentSignatureSchema = z.object({
+  postId: z.string(),
 });

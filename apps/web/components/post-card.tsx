@@ -81,7 +81,7 @@ export function PostCard({
 }) {
   // TODO: use owl carousel
   return (
-    <div className="w-[500px] border border-border rounded-md bg-white flex flex-col">
+    <div className="border border-border rounded-md bg-white flex flex-col">
       <div className="flex gap-2 items-center border-b p-2 px-4">
         <UserProfile />
       </div>

@@ -9,11 +9,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { apiClient } from "@/lib/apiClient";
-import { loadUser } from "@/lib/store/auth";
+import { loadUser } from "@/store/auth";
 import { LoginFormSchema } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircleIcon, CheckCircleIcon } from "lucide-react";
+import { AlertCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -23,16 +23,16 @@ export function LoginForm() {
   const form = useForm({
     resolver: zodResolver(LoginFormSchema),
     defaultValues: { id: "", password: "" },
-    mode: "onTouched"
+    mode: "onTouched",
   });
 
   const watchedValues = form.watch();
-  const { errors, touchedFields } = form.formState
+  const { errors, touchedFields } = form.formState;
 
   function getFieldStatus(fieldName: keyof z.infer<typeof LoginFormSchema>) {
     const hasError = errors[fieldName];
     const isTouched = touchedFields[fieldName];
-    const hasValue = watchedValues[fieldName]
+    const hasValue = watchedValues[fieldName];
 
     if (hasError && isTouched) {
       return "error";
@@ -61,7 +61,6 @@ export function LoginForm() {
     router.push(next);
   }
 
-
   return (
     <Form {...form}>
       <form
@@ -75,7 +74,10 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Username or Email</FormLabel>
               <FormControl>
-                <Input {...field} className={cn(getFieldStyle(getFieldStatus("id")))} />
+                <Input
+                  {...field}
+                  className={cn(getFieldStyle(getFieldStatus("id")))}
+                />
               </FormControl>
               {errors["id"] && (
                 <p className="text-red-500 text-sm" role="alert">
@@ -94,7 +96,10 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input {...field} className={cn(getFieldStyle(getFieldStatus("password")))} />
+                <Input
+                  {...field}
+                  className={cn(getFieldStyle(getFieldStatus("password")))}
+                />
               </FormControl>
               {errors["password"] && (
                 <p className="text-red-500 text-sm" role="alert">

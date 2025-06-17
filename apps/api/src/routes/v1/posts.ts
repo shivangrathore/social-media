@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { CreatePostSchema } from "../../types";
 import { db } from "../../db";
 import { commentTable, likeTable, postTable, userTable } from "../../db/schema";
 import authMiddleware from "../../middlewares/auth";
@@ -9,18 +8,6 @@ import { z } from "zod";
 const router: Router = Router();
 router.use(authMiddleware);
 export default router;
-
-router.post("/", async (req, res) => {
-  const body = await CreatePostSchema.parseAsync(req.body);
-  const [post] = await db
-    .insert(postTable)
-    .values({
-      content: body.content,
-      userId: res.locals["userId"],
-    })
-    .returning();
-  res.status(201).json(post);
-});
 
 const postPaginationCusor = z.number().optional();
 
