@@ -19,9 +19,8 @@ export const CreatePostSchema = z.object({
   attachments: z.array(z.string().url()).optional(),
 });
 
-export const UpdatePostSchema = z.object({
+export const UpdateDraftSchema = z.object({
   content: z.string().optional(),
-  published: z.boolean().optional(),
 });
 
 export const EditCommentSchema = z.object({

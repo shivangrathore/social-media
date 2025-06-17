@@ -1,14 +1,17 @@
-import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
+"use client";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
-export function ImageModal({
+type ImageModalProps = {
+  image: string;
+  isOpen: boolean;
+  onToggle(v: boolean): void;
+};
+
+export function ImagePreviewModal({
   image,
   isOpen,
   onToggle,
-}: {
-  image: string;
-  isOpen: boolean;
-  onToggle: (v: boolean) => void;
-}) {
+}: ImageModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onToggle}>
       <DialogContent

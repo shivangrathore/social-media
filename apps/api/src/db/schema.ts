@@ -100,7 +100,9 @@ export const postTable = pgTable("post", {
   content: text("content"),
   published: boolean("published").default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").default(sql`NULL`),
+  updatedAt: timestamp("updated_at")
+    .default(sql`NULL`)
+    .$onUpdate(() => new Date()),
   numLikes: integer("num_likes").notNull().default(0),
   numComments: integer("num_comments").notNull().default(0),
 });

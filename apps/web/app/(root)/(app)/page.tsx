@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { PostCard } from "@/components/post-card";
-import { UserProfile } from "@/components/user-profile";
+import { CreateNewPost } from "@/features/create-new-post/components";
 import { Input } from "@/components/ui/input";
-import { CreateNewPost } from "@/components/create-new-post";
+import { UserProfile } from "@/components/user-profile";
 
 export const metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME || "Home",
