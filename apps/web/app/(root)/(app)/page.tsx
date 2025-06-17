@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { PostCard } from "@/components/post-card";
-import { CreateNewPost } from "@/features/create-new-post/components";
+import { CreateNewPost } from "@/features/compose-post/components";
 import { Input } from "@/components/ui/input";
 import { UserProfile } from "@/components/user-profile";
 

@@ -12,8 +12,9 @@ export default router;
 
 // TODO: Export context function for client
 router.post("/signature", express.json(), authMiddleware, async (req, res) => {
-  const data = await generateSignature(res.locals["userId"], req.body);
-  const uploadUrl = `https://api.cloudinary.com/v1_1/${config.CLOUDINARY_CLOUD_NAME}/image/upload`;
+  const { type = "image", ...rest } = req.body;
+  const data = await generateSignature(res.locals["userId"], rest);
+  const uploadUrl = `https://api.cloudinary.com/v1_1/${config.CLOUDINARY_CLOUD_NAME}/upload`;
   res.json({ ...data, uploadUrl });
 });
 

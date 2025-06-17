@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { FileItem } from "./file-item";
 import { useStore } from "zustand";
 import { postStore } from "../store/postStore";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { attachmentAdapter } from "../utils";
 import { ImagePreviewModal } from "./image-preview-modal";
 import { uploadStore } from "../store/uploadStore";
@@ -21,20 +21,23 @@ export function FileUploadGrid() {
     setIsImageModalOpen(open);
   };
 
-  const onImageClick = (id: string) => {
-    const attachment = attachments.find((att) => att.id === id);
-    if (attachment) {
-      setSelectedImage(attachmentAdapter(attachment).url);
-      toggleImageModal(true);
-    }
-  };
-
   const files = useMemo(
     () =>
       [...attachments, ...uploadFiles].map((attachment) =>
         attachmentAdapter(attachment),
       ),
     [attachments, uploadFiles],
+  );
+
+  const onImageClick = useCallback(
+    (id: string) => {
+      const image = files.find((att) => att.id === id);
+      if (image) {
+        setSelectedImage(attachmentAdapter(image).url);
+        toggleImageModal(true);
+      }
+    },
+    [files],
   );
 
   if (files.length === 0) {
@@ -51,7 +54,7 @@ export function FileUploadGrid() {
     >
       {files.map((file) => (
         <FileItem
-          key={file.id}
+          key={`${["attachment", "upload"][+file.isAttachment]}:${file.id}`}
           file={file}
           onRemove={() => {}}
           onImageClick={onImageClick}

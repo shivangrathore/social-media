@@ -1,7 +1,10 @@
+// Poststore and Uploadstore are meant to be used together.
+
 import { create } from "zustand";
 import { Post } from "../types/post";
 import { apiClient } from "@/lib/apiClient";
 import { devtools } from "zustand/middleware";
+import { AttachmentFile } from "../types";
 
 type PostStore = {
   post: Post;
@@ -14,6 +17,7 @@ type PostStore = {
   loadFromStorage: () => Post | undefined;
   loadDraft: () => Promise<void>;
   saveDraft: () => Promise<void>;
+  addAttachment: (attachment: AttachmentFile) => void;
 };
 
 const defaultPost: Post = {
@@ -105,6 +109,13 @@ export const postStore = create(
       }
     },
     clearDraft: () => set({ post: defaultPost }),
+    addAttachment: (attachment) =>
+      set((state) => ({
+        post: {
+          ...state.post,
+          attachments: [...state.post.attachments, attachment],
+        },
+      })),
   })),
 );
 
