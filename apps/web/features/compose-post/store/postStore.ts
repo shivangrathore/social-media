@@ -1,10 +1,10 @@
 // Poststore and Uploadstore are meant to be used together.
 
 import { create } from "zustand";
-import { Post } from "../types/post";
+import { Post } from "@/types/post";
 import { apiClient } from "@/lib/apiClient";
 import { devtools } from "zustand/middleware";
-import { AttachmentFile } from "../types";
+import { AttachmentFile } from "@/types/post";
 
 type PostStore = {
   post: Post;
@@ -17,6 +17,7 @@ type PostStore = {
   loadFromStorage: () => Post | undefined;
   loadDraft: () => Promise<void>;
   saveDraft: () => Promise<void>;
+  clearDraft: () => void;
   addAttachment: (attachment: AttachmentFile) => void;
 };
 
@@ -49,7 +50,9 @@ export const postStore = create(
       set({ isSaving: true });
       const post = get().post;
       try {
-        await apiClient.patch<Post>(`/drafts/${post.id}`, post);
+        await apiClient.patch<Post>(`/drafts/${post.id}`, {
+          content: post.content || "",
+        });
         console.log("Draft saved successfully");
       } finally {
         set({ isSaving: false });
@@ -64,6 +67,7 @@ export const postStore = create(
           get().post,
         );
         set({ post: res.data });
+        get().clearDraft();
         return res.data;
       } finally {
         set({ isLoading: false });
@@ -108,7 +112,10 @@ export const postStore = create(
         get().saveToStorage();
       }
     },
-    clearDraft: () => set({ post: defaultPost }),
+    clearDraft: () => {
+      localStorage.removeItem("draftPost");
+      set({ post: defaultPost });
+    },
     addAttachment: (attachment) =>
       set((state) => ({
         post: {

@@ -18,7 +18,7 @@ export function ComposePost() {
     },
     [setContent],
   );
-  useAutosave(content, 1000);
+  useAutosave(content || "", 1000);
   if (isPostLoading) {
     return <PostLoadingSkeleton />;
   }
@@ -26,7 +26,7 @@ export function ComposePost() {
     <div className="my-6 p-4 bg-white">
       <div className="relative">
         <AutoHeightTextarea
-          value={content}
+          value={content || ""}
           onChange={textAreaChange}
           className="p-4 rounded-lg border border-border w-full resize-none overflow-hidden text-base"
           placeholder="What's on your mind?"

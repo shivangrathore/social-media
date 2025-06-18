@@ -1,9 +1,16 @@
 import { Router } from "express";
 import { db } from "../../db";
-import { commentTable, likeTable, postTable, userTable } from "../../db/schema";
+import {
+  attachmentTable,
+  commentTable,
+  likeTable,
+  postTable,
+  userTable,
+} from "../../db/schema";
 import authMiddleware from "../../middlewares/auth";
 import { and, asc, eq, gt, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
+import { GetPostsResponse } from "@repo/api-types/post";
 
 const router: Router = Router();
 router.use(authMiddleware);
@@ -22,11 +29,16 @@ router.get("/", async (req, res) => {
     .limit(limit + 1)
     .innerJoin(userTable, eq(userTable.id, postTable.userId))
     .orderBy(asc(postTable.id));
-  const data = posts.slice(0, limit);
+  const data = posts.slice(0, limit).map((post) => {
+    return {
+      post: { ...post.post, attachments: [] },
+      user: post.user,
+    };
+  });
   res.json({
     data,
     nextCursor: posts.length > limit ? data.at(-1)?.post.id : null,
-  });
+  } as GetPostsResponse);
 });
 
 router.get("/:postId", async (req, res) => {

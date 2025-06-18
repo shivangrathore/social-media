@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { PostCard } from "@/components/post-card";
 import { ComposePost } from "@/features/compose-post/components";
 import { Input } from "@/components/ui/input";
 import { UserProfile } from "@/components/user-profile";
+import FeedView from "@/features/feed-view/components";
 
 export const metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME || "Home",
@@ -12,17 +12,11 @@ export const metadata = {
 export default function FeedPage() {
   return (
     <div className="flex gap-36 mb-10">
-      <div className="ml-20 space-y-4 max-w-lg w-full">
+      <div className="ml-20 space-y-4 max-w-lg shrink-0 w-[600px]">
         <ComposePost />
-        <div className="space-y-4">
-          <PostCard showContent={false} />
-          <PostCard showImage={false} />
-          <PostCard />
-          <PostCard showImage={false} />
-          <PostCard showContent={false} />
-        </div>
+        <FeedView />
       </div>
-      <div className="w-[320px] mt-6 relative">
+      <div className="w-[320px] mt-6 relative shrink-0">
         <div className="sticky top-6">
           <div className="p-4 bg-white rounded-md">
             <Input type="search" placeholder="Search" />

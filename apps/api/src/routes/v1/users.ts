@@ -3,7 +3,7 @@ import { db } from "../../db";
 import { friendRequestTable, friendTable, userTable } from "../../db/schema";
 import authMiddleware from "../../middlewares/auth";
 import { and, eq, or } from "drizzle-orm";
-import dateFns from "date-fns";
+import * as dateFns from "date-fns";
 
 const router: Router = Router();
 
