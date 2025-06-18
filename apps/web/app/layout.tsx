@@ -2,6 +2,9 @@
 import { useEffect } from "react";
 import "./globals.css";
 import { loadUser } from "@/store/auth";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient({});
 
 export default function RootLayout({
   children,
@@ -13,7 +16,9 @@ export default function RootLayout({
   }, []);
   return (
     <html lang="en">
-      <body>{children}</body>
+      <QueryClientProvider client={queryClient}>
+        <body>{children}</body>
+      </QueryClientProvider>
     </html>
   );
 }

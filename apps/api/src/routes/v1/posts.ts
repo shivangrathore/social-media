@@ -1,6 +1,12 @@
 import { Router } from "express";
 import { db } from "../../db";
-import { commentTable, likeTable, postTable, userTable } from "../../db/schema";
+import {
+  attachmentTable,
+  commentTable,
+  likeTable,
+  postTable,
+  userTable,
+} from "../../db/schema";
 import authMiddleware from "../../middlewares/auth";
 import { and, asc, eq, gt, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -23,6 +29,14 @@ router.get("/", async (req, res) => {
     .innerJoin(userTable, eq(userTable.id, postTable.userId))
     .orderBy(asc(postTable.id));
   const data = posts.slice(0, limit);
+  for (const post of data) {
+    const attachments = await db
+      .select()
+      .from(attachmentTable)
+      .where(eq(attachmentTable.postId, post.post.id));
+    // @ts-ignore
+    post.attachments = attachments;
+  }
   res.json({
     data,
     nextCursor: posts.length > limit ? data.at(-1)?.post.id : null,

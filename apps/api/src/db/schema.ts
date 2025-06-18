@@ -201,3 +201,38 @@ export const friendTable = pgTable(
   },
   (t) => [check("ordered_friend_ids", sql`${t.user1Id} < ${t.user2Id}`)],
 );
+
+export const pollTable = pgTable("poll", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  postId: bigint("post_id", { mode: "number" })
+    .notNull()
+    .references(() => postTable.id),
+  question: text("question").notNull(),
+  expiresAt: timestamp("expires_at").default(sql`NULL`),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const pollOptionTable = pgTable("poll_option", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  pollId: bigint("poll_id", { mode: "number" })
+    .notNull()
+    .references(() => pollTable.id),
+  option: text("option").notNull(),
+  votes: integer("votes").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const pollVoteTable = pgTable(
+  "poll_vote",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => userTable.id),
+    pollOptionId: bigint("poll_option_id", { mode: "number" })
+      .notNull()
+      .references(() => pollOptionTable.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [unique().on(t.userId, t.pollOptionId)],
+);

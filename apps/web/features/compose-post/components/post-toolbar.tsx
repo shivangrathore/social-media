@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { ChartBarIcon, ImageIcon, SmileIcon } from "lucide-react";
-import React, { useCallback } from "react";
+import { ImageIcon, SmileIcon } from "lucide-react";
+import React, { useCallback, useMemo } from "react";
 import { useStore } from "zustand";
 import { uploadStore } from "../store/uploadStore";
 import {
@@ -16,6 +16,33 @@ import {
 } from "@/components/ui/emoji-picker";
 import { Emoji } from "frimousse";
 import { postStore } from "../store/postStore";
+
+function CreateButton() {
+  const content = useStore(postStore, (state) => state.post.content);
+  const attachments = useStore(postStore, (state) => state.post.attachments);
+  const isEmpty = useMemo(() => {
+    return (content && content.trim() === "") || attachments.length === 0;
+  }, [content, attachments]);
+
+  const publishPost = useStore(postStore, (state) => state.publishPost);
+  const handleClick = useCallback(() => {
+    if (!isEmpty) {
+      publishPost();
+    }
+  }, [isEmpty, publishPost]);
+
+  return (
+    <Button
+      size="sm"
+      variant="default"
+      className="ml-auto"
+      disabled={isEmpty}
+      onClick={handleClick}
+    >
+      <span>Post</span>
+    </Button>
+  );
+}
 
 export default function PostToolbar() {
   const addFiles = useStore(uploadStore, (state) => state.addFiles);
@@ -41,7 +68,7 @@ export default function PostToolbar() {
   const emojiSelect = useCallback(
     (emoji: Emoji) => {
       const content = postStore.getState().post.content;
-      let newContent = content;
+      let newContent = content || "";
       if (newContent.endsWith(" ")) {
         newContent = newContent.slice(0, -1);
       }
@@ -70,21 +97,8 @@ export default function PostToolbar() {
             </EmojiPicker>
           </PopoverContent>
         </Popover>
-        {/* {[ */}
-        {/*   { icon: ImageIcon, action: actions.file }, */}
-        {/*   { icon: SmileIcon, action: actions.emoji }, */}
-        {/*   { icon: ChartBarIcon, action: actions.poll }, */}
-        {/* ].map((item, idx) => ( */}
-        {/* ))} */}
       </div>
-      <Button
-        size="sm"
-        variant="default"
-        className="ml-auto"
-        // disabled={isEmpty}
-      >
-        <span>Post</span>
-      </Button>
+      <CreateButton />
     </div>
   );
 }
