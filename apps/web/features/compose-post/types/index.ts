@@ -1,4 +1,6 @@
-import { AttachmentFile } from "@/types/post";
+import { AttachmentFile } from "@repo/api-types";
+
+export type PostComposeMode = "post" | "poll";
 
 export type UploadFile = {
   id: string;

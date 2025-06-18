@@ -37,7 +37,12 @@ router.get("/", async (req, res) => {
     .from(postTable)
     .innerJoin(userTable, eq(userTable.id, postTable.userId))
     .innerJoin(profileTable, eq(profileTable.userId, userTable.id))
-    .where(cursor ? gt(postTable.id, cursor) : undefined)
+    .where(
+      and(
+        cursor ? gt(postTable.id, cursor) : undefined,
+        eq(postTable.published, true),
+      ),
+    )
     .limit(limit + 1)
     .orderBy(asc(postTable.id));
   const data = await Promise.all(

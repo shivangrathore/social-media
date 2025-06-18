@@ -16,13 +16,12 @@ import {
 } from "@/components/ui/emoji-picker";
 import { Emoji } from "frimousse";
 import { postStore } from "../store/postStore";
-import { PostComposeMode } from "../types";
 
-function CreateButton({ mode }: { mode: PostComposeMode }) {
+function CreateButton() {
   const content = useStore(postStore, (state) => state.post.content);
   const attachments = useStore(postStore, (state) => state.post.attachments);
   const isEmpty = useMemo(() => {
-    return (!content || content.trim() === "") && attachments.length === 0;
+    return (content && content.trim() === "") || attachments.length === 0;
   }, [content, attachments]);
 
   const publishPost = useStore(postStore, (state) => state.publishPost);
@@ -40,12 +39,12 @@ function CreateButton({ mode }: { mode: PostComposeMode }) {
       disabled={isEmpty}
       onClick={handleClick}
     >
-      {mode === "poll" ? "Create Poll" : "Post"}
+      <span>Post</span>
     </Button>
   );
 }
 
-export default function PostToolbar({ mode }: { mode: PostComposeMode }) {
+export default function PostToolbar() {
   const addFiles = useStore(uploadStore, (state) => state.addFiles);
   const setContent = useStore(postStore, (state) => state.setContent);
   const [isEmojiPickerOpen, setEmojiPickerOpen] = React.useState(false);
@@ -80,28 +79,26 @@ export default function PostToolbar({ mode }: { mode: PostComposeMode }) {
   );
   return (
     <div className="flex items-center mt-2 mx-2">
-      {mode == "post" && (
-        <div className="">
-          <button className={classNames} onClick={fileUpload}>
-            <ImageIcon className="size-5" />
-          </button>
-          <Popover open={isEmojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
-            <PopoverTrigger asChild>
-              <button className={classNames}>
-                <SmileIcon className="size-5" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-fit p-0">
-              <EmojiPicker className="h-[342px]" onEmojiSelect={emojiSelect}>
-                <EmojiPickerSearch />
-                <EmojiPickerContent />
-                <EmojiPickerFooter />
-              </EmojiPicker>
-            </PopoverContent>
-          </Popover>
-        </div>
-      )}
-      <CreateButton mode={mode} />
+      <div className="">
+        <button className={classNames} onClick={fileUpload}>
+          <ImageIcon className="size-5" />
+        </button>
+        <Popover open={isEmojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
+          <PopoverTrigger asChild>
+            <button className={classNames}>
+              <SmileIcon className="size-5" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-fit p-0">
+            <EmojiPicker className="h-[342px]" onEmojiSelect={emojiSelect}>
+              <EmojiPickerSearch />
+              <EmojiPickerContent />
+              <EmojiPickerFooter />
+            </EmojiPicker>
+          </PopoverContent>
+        </Popover>
+      </div>
+      <CreateButton />
     </div>
   );
 }

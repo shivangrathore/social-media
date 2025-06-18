@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function PostLoadingSkeleton() {
+export function ComposePostLoadingSkeleton() {
   return (
     <div className="my-6 p-4 bg-white rounded-lg border">
       <Skeleton className="h-14 w-full mb-4" />
