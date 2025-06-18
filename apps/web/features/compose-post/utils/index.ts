@@ -1,4 +1,5 @@
-import { FileAdapter, AttachmentFile, UploadFile } from "../types";
+import { AttachmentFile } from "@/types/post";
+import { FileAdapter, UploadFile } from "../types";
 
 export function attachmentAdapter(
   file: UploadFile | AttachmentFile,

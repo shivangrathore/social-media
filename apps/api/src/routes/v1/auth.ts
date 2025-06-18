@@ -1,5 +1,5 @@
 import { Router } from "express";
-import dateFns from "date-fns";
+import * as dateFns from "date-fns";
 import { LoginSchema, RegisterSchema } from "../../types";
 import { db } from "../../db";
 import {

@@ -10,7 +10,9 @@ export default function FeedView() {
       {isLoading ? (
         <div />
       ) : (
-        feed.map((post) => <PostCard key={post.id} post={post} />)
+        feed.map((entry) => (
+          <PostCard key={entry.post.id} post={entry.post} author={entry.user} />
+        ))
       )}
     </div>
   );

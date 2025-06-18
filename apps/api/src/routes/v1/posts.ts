@@ -10,6 +10,7 @@ import {
 import authMiddleware from "../../middlewares/auth";
 import { and, asc, eq, gt, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
+import { GetPostsResponse } from "@repo/api-types/post";
 
 const router: Router = Router();
 router.use(authMiddleware);
@@ -28,19 +29,16 @@ router.get("/", async (req, res) => {
     .limit(limit + 1)
     .innerJoin(userTable, eq(userTable.id, postTable.userId))
     .orderBy(asc(postTable.id));
-  const data = posts.slice(0, limit);
-  for (const post of data) {
-    const attachments = await db
-      .select()
-      .from(attachmentTable)
-      .where(eq(attachmentTable.postId, post.post.id));
-    // @ts-ignore
-    post.attachments = attachments;
-  }
+  const data = posts.slice(0, limit).map((post) => {
+    return {
+      post: { ...post.post, attachments: [] },
+      user: post.user,
+    };
+  });
   res.json({
     data,
     nextCursor: posts.length > limit ? data.at(-1)?.post.id : null,
-  });
+  } as GetPostsResponse);
 });
 
 router.get("/:postId", async (req, res) => {

@@ -2,8 +2,8 @@
 import { UserProfile } from "@/components/user-profile";
 import { BookmarkIcon, HeartIcon, MessageCircle, SendIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Post } from "@/types/post";
 import { PostAttachmentCarousel } from "./post-attachment-carousel";
+import { Post, User } from "@repo/api-types";
 
 export function PostCard({ post, author }: { post: Post; author: User }) {
   return (
