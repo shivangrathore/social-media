@@ -1,5 +1,5 @@
 export type AttachmentFile = {
-  id: string;
+  id: string | number;
   postId: number;
   userId: number;
   url: string;
@@ -21,12 +21,8 @@ export type Post = {
 
 export type User = {
   avatar: string | null;
+  username: string;
   createdAt: Date;
-  dob: Date | null;
-  email: string;
-  emailVerified: boolean;
   firstName: string;
-  id: number;
   lastName: string;
-  updatedAt: Date | null;
 };

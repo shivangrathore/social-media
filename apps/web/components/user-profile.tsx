@@ -1,18 +1,33 @@
 import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
-export function UserProfile() {
+type UserProfileProps = {
+  avatarUrl?: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+};
+
+export function UserProfile({
+  avatarUrl,
+  username,
+  firstName,
+  lastName,
+}: UserProfileProps) {
   return (
     <div className="flex gap-2 items-center">
-      <Image
-        src="https://randomuser.me/api/portraits/men/31.jpg"
-        alt="Post Image"
-        width={100}
-        height={100}
-        className="rounded-full size-10"
-      />
+      <Avatar className="rounded-full size-10">
+        <AvatarImage src={avatarUrl} />
+        <AvatarFallback>
+          {firstName?.at(0)}
+          {lastName?.at(0)}
+        </AvatarFallback>
+      </Avatar>
       <div>
-        <h2 className="text-sm font-medium">Davil Jones</h2>
-        <p className="text-xs text-gray-500">@david</p>
+        <h2 className="text-sm font-medium">
+          {firstName} {lastName}
+        </h2>
+        <p className="text-xs text-gray-500">@{username}</p>
       </div>
     </div>
   );

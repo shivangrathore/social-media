@@ -5,6 +5,7 @@ import {
   commentTable,
   likeTable,
   postTable,
+  profileTable,
   userTable,
 } from "../../db/schema";
 import authMiddleware from "../../middlewares/auth";
@@ -23,18 +24,34 @@ router.get("/", async (req, res) => {
   const cursor = await postPaginationCusor.parseAsync(req.query.cursor);
   const limit = 10;
   const posts = await db
-    .select()
+    .select({
+      post: postTable,
+      user: {
+        firstName: userTable.firstName,
+        lastName: userTable.lastName,
+        username: profileTable.username,
+        avatar: userTable.avatar,
+        createdAt: userTable.createdAt,
+      },
+    })
     .from(postTable)
+    .innerJoin(userTable, eq(userTable.id, postTable.userId))
+    .innerJoin(profileTable, eq(profileTable.userId, userTable.id))
     .where(cursor ? gt(postTable.id, cursor) : undefined)
     .limit(limit + 1)
-    .innerJoin(userTable, eq(userTable.id, postTable.userId))
     .orderBy(asc(postTable.id));
-  const data = posts.slice(0, limit).map((post) => {
-    return {
-      post: { ...post.post, attachments: [] },
-      user: post.user,
-    };
-  });
+  const data = await Promise.all(
+    posts.slice(0, limit).map(async (post) => {
+      const attachments = await db
+        .select()
+        .from(attachmentTable)
+        .where(eq(attachmentTable.postId, post.post.id));
+      return {
+        post: { ...post.post, attachments },
+        user: post.user,
+      };
+    }),
+  );
   res.json({
     data,
     nextCursor: posts.length > limit ? data.at(-1)?.post.id : null,
