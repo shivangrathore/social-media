@@ -12,6 +12,7 @@ import { AvatarImage } from "@radix-ui/react-avatar";
 import { BarChart3, FileTextIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PostComposeMode } from "../types";
+import { FileUploadGrid } from "./file-upload-grid";
 
 export function ComposePost() {
   const content = useStore(postStore, (state) => state.post.content);
@@ -68,13 +69,16 @@ export function ComposePost() {
         {mode == "poll" ? (
           <PollComposeView />
         ) : (
-          <AutoHeightTextarea
-            value={content || ""}
-            onChange={textAreaChange}
-            className="p-4 rounded-lg border border-border w-full resize-none overflow-hidden text-base"
-            placeholder="What's on your mind?"
-            rows={1}
-          />
+          <>
+            <AutoHeightTextarea
+              value={content || ""}
+              onChange={textAreaChange}
+              className="p-4 rounded-lg border border-border w-full resize-none overflow-hidden text-base"
+              placeholder="What's on your mind?"
+              rows={1}
+            />
+            <FileUploadGrid />
+          </>
         )}
         <PostToolbar mode={mode} />
       </div>

@@ -39,10 +39,10 @@ router.post("/", async (_req, res) => {
   const attachments = await db.query.attachmentTable.findMany({
     where: (fields, { eq }) => eq(fields.postId, draftPost.id),
   });
+  console.log(attachments);
   res.status(200).json({
     ...draftPost,
     attachments,
-    poll: null,
   } as CreateDraftPostResponse);
   return;
 });

@@ -23,6 +23,7 @@ type PostStore = {
 };
 
 const defaultPost: Post = {
+  postType: "regular",
   content: "",
   id: 0,
   userId: 0,
@@ -116,6 +117,7 @@ export const postStore = create(
         set({ post: localPost, isLoading: false });
         get().saveDraft();
       } else {
+        console.log("Database draft is newer, using database draft");
         set({ post: dbPost, isLoading: false });
         get().saveToStorage();
       }

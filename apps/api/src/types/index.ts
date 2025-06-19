@@ -32,3 +32,8 @@ export const AddAttachmentSchema = z.object({});
 export const PostAttachmentSignatureSchema = z.object({
   postId: z.string(),
 });
+
+export const UpdatePollSchema = z.object({
+  question: z.string(),
+  options: z.array(z.string().min(1).max(100)).max(4),
+});

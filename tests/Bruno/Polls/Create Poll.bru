@@ -1,0 +1,15 @@
+meta {
+  name: Create Poll
+  type: http
+  seq: 1
+}
+
+post {
+  url: /polls
+  body: none
+  auth: inherit
+}
+
+vars:post-response {
+  DRAFT_POLL_ID: res.body.id
+}
