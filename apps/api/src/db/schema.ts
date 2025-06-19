@@ -21,6 +21,7 @@ export const friendRequestStatusEnum = pgEnum("friend_request_status", [
   "rejected",
 ]);
 export const profileTypeEnum = pgEnum("profile_type", ["user", "page"]);
+export const postTypeEnum = pgEnum("post_type", ["regular", "poll"]);
 
 export const userTable = pgTable("user", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
@@ -99,6 +100,7 @@ export const postTable = pgTable("post", {
     .references(() => userTable.id),
   content: text("content"),
   published: boolean("published").default(false),
+  postType: postTypeEnum("post_type").notNull().default("regular"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .default(sql`NULL`)
@@ -106,10 +108,6 @@ export const postTable = pgTable("post", {
   numLikes: integer("num_likes").notNull().default(0),
   numComments: integer("num_comments").notNull().default(0),
 });
-
-// export const attachments = relations(postTable, ({ many }) => ({
-//   attachments: many(attachmentTable),
-// }));
 
 export const likeTable = pgTable(
   "like",
@@ -155,14 +153,16 @@ export const attachmentTable = pgTable("attachment", {
     .notNull()
     .references(() => postTable.id),
   url: text("url").notNull(),
-  asset_id: text("asset_id"),
-  public_id: text("public_id"),
+  asset_id: text("asset_id").notNull(),
+  public_id: text("public_id").notNull(),
   width: integer("width"),
   height: integer("height"),
   userId: bigint("user_id", { mode: "number" })
     .notNull()
     .references(() => userTable.id),
-  resource_type: varchar("resource_type", { length: 50 }).default("image"),
+  resource_type: varchar("resource_type", { length: 50 })
+    .default("image")
+    .notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   // TODO: add more fields like public_id, format, etc.
 });
@@ -206,7 +206,8 @@ export const pollTable = pgTable("poll", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
   postId: bigint("post_id", { mode: "number" })
     .notNull()
-    .references(() => postTable.id),
+    .references(() => postTable.id)
+    .unique(),
   question: text("question").notNull(),
   expiresAt: timestamp("expires_at").default(sql`NULL`),
   createdAt: timestamp("created_at").defaultNow().notNull(),

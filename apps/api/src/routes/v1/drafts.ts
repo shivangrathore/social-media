@@ -1,33 +1,49 @@
 import { Router } from "express";
 import authMiddleware from "../../middlewares/auth";
 import { db } from "../../db";
-import { attachmentTable, postTable } from "../../db/schema";
+import { postTable } from "../../db/schema";
 import { eq } from "drizzle-orm";
 import { UpdateDraftSchema } from "../../types";
+import { CreateDraftPostResponse } from "@repo/api-types/post";
 
 const router: Router = Router();
 
 router.use(authMiddleware);
 
-router.post("/", async (_req, res) => {
-  const draftPost = await db.query.postTable.findFirst({
+async function createRegularDraftPost(userId: number) {
+  const existingDraft = await db.query.postTable.findFirst({
     where: (fields, { eq, and }) =>
-      and(eq(fields.userId, res.locals["userId"]), eq(fields.published, false)),
+      and(
+        eq(fields.userId, userId),
+        eq(fields.published, false),
+        eq(fields.postType, "regular"),
+      ),
   });
-  if (!draftPost) {
-    const [post] = await db
-      .insert(postTable)
-      .values({
-        userId: res.locals["userId"],
-      })
-      .returning();
-    res.status(201).json({ ...post, attachments: [] });
-    return;
+  if (existingDraft) {
+    return existingDraft;
   }
+  const [post] = await db
+    .insert(postTable)
+    .values({
+      userId,
+      postType: "regular",
+    })
+    .returning();
+  return post;
+}
+
+router.post("/", async (_req, res) => {
+  const userId = res.locals["userId"];
+  let draftPost;
+  draftPost = await createRegularDraftPost(userId);
   const attachments = await db.query.attachmentTable.findMany({
     where: (fields, { eq }) => eq(fields.postId, draftPost.id),
   });
-  res.status(200).json({ ...draftPost, attachments });
+  res.status(200).json({
+    ...draftPost,
+    attachments,
+    poll: null,
+  } as CreateDraftPostResponse);
   return;
 });
 

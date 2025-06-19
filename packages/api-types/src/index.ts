@@ -1,3 +1,4 @@
+export type PostType = "regular" | "poll";
 export type AttachmentFile = {
   id: string | number;
   postId: number;
@@ -5,8 +6,8 @@ export type AttachmentFile = {
   url: string;
   asset_id: string;
   public_id: string;
-  width: number;
-  height: number;
+  width: number | null;
+  height: number | null;
   resource_type: string;
 };
 
@@ -14,6 +15,7 @@ export type Post = {
   id: number;
   content: string | null;
   userId: number;
+  postType: PostType;
   createdAt: Date;
   updatedAt: Date | null;
   attachments: AttachmentFile[];
@@ -25,4 +27,12 @@ export type User = {
   createdAt: Date;
   firstName: string;
   lastName: string;
+};
+
+export type Poll = {
+  id: number;
+  question: string;
+  // options: PollOption[];
+  userId: number;
+  createdAt: Date;
 };

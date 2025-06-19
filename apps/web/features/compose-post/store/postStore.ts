@@ -1,10 +1,11 @@
 // Poststore and Uploadstore are meant to be used together.
 
 import { create } from "zustand";
-import { Post } from "@/types/post";
+import { Post } from "@repo/api-types";
 import { apiClient } from "@/lib/apiClient";
 import { devtools } from "zustand/middleware";
-import { AttachmentFile } from "@/types/post";
+import { AttachmentFile } from "@repo/api-types";
+import { AxiosError } from "axios";
 
 type PostStore = {
   post: Post;
@@ -53,7 +54,14 @@ export const postStore = create(
         await apiClient.patch<Post>(`/drafts/${post.id}`, {
           content: post.content || "",
         });
-        console.log("Draft saved successfully");
+      } catch (e) {
+        if (e instanceof AxiosError) {
+          if (e.status == 404) {
+            const newPost = await get().createDraft();
+            set({ post: newPost });
+            return;
+          }
+        }
       } finally {
         set({ isSaving: false });
       }

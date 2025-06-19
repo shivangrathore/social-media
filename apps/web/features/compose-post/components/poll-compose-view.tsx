@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { XIcon } from "lucide-react";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 
 const RANDOM_QUESTIONS = [
   {
@@ -11,19 +11,19 @@ const RANDOM_QUESTIONS = [
   },
   {
     question: "What is your favorite movie?",
-    options: ["Inception", "The Matrix", "Interstellar"],
+    options: ["Inception", "The Matrix"],
   },
   {
     question: "What is your favorite food?",
-    options: ["Pizza", "Sushi", "Burger", "Pasta"],
+    options: ["Pizza", "Sushi"],
   },
   {
     question: "What is your favorite hobby?",
-    options: ["Reading", "Gaming", "Traveling"],
+    options: ["Reading", "Gaming"],
   },
   {
     question: "What is your favorite sport?",
-    options: ["Football", "Basketball", "Tennis"],
+    options: ["Football", "Basketball"],
   },
 ];
 
@@ -31,8 +31,10 @@ const MIN_OPTIONS = 2;
 const MAX_OPTIONS = 4;
 
 export function PollComposeView() {
-  const randomPlaceholderQuestion =
-    RANDOM_QUESTIONS[Math.floor(Math.random() * RANDOM_QUESTIONS.length)];
+  const placeholder = useMemo(
+    () => RANDOM_QUESTIONS[Math.floor(Math.random() * RANDOM_QUESTIONS.length)],
+    [],
+  );
   const [options, setOptions] = React.useState<string[]>(["", ""]);
   const addOption = useCallback(
     (option: string) => {
@@ -44,7 +46,7 @@ export function PollComposeView() {
   return (
     <div>
       <Label className="mb-2 text-sm font-medium">Poll Question</Label>
-      <Input type="text" placeholder={randomPlaceholderQuestion.question} />
+      <Input type="text" placeholder={placeholder.question} />
       <Label className="mt-4 mb-2 text-sm font-medium">Options</Label>
       <div className="gap-2 flex flex-col">
         {options.map((option, index) => (
@@ -58,7 +60,9 @@ export function PollComposeView() {
                 newOptions[index] = e.target.value;
                 setOptions(newOptions);
               }}
-              placeholder={randomPlaceholderQuestion.options[index]}
+              placeholder={
+                placeholder.options[index] || "Option " + (index + 1)
+              }
             />
             {options.length > MIN_OPTIONS && (
               <Button

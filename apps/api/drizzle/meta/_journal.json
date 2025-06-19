@@ -15,6 +15,13 @@
       "when": 1750057360638,
       "tag": "0001_robust_chimera",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1750302655432,
+      "tag": "0002_curly_greymalkin",
+      "breakpoints": true
     }
   ]
 }
