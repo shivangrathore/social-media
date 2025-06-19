@@ -32,7 +32,7 @@ export type User = {
 export type Poll = {
   id: number;
   question: string;
-  // options: PollOption[];
+  options: string[];
   userId: number;
   createdAt: Date;
 };

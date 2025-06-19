@@ -1,21 +1,14 @@
-// Poststore and Uploadstore are meant to be used together.
-
 import { create } from "zustand";
 import { Post } from "@repo/api-types";
-import { apiClient } from "@/lib/apiClient";
 import { devtools } from "zustand/middleware";
 import { AttachmentFile } from "@repo/api-types";
-import { AxiosError } from "axios";
+import { createDraftPost, publishPost, saveDraftPost } from "../api/posts";
 
 type PostStore = {
   post: Post;
   setContent: (content: string) => void;
   isLoading: boolean;
-  isSaving: boolean;
-  createDraft: () => Promise<Post>;
-  publishPost: () => Promise<Post>;
-  saveToStorage: () => void;
-  loadFromStorage: () => Post | undefined;
+  publishPost: () => Promise<void>;
   loadDraft: () => Promise<void>;
   saveDraft: () => Promise<void>;
   clearDraft: () => void;
@@ -35,7 +28,6 @@ const defaultPost: Post = {
 export const postStore = create(
   devtools<PostStore>((set, get) => ({
     post: defaultPost,
-    isSaving: false,
     isLoading: true,
     setContent: (content: string) =>
       set((state) => ({
@@ -44,86 +36,25 @@ export const postStore = create(
           content,
         },
       })),
-    createDraft: async () => {
-      const res = await apiClient.post<Post>("/drafts");
-      return res.data;
-    },
     saveDraft: async () => {
-      set({ isSaving: true });
-      const post = get().post;
-      try {
-        await apiClient.patch<Post>(`/drafts/${post.id}`, {
-          content: post.content || "",
-        });
-      } catch (e) {
-        if (e instanceof AxiosError) {
-          if (e.status == 404) {
-            const newPost = await get().createDraft();
-            set({ post: newPost });
-            return;
-          }
-        }
-      } finally {
-        set({ isSaving: false });
-      }
+      await saveDraftPost(get().post);
     },
     publishPost: async () => {
-      const post = get().post;
+      const postId = get().post.id;
       set({ isLoading: true });
       try {
-        const res = await apiClient.post<Post>(
-          `/drafts/${post.id}/publish`,
-          get().post,
-        );
-        set({ post: res.data });
+        await publishPost(postId);
         get().clearDraft();
-        return res.data;
       } finally {
         set({ isLoading: false });
       }
     },
-    saveToStorage: () => {
-      const post = get().post;
-      localStorage.setItem("draftPost", JSON.stringify(post));
-    },
-    loadFromStorage: () => {
-      const storedPost = localStorage.getItem("draftPost");
-      if (storedPost) {
-        return JSON.parse(storedPost) as Post;
-      }
-    },
     loadDraft: async () => {
       set({ isLoading: true });
-      const localPost = get().loadFromStorage();
-      const dbPost = await get().createDraft();
-
-      if (!localPost) {
-        set({ isLoading: false, post: dbPost });
-        get().saveToStorage();
-        return;
-      }
-
-      if (!dbPost.updatedAt) {
-        set({ post: localPost, isLoading: false });
-        get().saveDraft();
-        return;
-      }
-
-      if (!localPost.updatedAt) {
-        set({ post: dbPost, isLoading: false });
-        return;
-      }
-      if (localPost.updatedAt > dbPost.updatedAt) {
-        set({ post: localPost, isLoading: false });
-        get().saveDraft();
-      } else {
-        console.log("Database draft is newer, using database draft");
-        set({ post: dbPost, isLoading: false });
-        get().saveToStorage();
-      }
+      const cloudPost = await createDraftPost();
+      set({ post: cloudPost, isLoading: false });
     },
     clearDraft: () => {
-      localStorage.removeItem("draftPost");
       set({ post: defaultPost });
     },
     addAttachment: (attachment) =>

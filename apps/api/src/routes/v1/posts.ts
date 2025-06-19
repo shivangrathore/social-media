@@ -1,66 +1,101 @@
 import { Router } from "express";
 import { db } from "../../db";
-import {
-  attachmentTable,
-  commentTable,
-  likeTable,
-  postTable,
-  profileTable,
-  userTable,
-} from "../../db/schema";
+import { commentTable, likeTable, postTable, userTable } from "../../db/schema";
 import authMiddleware from "../../middlewares/auth";
 import { and, asc, eq, gt, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import { GetPostsResponse } from "@repo/api-types/post";
+import { CreateDraftPostResponse } from "@repo/api-types/post";
+import { UpdateDraftSchema } from "../../types";
 
 const router: Router = Router();
 router.use(authMiddleware);
 export default router;
 
-const postPaginationCusor = z.number().optional();
-
-// FIXME: Remove later on, we will implement a recommendation system
-router.get("/", async (req, res) => {
-  const cursor = await postPaginationCusor.parseAsync(req.query.cursor);
-  const limit = 10;
-  const posts = await db
-    .select({
-      post: postTable,
-      user: {
-        firstName: userTable.firstName,
-        lastName: userTable.lastName,
-        username: profileTable.username,
-        avatar: userTable.avatar,
-        createdAt: userTable.createdAt,
-      },
-    })
-    .from(postTable)
-    .innerJoin(userTable, eq(userTable.id, postTable.userId))
-    .innerJoin(profileTable, eq(profileTable.userId, userTable.id))
-    .where(
+async function createRegularDraftPost(userId: number) {
+  const existingDraft = await db.query.postTable.findFirst({
+    where: (fields, { eq, and }) =>
       and(
-        cursor ? gt(postTable.id, cursor) : undefined,
-        eq(postTable.published, true),
+        eq(fields.userId, userId),
+        eq(fields.published, false),
+        eq(fields.postType, "regular"),
       ),
-    )
-    .limit(limit + 1)
-    .orderBy(asc(postTable.id));
-  const data = await Promise.all(
-    posts.slice(0, limit).map(async (post) => {
-      const attachments = await db
-        .select()
-        .from(attachmentTable)
-        .where(eq(attachmentTable.postId, post.post.id));
-      return {
-        post: { ...post.post, attachments },
-        user: post.user,
-      };
-    }),
-  );
-  res.json({
-    data,
-    nextCursor: posts.length > limit ? data.at(-1)?.post.id : null,
-  } as GetPostsResponse);
+  });
+  if (existingDraft) {
+    return existingDraft;
+  }
+  const [post] = await db
+    .insert(postTable)
+    .values({
+      userId,
+      postType: "regular",
+    })
+    .returning();
+  return post;
+}
+
+router.post("/", async (_req, res) => {
+  const userId = res.locals["userId"];
+  let draftPost;
+  draftPost = await createRegularDraftPost(userId);
+  const attachments = await db.query.attachmentTable.findMany({
+    where: (fields, { eq }) => eq(fields.postId, draftPost.id),
+  });
+  console.log(attachments);
+  res.status(200).json({
+    ...draftPost,
+    attachments,
+  } as CreateDraftPostResponse);
+  return;
+});
+
+router.patch("/:postId", async (req, res) => {
+  const userId = res.locals["userId"];
+  const postId = parseInt(req.params.postId);
+  const draftPost = await db.query.postTable.findFirst({
+    where: (fields, { eq, and }) =>
+      and(eq(fields.id, postId), eq(fields.userId, userId)),
+  });
+  if (!draftPost) {
+    res.status(404).json({ message: "Draft post not found" });
+    return;
+  }
+  const body = await UpdateDraftSchema.parseAsync(req.body);
+  if (Object.keys(body).length === 0) {
+    res.status(400).json({ message: "No fields to update" });
+    return;
+  }
+  if (draftPost.published) {
+    res.status(400).json({ message: "Draft post is already published" });
+    return;
+  }
+  await db
+    .update(postTable)
+    .set({
+      content: body.content,
+    })
+    .where(eq(postTable.id, postId));
+  res.status(200).json({ message: "Draft post updated successfully" });
+});
+
+router.post("/:postId/publish", async (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const draftPost = await db.query.postTable.findFirst({
+    where: (fields, { eq, and }) =>
+      and(eq(fields.id, postId), eq(fields.userId, res.locals["userId"])),
+  });
+  if (!draftPost) {
+    res.status(404).json({ message: "Draft post not found" });
+    return;
+  }
+  if (draftPost.published) {
+    res.status(400).json({ message: "Draft post is already published" });
+    return;
+  }
+  await db
+    .update(postTable)
+    .set({ published: true })
+    .where(eq(postTable.id, postId));
+  res.status(200).json({ message: "Draft post published successfully" });
 });
 
 router.get("/:postId", async (req, res) => {

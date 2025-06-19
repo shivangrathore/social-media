@@ -108,12 +108,50 @@ router.patch("/:postId", async (req, res) => {
     pollId,
     option,
   }));
-
-  await db.insert(pollOptionTable).values(options);
+  if (options.length > 0) {
+    await db.insert(pollOptionTable).values(options);
+  }
   res.json({
     message: "Poll updated successfully",
     postId: post.id,
     question: body.question,
     options: body.options,
+  });
+});
+
+router.post("/:postId/publish", async (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const post = await db.query.postTable.findFirst({
+    where: (fields, { eq, and }) =>
+      and(
+        eq(fields.id, postId),
+        eq(fields.published, false),
+        eq(fields.postType, "poll"),
+      ),
+  });
+  if (!post) {
+    res.status(404).json({ message: "Draft post not found" });
+    return;
+  }
+  const poll = await getPoll(postId);
+  if (!poll) {
+    res.status(404).json({ message: "Poll not found" });
+    return;
+  }
+  if (!poll.question || poll.options.length < 2) {
+    res.status(400).json({
+      message: "Poll must have a question and at least two options",
+    });
+    return;
+  }
+
+  await db
+    .update(postTable)
+    .set({ published: true })
+    .where(eq(postTable.id, postId));
+
+  res.json({
+    question: poll.question,
+    options: poll.options.map((option) => option.option),
   });
 });

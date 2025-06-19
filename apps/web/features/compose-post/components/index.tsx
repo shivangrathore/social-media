@@ -1,34 +1,16 @@
 "use client";
-import { useStore } from "zustand";
-import { ComposePostLoadingSkeleton } from "./post-loading-skeleton";
-import { postStore } from "../store/postStore";
-import { ChangeEvent, useCallback, useState } from "react";
-import AutoHeightTextarea from "./auto-height-textarea";
-import PostToolbar from "./post-toolbar";
-import { useAutosave } from "../hooks/use-auto-save";
 import { PollComposeView } from "./poll-compose-view";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { BarChart3, FileTextIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PostComposeMode } from "../types";
-import { FileUploadGrid } from "./file-upload-grid";
+import { PostComposeView } from "./post-compose-view";
+import { useStore } from "zustand";
+import { composeModeStore } from "../store/composeModeStore";
 
 export function ComposePost() {
-  const content = useStore(postStore, (state) => state.post.content);
-  const isPostLoading = useStore(postStore, (state) => state.isLoading);
-  const setContent = useStore(postStore, (state) => state.setContent);
-  const textAreaChange = useCallback(
-    (e: ChangeEvent<HTMLTextAreaElement>) => {
-      setContent(e.target.value);
-    },
-    [setContent],
-  );
-  const [mode, setMode] = useState<PostComposeMode>("post");
-  useAutosave(content || "", 1000);
-  if (isPostLoading) {
-    return <ComposePostLoadingSkeleton />;
-  }
+  const mode = useStore(composeModeStore, (state) => state.mode);
+  const setMode = useStore(composeModeStore, (state) => state.setMode);
   return (
     <div className="my-6 p-4 bg-white rounded-md border-border border">
       <div className="flex gap-4">
@@ -66,21 +48,7 @@ export function ComposePost() {
         </div>
       </div>
       <div className="mt-4">
-        {mode == "poll" ? (
-          <PollComposeView />
-        ) : (
-          <>
-            <AutoHeightTextarea
-              value={content || ""}
-              onChange={textAreaChange}
-              className="p-4 rounded-lg border border-border w-full resize-none overflow-hidden text-base"
-              placeholder="What's on your mind?"
-              rows={1}
-            />
-            <FileUploadGrid />
-          </>
-        )}
-        <PostToolbar mode={mode} />
+        {mode == "poll" ? <PollComposeView /> : <PostComposeView />}
       </div>
     </div>
   );
