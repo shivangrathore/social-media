@@ -1,7 +1,7 @@
 import { Router } from "express";
-import authMiddleware from "../../middlewares/auth";
-import { db } from "../../db";
-import { profileTable } from "../../db/schema";
+import authMiddleware from "@/middlewares/auth";
+import { db } from "@/db";
+import { profileTable } from "@/db/schema";
 
 const router: Router = Router();
 export default router;

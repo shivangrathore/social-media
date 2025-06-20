@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { generateSignature } from "../../utils/cloudinary";
-import authMiddleware from "../../middlewares/auth";
-import config from "../../config";
-import { db } from "../../db";
-import { attachmentTable } from "../../db/schema";
+import { generateSignature } from "@/utils/cloudinary";
+import authMiddleware from "@/middlewares/auth";
+import config from "@/config";
+import { db } from "@/db";
+import { attachmentTable } from "@/db/schema";
 import express from "express";
 import crypto from "crypto";
 

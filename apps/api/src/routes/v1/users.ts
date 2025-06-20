@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { db } from "../../db";
-import { friendRequestTable, friendTable, userTable } from "../../db/schema";
-import authMiddleware from "../../middlewares/auth";
+import { db } from "@/db";
+import { friendRequestTable, friendTable, userTable } from "@/db/schema";
+import authMiddleware from "@/middlewares/auth";
 import { and, eq, or } from "drizzle-orm";
 import * as dateFns from "date-fns";
 

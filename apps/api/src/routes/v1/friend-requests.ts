@@ -1,8 +1,8 @@
 import { Request, Response, Router } from "express";
-import { db } from "../../db";
-import authMiddleware from "../../middlewares/auth";
+import { db } from "@/db";
+import authMiddleware from "@/middlewares/auth";
 import { z } from "zod";
-import { friendRequestTable, friendTable, userTable } from "../../db/schema";
+import { friendRequestTable, friendTable, userTable } from "@/db/schema";
 import { and, asc, eq, gt } from "drizzle-orm";
 
 const router: Router = Router();

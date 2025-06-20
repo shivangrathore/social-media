@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { db } from "../../db";
-import { commentTable, likeTable, postTable, userTable } from "../../db/schema";
-import authMiddleware from "../../middlewares/auth";
+import { db } from "@/db";
+import { commentTable, likeTable, postTable, userTable } from "@/db/schema";
+import authMiddleware from "@/middlewares/auth";
 import { and, eq, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import { UpdateDraftSchema } from "../../types";
+import { UpdateDraftSchema } from "@/types";
 import { CreateDraftPostResponse } from "@repo/api-types/post";
 
 const router: Router = Router();

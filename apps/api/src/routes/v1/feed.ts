@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
-import { FeedRepository } from "../../repositories/feed.repository";
-import { FeedService } from "../../services/feed.service";
-import authMiddleware from "../../middlewares/auth";
+import { FeedRepository } from "@/repositories/feed.repository";
+import { FeedService } from "@/services/feed.service";
+import authMiddleware from "@/middlewares/auth";
 
 const router: Router = Router();
 router.use(authMiddleware);

@@ -1,16 +1,16 @@
 import { Router } from "express";
-import { db } from "../../db";
+import { db } from "@/db";
 import {
   pollOptionTable,
   pollTable,
   pollVoteTable,
   postTable,
-} from "../../db/schema";
+} from "@/db/schema";
 import { CreatePollDraftResponse } from "@repo/api-types/poll";
-import { CastVoteSchema } from "../../types";
+import { CastVoteSchema } from "@/types";
 import { UpdatePollSchema } from "@repo/api-types";
 import { and, eq, sql } from "drizzle-orm";
-import authMiddleware from "../../middlewares/auth";
+import authMiddleware from "@/middlewares/auth";
 
 const router: Router = Router();
 router.use(authMiddleware);
