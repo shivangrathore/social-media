@@ -93,7 +93,7 @@ router.post("/:postId/publish", async (req, res) => {
   }
   await db
     .update(postTable)
-    .set({ published: true })
+    .set({ published: true, createdAt: new Date() })
     .where(eq(postTable.id, postId));
   res.status(200).json({ message: "Draft post published successfully" });
 });
@@ -204,7 +204,7 @@ router.post("/:postId/likes", async (req, res) => {
       .returning();
     await tx
       .update(postTable)
-      .set({ numLikes: sql`${postTable.numLikes} + 1` })
+      .set({ likes: sql`${postTable.likes} + 1` })
       .where(eq(postTable.id, postId));
     return like;
   });
@@ -230,7 +230,7 @@ router.delete("/:postId/likes", async (req, res) => {
     if (!like) return;
     await tx
       .update(postTable)
-      .set({ numLikes: sql`${postTable.numLikes} - 1` })
+      .set({ likes: sql`${postTable.likes} - 1` })
       .where(eq(postTable.id, postId));
     return like;
   });

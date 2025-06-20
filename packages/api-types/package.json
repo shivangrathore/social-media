@@ -30,5 +30,8 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "bunchee": "^6.5.3"
+  },
+  "dependencies": {
+    "zod": "^3.24.3"
   }
 }

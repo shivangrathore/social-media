@@ -105,8 +105,9 @@ export const postTable = pgTable("post", {
   updatedAt: timestamp("updated_at")
     .default(sql`NULL`)
     .$onUpdate(() => new Date()),
-  numLikes: integer("num_likes").notNull().default(0),
-  numComments: integer("num_comments").notNull().default(0),
+  likes: integer("likes").notNull().default(0),
+  comments: integer("comments").notNull().default(0),
+  views: integer("views").notNull().default(0),
 });
 
 export const likeTable = pgTable(
@@ -164,7 +165,6 @@ export const attachmentTable = pgTable("attachment", {
     .default("image")
     .notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  // TODO: add more fields like public_id, format, etc.
 });
 
 export const friendRequestTable = pgTable(
@@ -240,3 +240,14 @@ export const pollVoteTable = pgTable(
   },
   (t) => [unique().on(t.userId, t.pollOptionId)],
 );
+
+export const postViewTable = pgTable("post_view", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  postId: bigint("post_id", { mode: "number" })
+    .notNull()
+    .references(() => postTable.id),
+  userId: bigint("user_id", { mode: "number" })
+    .notNull()
+    .references(() => userTable.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

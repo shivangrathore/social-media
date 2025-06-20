@@ -5,12 +5,10 @@ import { AvatarImage } from "@radix-ui/react-avatar";
 import { BarChart3, FileTextIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PostComposeView } from "./post-compose-view";
-import { useStore } from "zustand";
-import { composeModeStore } from "../store/composeModeStore";
+import { useComposeMode } from "../hooks/use-compose-mode";
 
 export function ComposePost() {
-  const mode = useStore(composeModeStore, (state) => state.mode);
-  const setMode = useStore(composeModeStore, (state) => state.setMode);
+  const { mode, setMode } = useComposeMode();
   return (
     <div className="my-6 p-4 bg-white rounded-md border-border border">
       <div className="flex gap-4">

@@ -6,7 +6,6 @@ import { useCallback, useState } from "react";
 
 type Poll = Extract<FeedEntry, { postType: "poll" }>;
 
-// TODO: Instant feedback
 export function PollDisplay({ poll }: { poll: Poll }) {
   const [selectedOption, setSelectedOption] = useState(poll.selectedOption);
   const [options, setOptions] = useState(poll.options);
@@ -17,11 +16,15 @@ export function PollDisplay({ poll }: { poll: Poll }) {
         return;
       }
       setOptions((prevOptions) =>
-        prevOptions.map((option) =>
-          option.id === optionId
-            ? { ...option, votes: option.votes + 1 }
-            : { ...option, votes: option.votes - 1 },
-        ),
+        prevOptions.map((option) => {
+          if (selectedOption === option.id) {
+            return { ...option, votes: option.votes - 1 };
+          }
+          if (option.id === optionId) {
+            return { ...option, votes: option.votes + 1 };
+          }
+          return option;
+        }),
       );
       setSelectedOption(optionId);
       try {

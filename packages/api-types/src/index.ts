@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export type PostType = "regular" | "poll";
 export type AttachmentFile = {
   id: string | number;
@@ -18,6 +20,7 @@ export type Post = {
   postType: PostType;
   createdAt: Date;
   updatedAt: Date | null;
+  views: number;
   attachments: AttachmentFile[];
 };
 
@@ -36,3 +39,9 @@ export type Poll = {
   userId: number;
   createdAt: Date;
 };
+
+// Validation zod
+export const UpdatePollSchema = z.object({
+  question: z.string(),
+  options: z.array(z.string().min(1).max(100)).max(4),
+});

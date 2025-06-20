@@ -1,5 +1,4 @@
 import { apiClient } from "@/lib/apiClient";
-import { Poll } from "@repo/api-types";
 import { CreatePollDraftResponse } from "@repo/api-types/poll";
 
 export async function createDraftPoll() {
@@ -7,11 +6,18 @@ export async function createDraftPoll() {
   return req.data;
 }
 
-export async function saveDraftPoll(poll: Poll) {
-  const pollId = poll.id;
-  await apiClient.patch(`/polls/${pollId}`, {
-    question: poll.question,
-    options: poll.options.filter((option) => option.trim() !== ""),
+export async function saveDraftPoll({
+  postId,
+  question,
+  options,
+}: {
+  postId: number;
+  question: string;
+  options: string[];
+}) {
+  await apiClient.patch(`/polls/${postId}`, {
+    question,
+    options,
   });
 }
 

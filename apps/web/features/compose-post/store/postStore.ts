@@ -22,6 +22,7 @@ const defaultPost: Post = {
   userId: 0,
   createdAt: new Date(),
   attachments: [],
+  views: 0,
   updatedAt: new Date(),
 };
 

@@ -17,34 +17,21 @@ import {
 import { Emoji } from "frimousse";
 import { postStore } from "../store/postStore";
 import { PostComposeMode } from "../types";
-import { pollStore } from "../store/pollStore";
 
-function CreateButton({ mode }: { mode: PostComposeMode }) {
+function CreateButton() {
   const content = useStore(postStore, (state) => state.post.content);
   const attachments = useStore(postStore, (state) => state.post.attachments);
-  const pollOptions = useStore(pollStore, (state) => state.poll.options);
-  const question = useStore(pollStore, (state) => state.poll.question);
   const isEmpty = useMemo(() => {
-    if (mode == "post") {
-      return (!content || content.trim() === "") && attachments.length === 0;
-    } else if (mode == "poll") {
-      return !question || pollOptions.filter((o) => o.trim() != "").length < 2;
-    }
-    return true;
-  }, [content, attachments, mode, pollOptions, question]);
+    return (!content || content.trim() === "") && attachments.length === 0;
+  }, [content, attachments]);
 
   const publishPost = useStore(postStore, (state) => state.publishPost);
-  const publishPoll = useStore(pollStore, (state) => state.publishPoll);
   const handleClick = useCallback(() => {
     if (isEmpty) {
       return;
     }
-    if (mode === "post") {
-      publishPost();
-    } else if (mode == "poll") {
-      publishPoll();
-    }
-  }, [isEmpty, publishPost, mode, publishPoll]);
+    publishPost();
+  }, [isEmpty, publishPost]);
 
   return (
     <Button
@@ -54,7 +41,7 @@ function CreateButton({ mode }: { mode: PostComposeMode }) {
       disabled={isEmpty}
       onClick={handleClick}
     >
-      {mode === "poll" ? "Create Poll" : "Post"}
+      Create Post
     </Button>
   );
 }
@@ -115,7 +102,7 @@ export default function PostToolbar({ mode }: { mode: PostComposeMode }) {
           </Popover>
         </div>
       )}
-      <CreateButton mode={mode} />
+      <CreateButton />
     </div>
   );
 }

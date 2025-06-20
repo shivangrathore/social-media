@@ -7,6 +7,7 @@ import commentsRouter from "./comments";
 import friendRequestsRouter from "./friend-requests";
 import pollsRouter from "./polls";
 import feedRouter from "./feed";
+import viewsRouter from "./views";
 import express from "express";
 
 const router: Router = Router();
@@ -18,5 +19,6 @@ router.use("/comments", express.json(), commentsRouter);
 router.use("/friend-requests", express.json(), friendRequestsRouter);
 router.use("/polls", express.json(), pollsRouter);
 router.use("/feed", express.json(), feedRouter);
+router.use("/", express.json(), viewsRouter);
 
 export default router;

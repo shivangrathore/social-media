@@ -7,11 +7,11 @@ import {
   postTable,
 } from "../../db/schema";
 import { CreatePollDraftResponse } from "@repo/api-types/poll";
-import { CastVoteSchema, UpdatePollSchema } from "../../types";
+import { CastVoteSchema } from "../../types";
+import { UpdatePollSchema } from "@repo/api-types";
 import { and, eq, sql } from "drizzle-orm";
 import authMiddleware from "../../middlewares/auth";
 
-// Polls Router
 const router: Router = Router();
 router.use(authMiddleware);
 export default router;
@@ -152,7 +152,7 @@ router.post("/:postId/publish", async (req, res) => {
 
   await db
     .update(postTable)
-    .set({ published: true })
+    .set({ published: true, createdAt: new Date() })
     .where(eq(postTable.id, postId));
 
   res.json({

@@ -225,6 +225,10 @@ importers:
         version: 5.8.2
 
   packages/api-types:
+    dependencies:
+      zod:
+        specifier: ^3.24.3
+        version: 3.24.3
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*

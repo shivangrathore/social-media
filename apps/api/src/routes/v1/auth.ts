@@ -1,19 +1,19 @@
 import { Router } from "express";
 import * as dateFns from "date-fns";
-import { LoginSchema, RegisterSchema } from "../../types";
-import { db } from "../../db";
+import { LoginSchema, RegisterSchema } from "@/types";
+import { db } from "@/db";
 import {
   accountTable,
   profileTable,
   sessionTable,
   userTable,
-} from "../../db/schema";
-import { comparePassword, hashPassword } from "../../utils/crypto";
-import { providers } from "../../auth_providers";
+} from "@/db/schema";
+import { comparePassword, hashPassword } from "@/utils/crypto";
+import { providers } from "@/auth_providers";
 import { eq } from "drizzle-orm";
-import { signJWT } from "../../utils/jwt";
-import { JWT_EXPIRE_TIME } from "../../data/constants";
-import { usernameFromName } from "../../utils/db";
+import { signJWT } from "@/utils/jwt";
+import { JWT_EXPIRE_TIME } from "@/data/constants";
+import { usernameFromName } from "@/utils/db";
 
 // TODO: Handle database errors and validation errors properly
 
@@ -28,9 +28,7 @@ router.get("/logout", async (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
-  console.log(req.body);
   const body = await RegisterSchema.parseAsync(req.body);
-  console.log(body);
   const hashedPassword = await hashPassword(body.password);
   const username = usernameFromName(body.firstName);
   await db.transaction(async (tx) => {
