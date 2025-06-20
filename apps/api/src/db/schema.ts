@@ -31,7 +31,7 @@ export const userTable = pgTable("user", {
   emailVerified: boolean("email_verified").default(false),
   avatar: varchar("avatar", { length: 255 }).default(sql`NULL`),
   dob: timestamp("dob").default(sql`NULL`),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
@@ -230,6 +230,9 @@ export const pollVoteTable = pgTable(
     userId: bigint("user_id", { mode: "number" })
       .notNull()
       .references(() => userTable.id),
+    pollId: bigint("poll_id", { mode: "number" })
+      .notNull()
+      .references(() => pollTable.id),
     pollOptionId: bigint("poll_option_id", { mode: "number" })
       .notNull()
       .references(() => pollOptionTable.id),

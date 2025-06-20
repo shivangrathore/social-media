@@ -20,6 +20,10 @@
     "./poll": {
       "types": "./dist/poll.d.ts",
       "import": "./dist/poll.js"
+    },
+    "./feed": {
+      "types": "./dist/feed.d.ts",
+      "import": "./dist/feed.js"
     }
   },
   "devDependencies": {

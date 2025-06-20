@@ -1,9 +1,14 @@
 import { Router } from "express";
 import { db } from "../../db";
-import { pollOptionTable, pollTable, postTable } from "../../db/schema";
+import {
+  pollOptionTable,
+  pollTable,
+  pollVoteTable,
+  postTable,
+} from "../../db/schema";
 import { CreatePollDraftResponse } from "@repo/api-types/poll";
-import { UpdatePollSchema } from "../../types";
-import { eq } from "drizzle-orm";
+import { CastVoteSchema, UpdatePollSchema } from "../../types";
+import { and, eq, sql } from "drizzle-orm";
 import authMiddleware from "../../middlewares/auth";
 
 // Polls Router
@@ -154,4 +159,64 @@ router.post("/:postId/publish", async (req, res) => {
     question: poll.question,
     options: poll.options.map((option) => option.option),
   });
+});
+
+// FIXME: Implement voting logic
+router.post("/:postId/vote", async (req, res) => {
+  const postId = parseInt(req.params.postId);
+  const userId = res.locals["userId"];
+  const { optionId } = await CastVoteSchema.parseAsync(req.body);
+  const post = await db.query.postTable.findFirst({
+    where: (fields, { eq, and }) =>
+      and(eq(fields.id, postId), eq(fields.published, true)),
+  });
+  if (!post) {
+    res.status(404).json({ message: "Post not found" });
+    return;
+  }
+  const poll = await db.query.pollTable.findFirst({
+    where: (fields, { eq }) => eq(fields.postId, postId),
+  });
+  if (!poll) {
+    res.status(404).json({ message: "Poll not found" });
+    return;
+  }
+  const option = await db.query.pollOptionTable.findFirst({
+    where: (fields, { eq, and }) =>
+      and(eq(fields.id, optionId), eq(fields.pollId, poll.id)),
+  });
+
+  if (!option) {
+    res.status(404).json({ message: "Option not found" });
+    return;
+  }
+
+  const [oldOption] = await db
+    .delete(pollVoteTable)
+    .where(
+      and(eq(pollVoteTable.userId, userId), eq(pollVoteTable.pollId, poll.id)),
+    )
+    .returning({ id: pollVoteTable.pollOptionId });
+
+  if (oldOption) {
+    await db
+      .update(pollOptionTable)
+      .set({
+        votes: sql`${pollOptionTable.votes} - 1`,
+      })
+      .where(eq(pollOptionTable.id, oldOption.id));
+  }
+
+  await db.insert(pollVoteTable).values({
+    pollId: poll.id,
+    userId,
+    pollOptionId: option.id,
+  });
+
+  await db
+    .update(pollOptionTable)
+    .set({ votes: sql`${pollOptionTable.votes}+ 1` })
+    .where(eq(pollOptionTable.id, option.id));
+
+  res.json({ message: "Vote cast successfully" });
 });

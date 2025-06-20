@@ -22,6 +22,27 @@
       "when": 1750302655432,
       "tag": "0002_curly_greymalkin",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1750338806099,
+      "tag": "0003_panoramic_baron_zemo",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1750340357198,
+      "tag": "0004_romantic_slipstream",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1750346345486,
+      "tag": "0005_short_fenris",
+      "breakpoints": true
     }
   ]
 }
