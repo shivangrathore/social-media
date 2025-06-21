@@ -137,3 +137,21 @@
   min-width: 0;
 }
 
+
+/* Animations */
+
+@theme {
+  --animate-pop: pop 0.3s linear; 
+
+  @keyframes pop {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.4);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}

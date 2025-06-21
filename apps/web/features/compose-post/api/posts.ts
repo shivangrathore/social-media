@@ -8,8 +8,11 @@ export async function createDraftPost() {
   return res.data;
 }
 
-export async function saveDraftPost(post: Post) {
-  const res = await apiClient.patch<Post>(`/posts/${post.id}`, {
+export async function saveDraftPost(post: {
+  id: number;
+  content?: string | null;
+}) {
+  const res = await apiClient.patch(`/posts/${post.id}`, {
     content: post.content || "",
   });
   return res.data;

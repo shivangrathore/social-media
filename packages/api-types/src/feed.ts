@@ -7,7 +7,9 @@ export type FeedEntry = {
   createdAt: Date;
   userId: number;
   author: User;
+  likes: number;
   views: number;
+  liked: boolean;
 } & (
   | {
       postType: "poll";

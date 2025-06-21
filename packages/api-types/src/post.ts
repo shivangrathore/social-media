@@ -12,6 +12,5 @@ export type CreateDraftPostResponse = {
   updatedAt: Date | null;
   userId: number;
   postType: "regular";
-  views: number;
   attachments: AttachmentFile[];
 };

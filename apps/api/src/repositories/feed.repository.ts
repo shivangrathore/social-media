@@ -1,6 +1,7 @@
 import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "../db";
 import {
+  likeTable,
   pollOptionTable,
   pollTable,
   pollVoteTable,
@@ -60,5 +61,19 @@ export class FeedRepository {
         and(eq(pollVoteTable.pollId, pollId), eq(pollVoteTable.userId, userId)),
       );
     return selectedOption ? selectedOption.optionId : null;
+  }
+
+  async getUserLikeStatus(postId: number, userId: number) {
+    const [like] = await db
+      .select({})
+      .from(likeTable)
+      .where(
+        and(
+          eq(likeTable.targetId, postId),
+          eq(likeTable.userId, userId),
+          eq(likeTable.targetType, "post"),
+        ),
+      );
+    return like ? true : false;
   }
 }

@@ -1,5 +1,5 @@
 "use client";
-import { cn } from "@/lib/utils";
+import { cn, pluralize } from "@/lib/utils";
 import { FeedEntry } from "@repo/api-types/feed";
 import { castVote } from "../api";
 import { useCallback, useState } from "react";
@@ -40,7 +40,9 @@ export function PollDisplay({ poll }: { poll: Poll }) {
   return (
     <div className="p-4">
       <h3 className="font-semibold">{poll.question}</h3>
-      <p className="text-sm text-gray-500 mt-1">{totalVotes} votes</p>
+      <p className="text-sm text-gray-500 mt-1">
+        {pluralize(totalVotes, "vote")}
+      </p>
       <ul className="mt-2 flex flex-col gap-2">
         {options.map((option) => (
           <li key={option.id}>
@@ -54,10 +56,13 @@ export function PollDisplay({ poll }: { poll: Poll }) {
               onClick={() => castVoteHandler(option.id)}
             >
               <span
-                className={cn("absolute inset-0 -z-10", {
-                  "bg-gray-400/20": option.id != selectedOption,
-                  "bg-primary/20": option.id == selectedOption,
-                })}
+                className={cn(
+                  "absolute inset-0 -z-10 transition-[width] duration-500",
+                  {
+                    "bg-gray-400/20": option.id != selectedOption,
+                    "bg-primary/20": option.id == selectedOption,
+                  },
+                )}
                 style={{
                   width:
                     totalVotes == 0
@@ -66,7 +71,7 @@ export function PollDisplay({ poll }: { poll: Poll }) {
                 }}
               />
               <span>{option.option}</span>
-              <span>{option.votes} votes</span>
+              <span>{option.votes > 0 && pluralize(option.votes, "vote")}</span>
             </button>
           </li>
         ))}

@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import { Post } from "@repo/api-types";
 import { devtools } from "zustand/middleware";
 import { AttachmentFile } from "@repo/api-types";
 import { createDraftPost, publishPost, saveDraftPost } from "../api/posts";
+import { CreateDraftPostResponse } from "@repo/api-types/post";
 
 type PostStore = {
-  post: Post;
+  post: CreateDraftPostResponse;
   setContent: (content: string) => void;
   isLoading: boolean;
   publishPost: () => Promise<void>;
@@ -15,15 +15,14 @@ type PostStore = {
   addAttachment: (attachment: AttachmentFile) => void;
 };
 
-const defaultPost: Post = {
+const defaultPost: CreateDraftPostResponse = {
   postType: "regular",
-  content: "",
   id: 0,
   userId: 0,
   createdAt: new Date(),
   attachments: [],
-  views: 0,
   updatedAt: new Date(),
+  content: "",
 };
 
 export const postStore = create(
@@ -38,7 +37,8 @@ export const postStore = create(
         },
       })),
     saveDraft: async () => {
-      await saveDraftPost(get().post);
+      const post = get().post;
+      await saveDraftPost(post);
     },
     publishPost: async () => {
       const postId = get().post.id;

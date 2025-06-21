@@ -26,7 +26,7 @@ export class FeedService {
         if (post.postType === "poll") {
           return await this.buildPollEntry(post, author, currentUserId);
         } else {
-          return await this.buildRegularEntry(post, author);
+          return await this.buildRegularEntry(post, author, currentUserId);
         }
       }),
     );
@@ -45,12 +45,14 @@ export class FeedService {
     const poll = await this.feedRepository.getPollData(post.id);
     const options = await this.feedRepository.getPollOptions(poll.id);
     const userVote = await this.feedRepository.getUserPollVote(poll.id, userId);
+    const liked = await this.feedRepository.getUserLikeStatus(post.id, userId);
     const record: FeedEntry = {
       ...post,
       author,
       options,
       question: poll.question,
       selectedOption: userVote,
+      liked,
       postType: "poll",
     };
     return record;
@@ -59,15 +61,18 @@ export class FeedService {
   private async buildRegularEntry(
     post: PostWithoutAttachments,
     author: User,
+    userId: number,
   ): Promise<FeedEntry> {
     const attachments = await db
       .select()
       .from(attachmentTable)
       .where(eq(attachmentTable.postId, post.id));
+    const liked = await this.feedRepository.getUserLikeStatus(post.id, userId);
     const record: FeedEntry = {
       ...post,
       author,
       attachments,
+      liked,
       postType: "regular",
     };
     return record;

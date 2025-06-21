@@ -20,6 +20,7 @@ export type Post = {
   postType: PostType;
   createdAt: Date;
   updatedAt: Date | null;
+  likes: number;
   views: number;
   attachments: AttachmentFile[];
 };
