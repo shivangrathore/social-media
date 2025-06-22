@@ -11,11 +11,11 @@ export default function useFeed() {
 
   const feed = data ? data.data : [];
 
-  function nextPage() {}
+  function loadMore() {}
 
   return {
     feed,
-    nextPage,
+    loadMore,
     isLoading,
   };
 }

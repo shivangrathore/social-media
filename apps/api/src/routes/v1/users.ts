@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { db } from "@/db";
-import { friendRequestTable, friendTable, userTable } from "@/db/schema";
+import {
+  friendRequestTable,
+  friendTable,
+  profileTable,
+  userTable,
+} from "@/db/schema";
 import authMiddleware from "@/middlewares/auth";
 import { and, eq, or } from "drizzle-orm";
 import * as dateFns from "date-fns";
@@ -9,15 +14,32 @@ const router: Router = Router();
 
 router.get("/:userId", authMiddleware, async (req, res) => {
   const p_userId = req.params.userId;
-  var user: typeof userTable.$inferSelect | undefined = undefined;
+  let userId: number;
   if (p_userId == "@me") {
-    user = await db.query.userTable.findFirst({
-      where: (fields, { eq }) => eq(fields.id, res.locals["userId"]),
-    });
+    userId = res.locals["userId"];
   } else {
-    user = await db.query.userTable.findFirst({
-      where: (fields, { eq }) => eq(fields.id, parseInt(p_userId!)),
-    });
+    userId = parseInt(p_userId);
+  }
+  if (isNaN(userId)) {
+    res.status(400).json({ message: "Invalid user ID" });
+    return;
+  }
+  const [user] = await db
+    .select({
+      id: userTable.id,
+      username: profileTable.username,
+      email: userTable.email,
+      createdAt: userTable.createdAt,
+      updatedAt: userTable.updatedAt,
+      firstName: userTable.firstName,
+      lastName: userTable.lastName,
+    })
+    .from(userTable)
+    .where(eq(userTable.id, userId))
+    .innerJoin(profileTable, eq(profileTable.userId, userTable.id));
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+    return;
   }
   res.json(user);
 });

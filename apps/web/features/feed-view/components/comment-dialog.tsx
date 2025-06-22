@@ -35,7 +35,7 @@ export function CommentDialog({
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <button className="text-gray-400 p-2 rounded-full hover:bg-primary/5 transition-colors cursor-pointer">
+        <button className="text-white hover:text-gray-200 p-2 rounded-full hover:bg-primary/5 transition-colors cursor-pointer">
           <MessageCircle className="size-5" />
         </button>
       </DialogTrigger>

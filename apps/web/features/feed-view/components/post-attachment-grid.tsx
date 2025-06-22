@@ -3,11 +3,13 @@ import { AttachmentFile } from "@repo/api-types";
 
 export default function PostAttachmentGrid({
   attachments,
+  className,
 }: {
   attachments: AttachmentFile[];
+  className?: string;
 }) {
   return (
-    <div className="px-4 mb-2">
+    <div className={cn("px-4 mb-2", className)}>
       <div className="grid grid-cols-2 overflow-hidden gap-px rounded-2xl max-h-[700px]">
         {attachments.map((attachment, index) => (
           <div

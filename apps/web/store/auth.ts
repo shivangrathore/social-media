@@ -2,12 +2,7 @@
 import { create, useStore } from "zustand";
 import { apiClient } from "@/lib/apiClient";
 import { useShallow } from "zustand/shallow";
-
-type User = {
-  id: string;
-  name: string;
-  email: string;
-};
+import { User } from "@repo/api-types";
 
 type AuthStore = {
   user: User | null;

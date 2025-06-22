@@ -36,21 +36,17 @@ export function PostCard({ post }: { post: FeedEntry }) {
     return () => observer.disconnect();
   }, [isLogged, logView]);
   return (
-    <div
-      className="border border-border rounded-md bg-background flex flex-col py-2"
-      ref={ref}
-    >
-      <div className="flex gap-2 items-center border-b p-2 px-4">
+    <div className="flex flex-col py-2 border-b" ref={ref}>
+      <div className="flex gap-2 items-center px-4">
         <UserProfile {...author} />
       </div>
       {post.postType === "regular" && <PostDisplay post={post} />}
       {post.postType === "poll" && <PollDisplay poll={post} />}
-      <hr className="my-2 mt-0" />
-      <div className="flex px-4 items-center">
+      <div className="flex mt-2 items-center px-2">
         <button
           className={cn(
-            "p-2 rounded-full hover:bg-primary/10 transition-colors cursor-pointer text-gray-400 text-sm flex",
-            post.liked && "text-red-500 hover:bg-red-500/10 dark:text-red-500",
+            "p-2 rounded-full hover:bg-primary/10 transition-colors cursor-pointer text-white hover:text-gray-200 text-sm flex",
+            post.liked && "text-red-500 hover:bg-red-500/10",
           )}
           onClick={() => toggleLike()}
         >
@@ -64,15 +60,14 @@ export function PostCard({ post }: { post: FeedEntry }) {
           postId={post.id}
           addComment={addComment}
         />
-        <button className="text-gray-400 p-2 rounded-full hover:bg-primary/5 transition-colors cursor-pointer">
+        <button className="text-white hover:text-gray-200 p-2 rounded-full hover:bg-primary/5 transition-colors cursor-pointer">
           <SendIcon className="size-5" />
         </button>
 
-        <Button variant="secondary" className="ml-auto">
+        <button className="text-white hover:text-gray-200 p-2 rounded-full hover:bg-primary/5 transition-colors cursor-pointer ml-auto">
           <BookmarkIcon className="size-5" />
-        </Button>
+        </button>
       </div>
-      <hr className="my-2" />
       <div className="flex gap-3 px-4">
         {/* TODO: Singular and plural logic for likes */}
         {post.likes > 0 && (
@@ -86,7 +81,7 @@ export function PostCard({ post }: { post: FeedEntry }) {
             href={`/posts/${post.id}`}
             className="text-gray-500 text-sm hover:underline cursor-pointer"
           >
-            {pluralize(post.comments, "comment")}
+            view {pluralize(post.comments, "comment")}
           </Link>
         )}
       </div>
