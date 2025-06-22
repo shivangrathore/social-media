@@ -1,37 +1,57 @@
 "use client";
 import { cn, pluralize } from "@/lib/utils";
-import { FeedEntry } from "@repo/api-types/feed";
+import { FeedEntry, FeedResponse } from "@repo/api-types/feed";
 import { castVote } from "../api";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Poll = Extract<FeedEntry, { postType: "poll" }>;
 
 export function PollDisplay({ poll }: { poll: Poll }) {
-  const [selectedOption, setSelectedOption] = useState(poll.selectedOption);
-  const [options, setOptions] = useState(poll.options);
+  const selectedOption = poll.selectedOption;
+  const options = poll.options;
   const totalVotes = options.reduce((acc, option) => acc + option.votes, 0);
+  const queryClient = useQueryClient();
+  const changeSelectedVote = useCallback(
+    (optionId: number) => {
+      queryClient.setQueryData(["feed"], (old: FeedResponse) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.map((entry) => {
+            if (entry.id === poll.id && entry.postType === "poll") {
+              return {
+                ...entry,
+                selectedOption: optionId,
+                options: entry.options.map((option) => {
+                  if (option.id === optionId) {
+                    return { ...option, votes: option.votes + 1 };
+                  }
+                  if (option.id === selectedOption) {
+                    return { ...option, votes: option.votes - 1 };
+                  }
+                  return option;
+                }),
+              };
+            }
+            return entry;
+          }),
+        };
+      });
+    },
+    [queryClient, poll.id, selectedOption],
+  );
   const castVoteHandler = useCallback(
     async (optionId: number) => {
       if (selectedOption === optionId) {
         return;
       }
-      setOptions((prevOptions) =>
-        prevOptions.map((option) => {
-          if (selectedOption === option.id) {
-            return { ...option, votes: option.votes - 1 };
-          }
-          if (option.id === optionId) {
-            return { ...option, votes: option.votes + 1 };
-          }
-          return option;
-        }),
-      );
-      setSelectedOption(optionId);
+      const oldData = queryClient.getQueryData<FeedResponse>(["feed"]);
+      changeSelectedVote(optionId);
       try {
         await castVote(poll.id, optionId);
       } catch (e) {
-        setOptions(poll.options);
-        setSelectedOption(poll.selectedOption);
+        queryClient.setQueryData(["feed"], oldData);
       }
     },
     [poll.id, poll.selectedOption, poll.options, selectedOption],

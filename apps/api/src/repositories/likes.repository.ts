@@ -36,9 +36,12 @@ export class LikesRepository {
         userId,
         targetType: target,
       });
-      await tx.update(postTable).set({
-        likes: sql`${postTable.likes} + 1`,
-      });
+      await tx
+        .update(postTable)
+        .set({
+          likes: sql`${postTable.likes} + 1`,
+        })
+        .where(and(eq(postTable.id, targetId)));
     });
   }
 
@@ -53,9 +56,12 @@ export class LikesRepository {
     }
     await db.transaction(async (tx) => {
       await tx.delete(likeTable).where(eq(likeTable.id, like.id));
-      await tx.update(postTable).set({
-        likes: sql`${postTable.likes} - 1`,
-      });
+      await tx
+        .update(postTable)
+        .set({
+          likes: sql`${postTable.likes} - 1`,
+        })
+        .where(eq(postTable.id, targetId));
     });
   }
 }
