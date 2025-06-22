@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect } from "react";
+import { Textarea } from "@/components/ui/textarea";
 
 type AutoHeightTextareaProps =
   React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
@@ -35,7 +36,7 @@ const AutoHeightTextarea = React.forwardRef<
   const handleInput = () => {
     adjustHeight();
   };
-  return <textarea {...props} ref={multipleRefs} onInput={handleInput} />;
+  return <Textarea {...props} ref={multipleRefs} onInput={handleInput} />;
 });
 
 AutoHeightTextarea.displayName = "AutoHeightTextarea";

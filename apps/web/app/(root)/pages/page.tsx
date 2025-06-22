@@ -1,5 +1,5 @@
 import { Button, buttonVariants } from "@/components/ui/button";
-import { ExternalLinkIcon, LinkIcon, ThumbsUpIcon } from "lucide-react";
+import { ExternalLinkIcon, ThumbsUpIcon } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = {

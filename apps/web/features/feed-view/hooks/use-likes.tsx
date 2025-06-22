@@ -1,20 +1,38 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { postAddLike, postRemoveLike } from "../api/likes";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { FeedResponse } from "@repo/api-types/feed";
 
-export function useLikes(postId: number, liked: boolean, likes: number) {
-  const [hasLiked, setHasLiked] = useState(liked);
-  const [numLikes, setNumLikes] = useState(likes);
+export function useLikes(postId: number, liked: boolean) {
+  const queryClient = useQueryClient();
+  function markLiked(liked: boolean) {
+    queryClient.setQueryData(["feed"], (old: FeedResponse) => {
+      if (!old) return old;
+      const incr = liked ? 1 : -1;
+      const updatedFeed = {
+        ...old,
+        data: old.data.map((post: any) => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              likes: post.likes + incr,
+              liked: liked,
+            };
+          }
+          return post;
+        }),
+      };
+      return updatedFeed;
+    });
+  }
   const { mutateAsync: addLike } = useMutation({
     mutationFn: async () => postAddLike(postId),
     mutationKey: ["addLike", postId],
     onMutate: () => {
-      setHasLiked(true);
-      setNumLikes((prev) => prev + 1);
+      markLiked(true);
     },
     onError: () => {
-      setHasLiked(false);
-      setNumLikes((prev) => prev - 1);
+      markLiked(false);
     },
   });
 
@@ -22,22 +40,20 @@ export function useLikes(postId: number, liked: boolean, likes: number) {
     mutationFn: async () => postRemoveLike(postId),
     mutationKey: ["removeLike", postId],
     onMutate: () => {
-      setHasLiked(false);
-      setNumLikes((prev) => prev - 1);
+      markLiked(false);
     },
     onError: () => {
-      setHasLiked(true);
-      setNumLikes((prev) => prev + 1);
+      markLiked(true);
     },
   });
 
   const toggleLike = useCallback(() => {
-    if (hasLiked) {
+    if (liked) {
       removeLike();
     } else {
       addLike();
     }
-  }, [hasLiked, addLike, removeLike]);
+  }, [liked, addLike, removeLike]);
 
-  return { hasLiked, toggleLike, numLikes };
+  return { toggleLike };
 }

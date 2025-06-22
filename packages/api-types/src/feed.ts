@@ -10,6 +10,7 @@ export type FeedEntry = {
   likes: number;
   views: number;
   liked: boolean;
+  comments: number;
 } & (
   | {
       postType: "poll";

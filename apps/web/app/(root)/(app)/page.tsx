@@ -18,10 +18,8 @@ export default function FeedPage() {
       </div>
       <div className="w-[320px] mt-6 relative shrink-0">
         <div className="sticky top-6">
-          <div className="p-4 bg-white rounded-md">
-            <Input type="search" placeholder="Search" />
-          </div>
-          <div className="flex flex-col bg-white p-4 rounded-md mt-4">
+          <Input type="search" placeholder="Search" className="py-5" />
+          <div className="flex flex-col p-4 rounded-md mt-4 bg-background border border-border">
             <div className="flex justify-between mt-4">
               <div className="flex gap-2 items-center">
                 <Image

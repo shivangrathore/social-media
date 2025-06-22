@@ -10,7 +10,7 @@ import { useComposeMode } from "../hooks/use-compose-mode";
 export function ComposePost() {
   const { mode, setMode } = useComposeMode();
   return (
-    <div className="my-6 p-4 bg-white rounded-md border-border border">
+    <div className="my-6 p-4 bg-background rounded-md border-border border">
       <div className="flex gap-4">
         <Avatar className="size-10">
           <AvatarImage />

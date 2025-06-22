@@ -29,7 +29,7 @@ export default function AppSidebar() {
         <Link
           key={item.name}
           href={item.href}
-          className="flex items-center gap-2 p-4 text-foreground hover:bg-gray-100"
+          className="flex items-center gap-2 p-4 py-3 text-foreground bg-background hover:bg-neutral-700 rounded-md"
         >
           <item.icon className="w-5 h-5" />
           <span>{item.name}</span>

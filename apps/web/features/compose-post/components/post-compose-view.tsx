@@ -3,7 +3,7 @@ import { postStore } from "../store/postStore";
 import React, { useCallback } from "react";
 import { useAutosave } from "../hooks/use-auto-save";
 import { ComposePostLoadingSkeleton } from "./post-loading-skeleton";
-import AutoHeightTextarea from "./auto-height-textarea";
+import AutoHeightTextarea from "@/components/auto-height-textarea";
 import { FileUploadGrid } from "./file-upload-grid";
 import PostToolbar from "./post-toolbar";
 

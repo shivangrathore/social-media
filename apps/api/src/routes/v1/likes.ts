@@ -16,7 +16,7 @@ router.post("/posts/:postId/likes", async (req, res) => {
   const postId = parseInt(req.params.postId);
 
   try {
-    const like = await likeService.addPostLike(userId, postId);
+    const like = await likeService.addPostLike(postId, userId);
     res.status(201).json(like);
   } catch (error) {
     console.error("Error adding like:", error);

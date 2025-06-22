@@ -125,29 +125,6 @@ router.delete("/:postId", async (req, res) => {
   res.json({ message: "Post deleted successfully" });
 });
 
-router.post("/:postId/comments", async (req, res) => {
-  const postId = parseInt(req.params.postId);
-  const { content } = req.body;
-  const userId = res.locals["userId"];
-  const parentId = await z.coerce
-    .number()
-    .nullish()
-    .default(null)
-    .parseAsync(req.query.parentId);
-
-  const [comment] = await db
-    .insert(commentTable)
-    .values({
-      content,
-      userId,
-      postId,
-      parentId,
-    })
-    .returning();
-
-  res.status(201).json(comment);
-});
-
 router.get("/:postId/comments", async (req, res) => {
   const limit = 10;
   const postId = parseInt(req.params.postId);
@@ -187,53 +164,4 @@ router.get("/:postId/comments", async (req, res) => {
     data,
     nextCursor: comments.length > limit ? data.at(-1)?.comment.id : null,
   });
-});
-
-router.post("/:postId/likes", async (req, res) => {
-  const postId = parseInt(req.params.postId);
-  const userId = res.locals["userId"];
-
-  const like = await db.transaction(async (tx) => {
-    const [like] = await tx
-      .insert(likeTable)
-      .values({
-        targetId: postId,
-        userId,
-        targetType: "post",
-      })
-      .returning();
-    await tx
-      .update(postTable)
-      .set({ likes: sql`${postTable.likes} + 1` })
-      .where(eq(postTable.id, postId));
-    return like;
-  });
-
-  res.status(201).json(like);
-});
-
-router.delete("/:postId/likes", async (req, res) => {
-  const postId = parseInt(req.params.postId);
-  const userId = res.locals["userId"];
-
-  const like = await db.transaction(async (tx) => {
-    const [like] = await tx
-      .delete(likeTable)
-      .where(
-        and(
-          eq(likeTable.userId, userId),
-          eq(likeTable.targetId, postId),
-          eq(likeTable.targetType, "post"),
-        ),
-      )
-      .returning();
-    if (!like) return;
-    await tx
-      .update(postTable)
-      .set({ likes: sql`${postTable.likes} - 1` })
-      .where(eq(postTable.id, postId));
-    return like;
-  });
-
-  res.status(201).json(like);
 });
