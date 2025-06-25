@@ -4,6 +4,7 @@ import { useState } from "react";
 import { getUploadSignature } from "../api/upload";
 import { apiClient } from "@/lib/apiClient";
 import { AxiosProgressEvent } from "axios";
+import { AttachmentFile } from "@repo/api-types";
 
 type UploadFile = {
   id: string;
@@ -11,11 +12,11 @@ type UploadFile = {
   progress: number;
   url: string;
   uploaded: boolean;
-  attachmentId?: number;
+  attachment?: AttachmentFile;
 };
 
 type UploadFilesHookProps = {
-  onAttachmentUploaded?: (file: any) => Promise<number | undefined>;
+  onAttachmentUploaded?: (file: any) => Promise<AttachmentFile | undefined>;
 };
 export function useUploadFiles({ onAttachmentUploaded }: UploadFilesHookProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
@@ -58,11 +59,11 @@ export function useUploadFiles({ onAttachmentUploaded }: UploadFilesHookProps) {
 
         const data = await response.data;
 
-        const attachmentId = await onAttachmentUploaded?.(data);
+        const attachment = await onAttachmentUploaded?.(data);
         updateFile({
           ...file,
           uploaded: true,
-          attachmentId,
+          attachment: attachment,
         });
       }),
     );

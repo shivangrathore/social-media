@@ -15,6 +15,7 @@ import { useUploadFiles } from "../hooks/use-upload-files";
 import { attachAttachmentToPost } from "../api/upload";
 import { AttachmentFile } from "@repo/api-types";
 import { CircularProgress } from "@/components/circular-progress";
+import { AttachmentGrid } from "./attachment-grid";
 
 const AttachmentSchema = z.object({
   id: z.number(),
@@ -39,10 +40,12 @@ export function PostComposeView() {
   const form = useForm({ resolver: zodResolver(PostComposeSchema) });
   const content = useWatch({ control: form.control, name: "content" });
   // TODO: Remove any
-  const onAttachmentUploaded = async (a: any): Promise<number | undefined> => {
-    if (!draft) return;
-    const attach = await attachAttachmentToPost(draft.id, a);
-    return attach.id;
+  const onAttachmentUploaded = async (
+    file: any,
+  ): Promise<AttachmentFile | undefined> => {
+    if (!draft) return undefined;
+    const attach = await attachAttachmentToPost(draft.id, file);
+    return attach;
   };
   const { files: uploadingFiles, addFiles } = useUploadFiles({
     onAttachmentUploaded,
@@ -51,7 +54,15 @@ export function PostComposeView() {
   const inputId = useId();
   const onEmojiSelect = (emoji: string) => {
     const currentContent = form.getValues("content");
-    form.setValue("content", currentContent + emoji);
+    let newContent = currentContent;
+    if (currentContent.trim() != "" && !currentContent.endsWith(" ")) {
+      newContent += " ";
+    }
+    newContent += emoji + " ";
+    form.setValue("content", newContent, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
   };
   useAutosavePost(isDirty, draft?.id, content, []);
   useEffect(() => {
@@ -64,6 +75,11 @@ export function PostComposeView() {
   }, [draft]);
   if (isDraftLoading) return <ComposePostLoadingSkeleton />;
   const attachments = form.watch("attachments", []) as AttachmentFile[];
+  function handleFileSelect(files: FileList | null) {
+    if (!draft || !files) return;
+    const filesArray = Array.from(files);
+    addFiles(draft.id, ...filesArray);
+  }
   return (
     <Form {...form}>
       <form>
@@ -81,64 +97,13 @@ export function PostComposeView() {
           className="hidden"
           id={inputId}
           onChange={(e) => {
-            if (!draft) return;
-            if (e.target.files) {
-              const filesArray = Array.from(e.target.files);
-              addFiles(draft.id, ...filesArray);
-              e.target.value = "";
-            }
+            handleFileSelect(e.target.files);
           }}
         />
-        {(attachments.length > 0 || uploadingFiles.length > 0) && (
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {attachments.map((attachment) => (
-              <div
-                key={attachment.id}
-                className="relative overflow-hidden rounded-lg"
-              >
-                {attachment.type === "image" ? (
-                  <img
-                    src={attachment.url}
-                    alt=""
-                    className="object-cover h-full"
-                  />
-                ) : (
-                  <video
-                    src={attachment.url}
-                    controls
-                    className="w-full h-auto object-cover"
-                  />
-                )}
-              </div>
-            ))}
-            {uploadingFiles.map((file) => (
-              <div key={file.id} className="relative">
-                {file.file.type.startsWith("image/") ? (
-                  <img
-                    src={file.url}
-                    alt={file.file.name}
-                    className="w-full h-auto rounded-lg mb-2"
-                  />
-                ) : (
-                  <video
-                    src={file.url}
-                    controls
-                    className="w-full h-auto rounded-lg mb-2"
-                  />
-                )}
-                {!file.uploaded && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <CircularProgress
-                      size={80}
-                      progress={file.progress}
-                      strokeWidth={4}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        <AttachmentGrid
+          attachments={attachments}
+          uploadingFiles={uploadingFiles}
+        />
         <div className="flex mt-1">
           <label htmlFor={inputId} className={toolbarButtonClassNames}>
             <ImageIcon className="size-5" />

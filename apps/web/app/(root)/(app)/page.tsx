@@ -1,4 +1,4 @@
-import { ComposePost } from "@/features/compose-post/components";
+import { ComposePost } from "@/features/post-compose/components";
 import FeedView from "@/features/feed-view/components";
 import { SuggestionPanel } from "@/components/suggestion-panel";
 
