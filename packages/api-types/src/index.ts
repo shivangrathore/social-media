@@ -2,15 +2,13 @@ import { z } from "zod";
 
 export type PostType = "regular" | "poll";
 export type AttachmentFile = {
-  id: string | number;
+  id: number;
   postId: number;
   userId: number;
   url: string;
-  asset_id: string;
-  public_id: string;
-  width: number | null;
-  height: number | null;
-  resource_type: string;
+  assetId: string;
+  publicId: string;
+  type: "image" | "video";
 };
 
 export type Post = {

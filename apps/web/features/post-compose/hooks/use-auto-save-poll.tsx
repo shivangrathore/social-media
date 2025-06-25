@@ -12,7 +12,6 @@ export function useAutoSaveDraft(
   const { mutateAsync, isPending: isSaving } = useMutation({
     mutationKey: ["saveDraftPoll"],
     mutationFn: saveDraftPoll,
-    onSuccess: () => console.log("Draft saved successfully"),
   });
 
   useEffect(() => {

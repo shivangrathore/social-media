@@ -1,2 +1,0 @@
-ALTER TABLE "poll_vote" ADD COLUMN "poll_id" bigint NOT NULL;--> statement-breakpoint
-ALTER TABLE "poll_vote" ADD CONSTRAINT "poll_vote_poll_id_poll_id_fk" FOREIGN KEY ("poll_id") REFERENCES "public"."poll"("id") ON DELETE no action ON UPDATE no action;

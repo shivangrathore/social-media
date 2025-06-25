@@ -21,7 +21,7 @@ export default function PostAttachmentGrid({
                 : "col-span-1",
             )}
           >
-            {attachment.resource_type === "image" ? (
+            {attachment.type === "image" ? (
               <img
                 src={attachment.url}
                 alt=""

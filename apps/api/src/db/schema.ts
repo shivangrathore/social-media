@@ -154,16 +154,12 @@ export const attachmentTable = pgTable("attachment", {
     .notNull()
     .references(() => postTable.id),
   url: text("url").notNull(),
-  asset_id: text("asset_id").notNull(),
-  public_id: text("public_id").notNull(),
-  width: integer("width"),
-  height: integer("height"),
+  assetId: text("asset_id").notNull(),
+  publicId: text("public_id").notNull(),
   userId: bigint("user_id", { mode: "number" })
     .notNull()
     .references(() => userTable.id),
-  resource_type: varchar("resource_type", { length: 50 })
-    .default("image")
-    .notNull(),
+  type: varchar("type", { length: 50 }).default("image").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

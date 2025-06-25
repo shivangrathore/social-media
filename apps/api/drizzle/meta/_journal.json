@@ -5,57 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1749905184050,
-      "tag": "0000_magical_spiral",
+      "when": 1750771199058,
+      "tag": "0000_neat_gunslinger",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1750057360638,
-      "tag": "0001_robust_chimera",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1750302655432,
-      "tag": "0002_curly_greymalkin",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1750338806099,
-      "tag": "0003_panoramic_baron_zemo",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1750340357198,
-      "tag": "0004_romantic_slipstream",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1750346345486,
-      "tag": "0005_short_fenris",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1750421511622,
-      "tag": "0006_fuzzy_menace",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1750422076636,
-      "tag": "0007_loving_silver_centurion",
+      "when": 1750823708992,
+      "tag": "0001_polite_wiccan",
       "breakpoints": true
     }
   ]

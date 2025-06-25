@@ -1,11 +1,18 @@
 import { Router } from "express";
 import { db } from "@/db";
-import { commentTable, likeTable, postTable, userTable } from "@/db/schema";
+import {
+  attachmentTable,
+  commentTable,
+  likeTable,
+  postTable,
+  userTable,
+} from "@/db/schema";
 import authMiddleware from "@/middlewares/auth";
 import { and, eq, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import { UpdateDraftSchema } from "@/types";
+import { CreateAttachmentSchema, UpdateDraftSchema } from "@/types";
 import { CreateDraftPostResponse } from "@repo/api-types/post";
+import { AttachmentFile } from "@repo/api-types";
 
 const router: Router = Router();
 router.use(authMiddleware);
@@ -40,12 +47,40 @@ router.post("/", async (_req, res) => {
   const attachments = await db.query.attachmentTable.findMany({
     where: (fields, { eq }) => eq(fields.postId, draftPost.id),
   });
-  console.log(attachments);
   res.status(200).json({
     ...draftPost,
     attachments,
   } as CreateDraftPostResponse);
   return;
+});
+
+router.post("/:postId/attachments", async (req, res) => {
+  const data = await CreateAttachmentSchema.parseAsync(req.body);
+  const postId = parseInt(req.params.postId);
+  const draftPost = await db.query.postTable.findFirst({
+    where: (fields, { eq, and }) =>
+      and(
+        eq(fields.id, postId),
+        eq(fields.userId, res.locals["userId"]),
+        eq(fields.published, false),
+      ),
+  });
+  if (!draftPost) {
+    res.status(404).json({ message: "Draft post not found" });
+    return;
+  }
+  const [attachment] = await db
+    .insert(attachmentTable)
+    .values({
+      postId: draftPost.id,
+      userId: res.locals["userId"],
+      url: data.url,
+      assetId: data.assetId,
+      publicId: data.publicId,
+      type: data.type,
+    })
+    .returning();
+  res.status(201).json(attachment as AttachmentFile);
 });
 
 router.patch("/:postId", async (req, res) => {

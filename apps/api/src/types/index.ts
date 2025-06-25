@@ -36,3 +36,10 @@ export const PostAttachmentSignatureSchema = z.object({
 export const CastVoteSchema = z.object({
   optionId: z.number(),
 });
+
+export const CreateAttachmentSchema = z.object({
+  url: z.string().url(),
+  assetId: z.string(),
+  publicId: z.string(),
+  type: z.enum(["image", "video"]),
+});
