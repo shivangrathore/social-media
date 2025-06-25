@@ -8,6 +8,7 @@ export function usePostDraft() {
     data: draft,
     isLoading,
     error,
+    refetch,
   } = useQuery<CreateDraftPostResponse>({
     queryKey: ["postDraft"],
     queryFn: createDraftPost,
@@ -19,5 +20,6 @@ export function usePostDraft() {
     draft,
     isLoading,
     error,
+    refetch,
   };
 }

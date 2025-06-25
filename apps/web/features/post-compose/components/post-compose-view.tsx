@@ -14,8 +14,9 @@ import EmojiPicker from "./emoji-picker";
 import { useUploadFiles } from "../hooks/use-upload-files";
 import { attachAttachmentToPost } from "../api/upload";
 import { AttachmentFile } from "@repo/api-types";
-import { CircularProgress } from "@/components/circular-progress";
 import { AttachmentGrid } from "./attachment-grid";
+import { Button } from "@/components/ui/button";
+import { publishPost } from "../api/posts";
 
 const AttachmentSchema = z.object({
   id: z.number(),
@@ -32,11 +33,17 @@ const PostComposeSchema = z.object({
   attachments: z.array(AttachmentSchema).default([]),
 });
 
+type PostComposeSchema = z.infer<typeof PostComposeSchema>;
+
 const toolbarButtonClassNames =
   "rounded-full text-primary p-2 cursor-pointer hover:bg-primary/5 transition-colors mr-2";
 
 export function PostComposeView() {
-  const { draft, isLoading: isDraftLoading } = usePostDraft();
+  const {
+    draft,
+    isLoading: isDraftLoading,
+    refetch: refetchDraft,
+  } = usePostDraft();
   const form = useForm({ resolver: zodResolver(PostComposeSchema) });
   const content = useWatch({ control: form.control, name: "content" });
   // TODO: Remove any
@@ -47,7 +54,12 @@ export function PostComposeView() {
     const attach = await attachAttachmentToPost(draft.id, file);
     return attach;
   };
-  const { files: uploadingFiles, addFiles } = useUploadFiles({
+  const {
+    files: uploadingFiles,
+    addFiles,
+    isUploading,
+    reset: resetFiles,
+  } = useUploadFiles({
     onAttachmentUploaded,
   });
   const isDirty = form.formState.isDirty;
@@ -80,9 +92,16 @@ export function PostComposeView() {
     const filesArray = Array.from(files);
     addFiles(draft.id, ...filesArray);
   }
+  const isValid = form.formState.isValid;
+  const onSubmit = async () => {
+    if (!draft) return;
+    await publishPost(draft.id);
+    await refetchDraft();
+    resetFiles();
+  };
   return (
     <Form {...form}>
-      <form>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <AutoHeightTextarea
           {...form.register("content")}
           className={cn(
@@ -104,7 +123,7 @@ export function PostComposeView() {
           attachments={attachments}
           uploadingFiles={uploadingFiles}
         />
-        <div className="flex mt-1">
+        <div className="flex mt-2 items-center">
           <label htmlFor={inputId} className={toolbarButtonClassNames}>
             <ImageIcon className="size-5" />
           </label>
@@ -112,6 +131,13 @@ export function PostComposeView() {
             emojiSelect={onEmojiSelect}
             className={toolbarButtonClassNames}
           />
+          <Button
+            disabled={!isValid || isUploading || form.formState.isSubmitting}
+            className="ml-auto"
+            size="sm"
+          >
+            Create Post
+          </Button>
         </div>
       </form>
     </Form>

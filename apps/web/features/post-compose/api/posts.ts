@@ -1,5 +1,4 @@
 import { apiClient } from "@/lib/apiClient";
-import { Post } from "@repo/api-types";
 import { CreateDraftPostResponse } from "@repo/api-types/post";
 
 // TODO: Handle errors and loading states properly
@@ -19,6 +18,6 @@ export async function saveDraftPost(post: {
 }
 
 export async function publishPost(postId: number) {
-  const res = await apiClient.post<Post>(`/posts/${postId}/publish`);
+  const res = await apiClient.post(`/posts/${postId}/publish`);
   return res.data;
 }

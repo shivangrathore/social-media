@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getUploadSignature } from "../api/upload";
 import { apiClient } from "@/lib/apiClient";
 import { AxiosProgressEvent } from "axios";
@@ -20,6 +20,7 @@ type UploadFilesHookProps = {
 };
 export function useUploadFiles({ onAttachmentUploaded }: UploadFilesHookProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const updateFile = (file: UploadFile) => {
     setFiles((prev) => {
       const existingFileIndex = prev.findIndex((f) => f.id === file.id);
@@ -32,6 +33,8 @@ export function useUploadFiles({ onAttachmentUploaded }: UploadFilesHookProps) {
     });
   };
   const uploadFiles = async (postId: number, files: UploadFile[]) => {
+    if (files.length === 0) return;
+    setIsUploading(true);
     await Promise.all(
       files.map(async (file) => {
         const { signature, apiKey, folder, timestamp, context, uploadUrl } =
@@ -67,6 +70,7 @@ export function useUploadFiles({ onAttachmentUploaded }: UploadFilesHookProps) {
         });
       }),
     );
+    setIsUploading(false);
   };
   const addFiles = async (postId: number, ...newFiles: File[]) => {
     const nfiles = newFiles.map((file) => ({
@@ -79,8 +83,16 @@ export function useUploadFiles({ onAttachmentUploaded }: UploadFilesHookProps) {
     setFiles((prev) => [...prev, ...nfiles]);
     await uploadFiles(postId, nfiles);
   };
+
+  const reset = () => {
+    setFiles([]);
+    setIsUploading(false);
+  };
+
   return {
     files,
     addFiles,
+    isUploading,
+    reset,
   };
 }
