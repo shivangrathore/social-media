@@ -1,13 +1,19 @@
 import { AttachmentFile } from "@repo/api-types";
 import { UploadFile } from "../types";
 import { CircularProgress } from "@/components/circular-progress";
+import { Button } from "@/components/ui/button";
+import { XIcon } from "lucide-react";
 
 export function AttachmentGrid({
   attachments,
   uploadingFiles,
+  removeUploadingFile,
+  removeAttachment,
 }: {
   attachments: AttachmentFile[];
   uploadingFiles: UploadFile[];
+  removeUploadingFile: (file: string) => void;
+  removeAttachment: (attachment: number) => void;
 }) {
   const count = attachments.length + uploadingFiles.length;
   const hasAttchments = count > 0;
@@ -15,13 +21,32 @@ export function AttachmentGrid({
     return null;
   }
 
+  const onRemove = (file: AttachmentFile | UploadFile) => {
+    if ("progress" in file) {
+      if (file.attachment) {
+        removeAttachment(file.attachment.id);
+      }
+      removeUploadingFile(file.id);
+    } else {
+      removeAttachment(file.id);
+    }
+  };
+
   return (
     <div className={"grid grid-cols-2 gap-2 mt-2"}>
       {attachments.map((attachment) => (
-        <AttachmentItem key={attachment.id} attachment={attachment} />
+        <AttachmentItem
+          key={attachment.id}
+          attachment={attachment}
+          onRemove={() => onRemove(attachment)}
+        />
       ))}
       {uploadingFiles.map((file) => (
-        <UploadingFileItem key={file.id} file={file} />
+        <UploadingFileItem
+          key={file.id}
+          file={file}
+          onRemove={() => onRemove(file)}
+        />
       ))}
     </div>
   );
@@ -29,11 +54,12 @@ export function AttachmentGrid({
 
 type AttachmentItemProps = {
   attachment: AttachmentFile;
+  onRemove?: () => void;
 };
 
-function AttachmentItem({ attachment }: AttachmentItemProps) {
+function AttachmentItem({ attachment, onRemove }: AttachmentItemProps) {
   return (
-    <Container>
+    <Container onRemove={onRemove}>
       {attachment.type === "image" ? (
         <img
           src={attachment.url || "/placeholder.svg"}
@@ -52,14 +78,15 @@ function AttachmentItem({ attachment }: AttachmentItemProps) {
 }
 
 type UploadingFileItemProps = {
+  onRemove?: () => void;
   file: UploadFile;
 };
 
-function UploadingFileItem({ file }: UploadingFileItemProps) {
+function UploadingFileItem({ file, onRemove }: UploadingFileItemProps) {
   const isImage = file.file.type.startsWith("image/");
 
   return (
-    <Container>
+    <Container onRemove={onRemove}>
       {isImage ? (
         <img
           src={file.url || "/placeholder.svg"}
@@ -83,8 +110,26 @@ function UploadingFileItem({ file }: UploadingFileItemProps) {
   );
 }
 
-function Container({ children }: { children: React.ReactNode }) {
+function Container({
+  children,
+  onRemove,
+}: {
+  children: React.ReactNode;
+  onRemove?: () => void;
+}) {
   return (
-    <div className="relative rounded-lg last:odd:col-span-2">{children}</div>
+    <div className="relative rounded-lg last:odd:col-span-2">
+      <div className="absolute top-2 right-2 z-10">
+        <Button
+          onClick={onRemove}
+          size="icon"
+          variant="secondary"
+          type="button"
+        >
+          <XIcon className="size-4" />
+        </Button>
+      </div>
+      {children}
+    </div>
   );
 }

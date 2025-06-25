@@ -146,8 +146,6 @@ export const commentTable = pgTable(
   ],
 );
 
-// cloudinary uploads
-// TODO: Settle with naming convention
 export const attachmentTable = pgTable("attachment", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
   postId: bigint("post_id", { mode: "number" })

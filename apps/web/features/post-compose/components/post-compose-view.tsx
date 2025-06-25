@@ -12,7 +12,7 @@ import { ComposePostLoadingSkeleton } from "./post-loading-skeleton";
 import { ImageIcon } from "lucide-react";
 import EmojiPicker from "./emoji-picker";
 import { useUploadFiles } from "../hooks/use-upload-files";
-import { attachAttachmentToPost } from "../api/upload";
+import { attachAttachmentToPost, deleteAttachment } from "../api/upload";
 import { AttachmentFile } from "@repo/api-types";
 import { AttachmentGrid } from "./attachment-grid";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,6 @@ export function PostComposeView() {
   } = usePostDraft();
   const form = useForm({ resolver: zodResolver(PostComposeSchema) });
   const content = useWatch({ control: form.control, name: "content" });
-  // TODO: Remove any
   const onAttachmentUploaded = async (
     file: any,
   ): Promise<AttachmentFile | undefined> => {
@@ -59,9 +58,23 @@ export function PostComposeView() {
     addFiles,
     isUploading,
     reset: resetFiles,
+    remove: removeUploadingFile,
   } = useUploadFiles({
     onAttachmentUploaded,
   });
+  const attachments = form.watch("attachments", []) as AttachmentFile[];
+  function handleFileSelect(files: FileList | null) {
+    if (!draft || !files) return;
+    const filesArray = Array.from(files);
+    addFiles(draft.id, ...filesArray);
+  }
+  const isValid = form.formState.isValid;
+  const onSubmit = async () => {
+    if (!draft) return;
+    await publishPost(draft.id);
+    await refetchDraft();
+    resetFiles();
+  };
   const isDirty = form.formState.isDirty;
   const inputId = useId();
   const onEmojiSelect = (emoji: string) => {
@@ -85,20 +98,18 @@ export function PostComposeView() {
       });
     }
   }, [draft]);
-  if (isDraftLoading) return <ComposePostLoadingSkeleton />;
-  const attachments = form.watch("attachments", []) as AttachmentFile[];
-  function handleFileSelect(files: FileList | null) {
-    if (!draft || !files) return;
-    const filesArray = Array.from(files);
-    addFiles(draft.id, ...filesArray);
-  }
-  const isValid = form.formState.isValid;
-  const onSubmit = async () => {
-    if (!draft) return;
-    await publishPost(draft.id);
-    await refetchDraft();
-    resetFiles();
+  const handleDeleteAttachment = async (attachmentId: number) => {
+    await deleteAttachment(attachmentId);
+    const currentAttachments = form.getValues("attachments") || [];
+    const updatedAttachments = currentAttachments.filter(
+      (att) => att.id !== attachmentId,
+    );
+    form.setValue("attachments", updatedAttachments, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
   };
+  if (isDraftLoading) return <ComposePostLoadingSkeleton />;
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -114,6 +125,7 @@ export function PostComposeView() {
           type="file"
           accept="image/*,video/*"
           className="hidden"
+          multiple
           id={inputId}
           onChange={(e) => {
             handleFileSelect(e.target.files);
@@ -122,6 +134,8 @@ export function PostComposeView() {
         <AttachmentGrid
           attachments={attachments}
           uploadingFiles={uploadingFiles}
+          removeUploadingFile={removeUploadingFile}
+          removeAttachment={handleDeleteAttachment}
         />
         <div className="flex mt-2 items-center">
           <label htmlFor={inputId} className={toolbarButtonClassNames}>
@@ -135,6 +149,7 @@ export function PostComposeView() {
             disabled={!isValid || isUploading || form.formState.isSubmitting}
             className="ml-auto"
             size="sm"
+            type="submit"
           >
             Create Post
           </Button>

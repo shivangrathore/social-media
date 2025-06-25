@@ -1,7 +1,6 @@
 "use client";
 import { UserProfile } from "@/components/user-profile";
 import { BookmarkIcon, HeartIcon, SendIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { FeedEntry } from "@repo/api-types/feed";
 import { PollDisplay } from "./poll-display";
 import { PostDisplay } from "./post-display";
@@ -46,7 +45,7 @@ export function PostCard({ post }: { post: FeedEntry }) {
         <button
           className={cn(
             "p-2 rounded-full hover:bg-primary/10 transition-colors cursor-pointer text-white hover:text-gray-200 text-sm flex",
-            post.liked && "text-red-500 hover:bg-red-500/10",
+            post.liked && "text-red-500 hover:bg-red-500/10 hover:text-red-500",
           )}
           onClick={() => toggleLike()}
         >

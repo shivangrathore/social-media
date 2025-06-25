@@ -89,10 +89,15 @@ export function useUploadFiles({ onAttachmentUploaded }: UploadFilesHookProps) {
     setIsUploading(false);
   };
 
+  const remove = (id: string) => {
+    setFiles((prev) => prev.filter((file) => file.id !== id));
+  };
+
   return {
     files,
     addFiles,
     isUploading,
     reset,
+    remove,
   };
 }

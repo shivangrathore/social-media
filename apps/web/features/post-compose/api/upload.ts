@@ -20,7 +20,6 @@ export async function getUploadSignature(postId: number) {
 }
 
 export async function attachAttachmentToPost(postId: number, file: any) {
-  console.log("Attaching file to post", postId, file);
   const res = await apiClient.post(`/posts/${postId}/attachments`, {
     url: file.url,
     assetId: file.asset_id,
@@ -29,4 +28,10 @@ export async function attachAttachmentToPost(postId: number, file: any) {
   });
 
   return res.data as AttachmentFile;
+}
+
+export async function deleteAttachment(attachmentId: number) {
+  console.log("Deleting attachment with ID:", attachmentId);
+  const res = await apiClient.delete(`/attachments/${attachmentId}`);
+  return res.data;
 }
