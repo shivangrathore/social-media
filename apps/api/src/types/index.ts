@@ -27,8 +27,6 @@ export const EditCommentSchema = z.object({
   content: z.string(),
 });
 
-export const AddAttachmentSchema = z.object({});
-
 export const PostAttachmentSignatureSchema = z.object({
   postId: z.string(),
 });
@@ -37,9 +35,11 @@ export const CastVoteSchema = z.object({
   optionId: z.number(),
 });
 
-export const CreateAttachmentSchema = z.object({
+export const AddAttachmentSchema = z.object({
   url: z.string().url(),
   assetId: z.string(),
   publicId: z.string(),
   type: z.enum(["image", "video"]),
 });
+
+export type AddAttachmentSchema = z.infer<typeof AddAttachmentSchema>;

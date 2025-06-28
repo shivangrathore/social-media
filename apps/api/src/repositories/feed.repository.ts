@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "../db";
 import {
   likeTable,
@@ -7,11 +7,12 @@ import {
   pollVoteTable,
   postTable,
   profileTable,
+  userBookmarkTable,
   userTable,
 } from "../db/schema";
 
 export class FeedRepository {
-  async getFeedPosts(cursor?: number, limit: number = 10) {
+  async getFeedPosts(userId: number, cursor?: number, limit: number = 10) {
     return await db
       .select({
         post: postTable,
@@ -23,6 +24,7 @@ export class FeedRepository {
           lastName: userTable.lastName,
           createdAt: userTable.createdAt,
         },
+        bookmarked: sql<boolean>`user_bookmark.id IS NOT NULL`.as("bookmarked"),
       })
       .from(postTable)
       .limit(limit + 1)
@@ -34,7 +36,15 @@ export class FeedRepository {
       )
       .orderBy(desc(postTable.createdAt))
       .innerJoin(userTable, eq(userTable.id, postTable.userId))
-      .innerJoin(profileTable, eq(profileTable.userId, userTable.id));
+      .innerJoin(profileTable, eq(profileTable.userId, userTable.id))
+      .leftJoin(
+        userBookmarkTable,
+        and(
+          eq(userBookmarkTable.targetId, postTable.id),
+          eq(userBookmarkTable.type, "post"),
+          eq(userBookmarkTable.userId, userId),
+        ),
+      );
   }
 
   async getPollData(postId: number) {

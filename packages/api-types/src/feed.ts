@@ -2,7 +2,7 @@ import { AttachmentFile, User } from ".";
 import { PollOption } from "./poll";
 
 // TODO: Add more fields to the feed response as needed
-export type FeedEntry = {
+export type FeedPost = {
   id: number;
   createdAt: Date;
   userId: number;
@@ -10,6 +10,7 @@ export type FeedEntry = {
   likes: number;
   views: number;
   liked: boolean;
+  bookmarked: boolean;
   comments: number;
 } & (
   | {
@@ -26,6 +27,6 @@ export type FeedEntry = {
 );
 
 export type FeedResponse = {
-  data: FeedEntry[];
+  data: FeedPost[];
   nextCursor: number | null;
 };

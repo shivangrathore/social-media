@@ -1,3 +1,6 @@
+// TODO: Delete firstname and lastname from user table
+// TODO: create new field name or displayname
+// TODO: remove Table suffix from table names (maybe?)
 import { relations, sql } from "drizzle-orm";
 import {
   integer,
@@ -22,6 +25,9 @@ export const friendRequestStatusEnum = pgEnum("friend_request_status", [
 ]);
 export const profileTypeEnum = pgEnum("profile_type", ["user", "page"]);
 export const postTypeEnum = pgEnum("post_type", ["regular", "poll"]);
+// TODO: add audio support
+export const attachmentTypeEnum = pgEnum("attachment_type", ["image", "video"]);
+export const bookmarkTypeEnum = pgEnum("bookmark_type", ["post", "comment"]);
 
 export const userTable = pgTable("user", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
@@ -154,10 +160,11 @@ export const attachmentTable = pgTable("attachment", {
   url: text("url").notNull(),
   assetId: text("asset_id").notNull(),
   publicId: text("public_id").notNull(),
+  // TODO: remove userId from attachment table
   userId: bigint("user_id", { mode: "number" })
     .notNull()
     .references(() => userTable.id),
-  type: varchar("type", { length: 50 }).default("image").notNull(),
+  type: attachmentTypeEnum("type").notNull().default("image"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -245,3 +252,19 @@ export const postViewTable = pgTable("post_view", {
     .references(() => userTable.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const userBookmarkTable = pgTable(
+  "user_bookmark",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => userTable.id),
+    targetId: bigint("post_id", { mode: "number" })
+      .notNull()
+      .references(() => postTable.id),
+    type: bookmarkTypeEnum("type").notNull().default("post"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [unique().on(t.userId, t.targetId, t.type)],
+);

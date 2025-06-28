@@ -2,12 +2,12 @@ import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { attachmentTable } from "../db/schema";
 import { type FeedRepository } from "../repositories/feed.repository";
-import { FeedEntry, FeedResponse } from "@repo/api-types/feed";
+import { FeedPost, FeedResponse } from "@repo/api-types/feed";
 import { Post, User } from "@repo/api-types";
 
 // TODO: Implement Feed repository interface
 //
-type PostWithoutAttachments = Omit<Post, "attachments">;
+type PostWithoutAttachments = Omit<Post, "attachments"> & {};
 
 export class FeedService {
   constructor(private feedRepository: FeedRepository) {
@@ -18,15 +18,29 @@ export class FeedService {
     cursor?: number,
     limit: number = 10,
   ): Promise<FeedResponse> {
-    const records = await this.feedRepository.getFeedPosts(cursor, limit);
+    const records = await this.feedRepository.getFeedPosts(
+      currentUserId,
+      cursor,
+      limit,
+    );
     const data = await Promise.all(
       records.slice(0, limit).map(async (record) => {
         const post = record.post;
         const author = record.user;
         if (post.postType === "poll") {
-          return await this.buildPollEntry(post, author, currentUserId);
+          return await this.buildPollEntry(
+            post,
+            author,
+            currentUserId,
+            record.bookmarked,
+          );
         } else {
-          return await this.buildRegularEntry(post, author, currentUserId);
+          return await this.buildRegularEntry(
+            post,
+            author,
+            currentUserId,
+            record.bookmarked,
+          );
         }
       }),
     );
@@ -41,13 +55,15 @@ export class FeedService {
     post: PostWithoutAttachments,
     author: User,
     userId: number,
-  ): Promise<FeedEntry> {
+    bookmarked: boolean | undefined,
+  ): Promise<FeedPost> {
     const poll = await this.feedRepository.getPollData(post.id);
     const options = await this.feedRepository.getPollOptions(poll.id);
     const userVote = await this.feedRepository.getUserPollVote(poll.id, userId);
     const liked = await this.feedRepository.getUserLikeStatus(post.id, userId);
-    const record: FeedEntry = {
+    const record: FeedPost = {
       ...post,
+      bookmarked: bookmarked ?? false,
       author,
       options,
       question: poll.question,
@@ -62,14 +78,16 @@ export class FeedService {
     post: PostWithoutAttachments,
     author: User,
     userId: number,
-  ): Promise<FeedEntry> {
+    bookmarked: boolean | undefined,
+  ): Promise<FeedPost> {
     const attachments = await db
       .select()
       .from(attachmentTable)
       .where(eq(attachmentTable.postId, post.id));
     const liked = await this.feedRepository.getUserLikeStatus(post.id, userId);
-    const record: FeedEntry = {
+    const record: FeedPost = {
       ...post,
+      bookmarked: bookmarked ?? false,
       author,
       attachments,
       liked,

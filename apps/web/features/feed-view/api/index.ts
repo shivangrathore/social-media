@@ -14,3 +14,13 @@ export const logView = async (postId: number) => {
   const res = await apiClient.post(`/posts/${postId}/views`, {});
   return res.data;
 };
+
+export const bookmarkPost = async (postId: number) => {
+  const res = await apiClient.post(`/posts/${postId}/bookmark`, {});
+  return res.data;
+};
+
+export const unbookmarkPost = async (postId: number) => {
+  const res = await apiClient.delete(`/posts/${postId}/bookmark`, {});
+  return res.data;
+};

@@ -1,7 +1,7 @@
 "use client";
 import { UserProfile } from "@/components/user-profile";
 import { BookmarkIcon, HeartIcon, SendIcon } from "lucide-react";
-import { FeedEntry } from "@repo/api-types/feed";
+import { FeedPost } from "@repo/api-types/feed";
 import { PollDisplay } from "./poll-display";
 import { PostDisplay } from "./post-display";
 import { useEffect, useRef } from "react";
@@ -11,13 +11,19 @@ import { cn, pluralize } from "@/lib/utils";
 import { CommentDialog } from "./comment-dialog";
 import Link from "next/link";
 import { useComments } from "../hooks/use-comments";
+import { bookmarkPost, unbookmarkPost } from "../api";
+import { useBookmarked } from "../hooks/use-bookmarked";
 
-export function PostCard({ post }: { post: FeedEntry }) {
+export function PostCard({ post }: { post: FeedPost }) {
   const ref = useRef<HTMLDivElement>(null);
   const author = post.author;
   const { logView, isLogged } = useLogView(post.id);
   const { toggleLike } = useLikes(post.id, post.liked);
   const { addComment } = useComments(post.id);
+  const { bookmarked, toggleBookmark } = useBookmarked(
+    post.id,
+    post.bookmarked,
+  );
   useEffect(() => {
     if (isLogged) return;
     const observer = new IntersectionObserver(
@@ -63,7 +69,14 @@ export function PostCard({ post }: { post: FeedEntry }) {
           <SendIcon className="size-5" />
         </button>
 
-        <button className="text-white hover:text-gray-200 p-2 rounded-full hover:bg-primary/5 transition-colors cursor-pointer ml-auto">
+        <button
+          className={cn(
+            "text-white hover:text-gray-200 p-2 rounded-full hover:bg-primary/5 transition-colors cursor-pointer ml-auto",
+            bookmarked &&
+              "bg-primary text-primary-foreground hover:bg-primary/80",
+          )}
+          onClick={toggleBookmark}
+        >
           <BookmarkIcon className="size-5" />
         </button>
       </div>
