@@ -106,7 +106,7 @@ export const postTable = pgTable("post", {
     .notNull()
     .references(() => userTable.id),
   content: text("content"),
-  published: boolean("published").default(false),
+  published: boolean("published").notNull().default(false),
   postType: postTypeEnum("post_type").notNull().default("regular"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
@@ -138,11 +138,12 @@ export const commentTable = pgTable(
     userId: bigint("user_id", { mode: "number" })
       .notNull()
       .references(() => userTable.id),
-    content: text("content"),
+    content: text("content").notNull(),
     postId: bigint("post_id", { mode: "number" })
       .notNull()
       .references(() => postTable.id),
     parentId: bigint("parent_id", { mode: "number" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
     foreignKey({

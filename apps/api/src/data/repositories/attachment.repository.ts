@@ -2,11 +2,11 @@ import { AddAttachmentSchemaType } from "@repo/request-schemas";
 import { IAttachmentRepository } from "./respository";
 import { IAttachment } from "@repo/types";
 import { db } from "@/db";
-import { and, eq } from "drizzle-orm";
-import { attachmentTable, postTable } from "@/db/schema";
+import { and, eq, InferSelectModel } from "drizzle-orm";
+import { attachmentTable } from "@/db/schema";
 import { ServiceError } from "@/utils/errors";
 
-type DBAttachment = typeof attachmentTable.$inferInsert;
+type DBAttachment = InferSelectModel<typeof attachmentTable>;
 
 export class AttachmentRepository implements IAttachmentRepository {
   private mapAttachment(attachment: DBAttachment): IAttachment {
@@ -27,18 +27,6 @@ export class AttachmentRepository implements IAttachmentRepository {
     postId: number,
   ): Promise<IAttachment> {
     const attachment = await db.transaction(async (tx) => {
-      const post = await tx.query.postTable.findFirst({
-        where: () =>
-          and(eq(postTable.id, postId), eq(postTable.userId, userId)),
-      });
-      if (!post) {
-        throw ServiceError.BadRequest("Post not found");
-      }
-      if (post.published) {
-        throw ServiceError.BadRequest(
-          "Cannot add attachment to a published post",
-        );
-      }
       const attachment = await tx
         .insert(attachmentTable)
         .values({
@@ -55,8 +43,27 @@ export class AttachmentRepository implements IAttachmentRepository {
     return this.mapAttachment(attachment[0]);
   }
 
-  async deleteAttachment(attachmentId: number, userId: number): Promise<void> {
-    // Implementation for deleting an attachment
-    throw new Error("");
+  async deleteAttachment(attachmentId: number, postId: number): Promise<void> {
+    await db.transaction(async (tx) => {
+      const attachment = await tx
+        .delete(attachmentTable)
+        .where(
+          and(
+            eq(attachmentTable.id, attachmentId),
+            eq(attachmentTable.postId, postId),
+          ),
+        )
+        .returning();
+      if (attachment.length === 0) {
+        throw ServiceError.NotFound("Attachment not found");
+      }
+    });
+    return;
+  }
+  async getAttachmentsByPostId(postId: number): Promise<IAttachment[]> {
+    const attachments = await db.query.attachmentTable.findMany({
+      where: eq(attachmentTable.postId, postId),
+    });
+    return attachments.map(this.mapAttachment);
   }
 }

@@ -17,4 +17,8 @@ export class ServiceError extends Error {
   static Unauthorized(message: string) {
     return new ServiceError(message, 401);
   }
+
+  static Forbidden(message: string) {
+    return new ServiceError(message, 403);
+  }
 }

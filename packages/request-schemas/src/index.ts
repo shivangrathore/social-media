@@ -20,6 +20,13 @@ export const AddAttachmentSchema = z.object({
   type: z.enum(["image", "video"]),
 });
 
+export const PostTypeSchema = z.enum(["regular", "poll"]);
+
+export const CreateDraftSchema = z.object({
+  type: PostTypeSchema,
+});
+
 export type RegisterUserSchemaType = z.infer<typeof RegisterUserSchema>;
 export type LoginUserSchemaType = z.infer<typeof LoginUserSchema>;
 export type AddAttachmentSchemaType = z.infer<typeof AddAttachmentSchema>;
+export type PostType = z.infer<typeof PostTypeSchema>;
