@@ -1,7 +1,8 @@
 // TODO: Delete firstname and lastname from user table
 // TODO: create new field name or displayname
 // TODO: remove Table suffix from table names (maybe?)
-import { relations, sql } from "drizzle-orm";
+// TODO: Seperate types with different files
+import { eq, relations, sql } from "drizzle-orm";
 import {
   integer,
   varchar,
@@ -15,6 +16,7 @@ import {
   unique,
   pgEnum,
   check,
+  pgView,
 } from "drizzle-orm/pg-core";
 
 export const likeTargetEnum = pgEnum("like_target", ["post", "comment"]);
@@ -31,8 +33,6 @@ export const bookmarkTypeEnum = pgEnum("bookmark_type", ["post", "comment"]);
 
 export const userTable = pgTable("user", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
-  firstName: varchar("first_name", { length: 255 }).notNull(),
-  lastName: varchar("last_name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   emailVerified: boolean("email_verified").default(false),
   avatar: varchar("avatar", { length: 255 }).default(sql`NULL`),
@@ -43,6 +43,7 @@ export const userTable = pgTable("user", {
 
 export const profileTable = pgTable("profile", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
+  name: varchar("name", { length: 255 }).default(sql`NULL`),
   username: varchar("username", { length: 255 }).notNull().unique(),
   userId: bigint("user_id", { mode: "number" })
     .notNull()
@@ -51,7 +52,6 @@ export const profileTable = pgTable("profile", {
   location: varchar("location", { length: 255 }).default(sql`NULL`),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-  name: varchar("name", { length: 255 }).default(sql`NULL`),
   type: profileTypeEnum("type").notNull().default("user"),
 });
 
@@ -69,8 +69,8 @@ export const accountTable = pgTable(
     accessToken: varchar("access_token", { length: 255 }).default(sql`NULL`),
     accessTokenExpiresAt: timestamp("access_token_expires").default(sql`NULL`),
     password: varchar("password", { length: 255 }).default(sql`NULL`),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at"),
   },
   (t) => [unique().on(t.provider, t.providerAccountId)],
 );
@@ -267,4 +267,21 @@ export const userBookmarkTable = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => [unique().on(t.userId, t.targetId, t.type)],
+);
+
+export const userView = pgView("user_view").as((qb) =>
+  qb
+    .select({
+      id: userTable.id,
+      name: profileTable.name,
+      email: userTable.email,
+      emailVerified: userTable.emailVerified,
+      avatar: userTable.avatar,
+      dob: userTable.dob,
+      createdAt: userTable.createdAt,
+      updatedAt: userTable.updatedAt,
+      username: profileTable.username,
+    })
+    .from(userTable)
+    .innerJoin(profileTable, eq(userTable.id, profileTable.userId)),
 );
