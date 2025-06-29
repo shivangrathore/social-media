@@ -1,5 +1,6 @@
 import { db } from "@/db";
-import { IAccount, IAuthRepository, IUser } from "./respository";
+import { IAccount, IAuthRepository } from "./respository";
+import { IUser } from "@repo/types";
 import {
   accountTable,
   profileTable,
@@ -79,6 +80,7 @@ export class AuthRepository implements IAuthRepository {
         type: "user",
         name: payload.name,
       });
+      return userId;
     });
   }
 
@@ -145,6 +147,7 @@ export class AuthRepository implements IAuthRepository {
           location: null,
           type: "user",
           name: payload.name,
+          avatar: payload.picture,
         })
         .onConflictDoNothing();
 

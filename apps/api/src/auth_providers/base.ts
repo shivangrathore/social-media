@@ -29,11 +29,4 @@ export class ProviderUser {
     this.email = email;
     this.picture = picture;
   }
-
-  get firstName(): string {
-    return this.name.split(" ")[0] || "";
-  }
-  get lastName(): string {
-    return this.name.split(" ")[1] || "";
-  }
 }

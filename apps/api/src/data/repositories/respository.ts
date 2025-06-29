@@ -1,13 +1,6 @@
 import { ProviderUser } from "@/auth_providers/base";
-import { type RegisterUserSchemaType } from "@repo/request-schemas";
-
-export interface IUser {
-  id: number;
-  username: string;
-  createdAt: Date;
-  avatar: string | null;
-  name: string | null;
-}
+import { RegisterUserSchemaType } from "@repo/request-schemas";
+import { IUser } from "@repo/types";
 
 export interface IAccount {
   id: number;

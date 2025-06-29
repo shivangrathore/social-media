@@ -48,6 +48,7 @@ export const profileTable = pgTable("profile", {
   userId: bigint("user_id", { mode: "number" })
     .notNull()
     .references(() => userTable.id),
+  avatar: varchar("avatar", { length: 255 }).default(sql`NULL`),
   bio: text("bio").default(sql`NULL`),
   location: varchar("location", { length: 255 }).default(sql`NULL`),
   createdAt: timestamp("created_at").defaultNow(),
@@ -276,7 +277,7 @@ export const userView = pgView("user_view").as((qb) =>
       name: profileTable.name,
       email: userTable.email,
       emailVerified: userTable.emailVerified,
-      avatar: userTable.avatar,
+      avatar: profileTable.avatar,
       dob: userTable.dob,
       createdAt: userTable.createdAt,
       updatedAt: userTable.updatedAt,
