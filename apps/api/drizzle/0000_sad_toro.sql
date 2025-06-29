@@ -1,3 +1,5 @@
+CREATE TYPE "public"."attachment_type" AS ENUM('image', 'video');--> statement-breakpoint
+CREATE TYPE "public"."bookmark_type" AS ENUM('post', 'comment');--> statement-breakpoint
 CREATE TYPE "public"."friend_request_status" AS ENUM('pending', 'accepted', 'rejected');--> statement-breakpoint
 CREATE TYPE "public"."like_target" AS ENUM('post', 'comment');--> statement-breakpoint
 CREATE TYPE "public"."post_type" AS ENUM('regular', 'poll');--> statement-breakpoint
@@ -10,8 +12,8 @@ CREATE TABLE "account" (
 	"access_token" varchar(255) DEFAULT NULL,
 	"access_token_expires" timestamp DEFAULT NULL,
 	"password" varchar(255) DEFAULT NULL,
-	"created_at" timestamp DEFAULT now(),
-	"updated_at" timestamp DEFAULT now(),
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp,
 	CONSTRAINT "account_provider_provider_account_id_unique" UNIQUE("provider","provider_account_id")
 );
 --> statement-breakpoint
@@ -21,10 +23,8 @@ CREATE TABLE "attachment" (
 	"url" text NOT NULL,
 	"asset_id" text NOT NULL,
 	"public_id" text NOT NULL,
-	"width" integer,
-	"height" integer,
 	"user_id" bigint NOT NULL,
-	"resource_type" varchar(50) DEFAULT 'image' NOT NULL,
+	"type" "attachment_type" DEFAULT 'image' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -112,13 +112,14 @@ CREATE TABLE "post_view" (
 --> statement-breakpoint
 CREATE TABLE "profile" (
 	"id" bigserial PRIMARY KEY NOT NULL,
+	"name" varchar(255) DEFAULT NULL,
 	"username" varchar(255) NOT NULL,
 	"user_id" bigint NOT NULL,
+	"avatar" varchar(255) DEFAULT NULL,
 	"bio" text DEFAULT NULL,
 	"location" varchar(255) DEFAULT NULL,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now(),
-	"name" varchar(255) DEFAULT NULL,
 	"type" "profile_type" DEFAULT 'user' NOT NULL,
 	CONSTRAINT "profile_username_unique" UNIQUE("username")
 );
@@ -134,10 +135,17 @@ CREATE TABLE "session" (
 	"updated_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
+CREATE TABLE "user_bookmark" (
+	"id" bigserial PRIMARY KEY NOT NULL,
+	"user_id" bigint NOT NULL,
+	"post_id" bigint NOT NULL,
+	"type" "bookmark_type" DEFAULT 'post' NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "user_bookmark_user_id_post_id_type_unique" UNIQUE("user_id","post_id","type")
+);
+--> statement-breakpoint
 CREATE TABLE "user" (
 	"id" bigserial PRIMARY KEY NOT NULL,
-	"first_name" varchar(255) NOT NULL,
-	"last_name" varchar(255) NOT NULL,
 	"email" varchar(255) NOT NULL,
 	"email_verified" boolean DEFAULT false,
 	"avatar" varchar(255) DEFAULT NULL,
@@ -167,4 +175,7 @@ ALTER TABLE "post" ADD CONSTRAINT "post_user_id_user_id_fk" FOREIGN KEY ("user_i
 ALTER TABLE "post_view" ADD CONSTRAINT "post_view_post_id_post_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."post"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "post_view" ADD CONSTRAINT "post_view_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "profile" ADD CONSTRAINT "profile_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "user_bookmark" ADD CONSTRAINT "user_bookmark_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "user_bookmark" ADD CONSTRAINT "user_bookmark_post_id_post_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."post"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE VIEW "public"."user_view" AS (select "user"."id", "profile"."name", "user"."email", "user"."email_verified", "profile"."avatar", "user"."dob", "user"."created_at", "user"."updated_at", "profile"."username" from "user" inner join "profile" on "user"."id" = "profile"."user_id");

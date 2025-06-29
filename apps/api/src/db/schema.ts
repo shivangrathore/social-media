@@ -154,6 +154,7 @@ export const commentTable = pgTable(
 );
 
 export const attachmentTable = pgTable("attachment", {
+  // TODO: remove userId from attachment table
   id: bigserial("id", { mode: "number" }).primaryKey(),
   postId: bigint("post_id", { mode: "number" })
     .notNull()
@@ -161,7 +162,6 @@ export const attachmentTable = pgTable("attachment", {
   url: text("url").notNull(),
   assetId: text("asset_id").notNull(),
   publicId: text("public_id").notNull(),
-  // TODO: remove userId from attachment table
   userId: bigint("user_id", { mode: "number" })
     .notNull()
     .references(() => userTable.id),

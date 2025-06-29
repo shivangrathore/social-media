@@ -13,5 +13,13 @@ export const LoginUserSchema = z.object({
   password: z.string().min(8),
 });
 
+export const AddAttachmentSchema = z.object({
+  url: z.string().url(),
+  assetId: z.string(),
+  publicId: z.string(),
+  type: z.enum(["image", "video"]),
+});
+
 export type RegisterUserSchemaType = z.infer<typeof RegisterUserSchema>;
 export type LoginUserSchemaType = z.infer<typeof LoginUserSchema>;
+export type AddAttachmentSchemaType = z.infer<typeof AddAttachmentSchema>;

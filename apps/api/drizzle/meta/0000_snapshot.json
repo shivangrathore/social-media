@@ -1,5 +1,5 @@
 {
-  "id": "e5f01771-c23b-4d2a-b12e-c9ace70a2d19",
+  "id": "3c0010bd-0581-4ffd-9747-c8cbfaa5a6a2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -57,15 +57,14 @@
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
+          "notNull": false
         }
       },
       "indexes": {},
@@ -133,27 +132,16 @@
           "primaryKey": false,
           "notNull": true
         },
-        "width": {
-          "name": "width",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "height": {
-          "name": "height",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "user_id": {
           "name": "user_id",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
-        "resource_type": {
-          "name": "resource_type",
-          "type": "varchar(50)",
+        "type": {
+          "name": "type",
+          "type": "attachment_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
           "default": "'image'"
@@ -906,6 +894,13 @@
           "primaryKey": true,
           "notNull": true
         },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL"
+        },
         "username": {
           "name": "username",
           "type": "varchar(255)",
@@ -917,6 +912,13 @@
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
+        },
+        "avatar": {
+          "name": "avatar",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL"
         },
         "bio": {
           "name": "bio",
@@ -945,13 +947,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "NULL"
         },
         "type": {
           "name": "type",
@@ -1071,8 +1066,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user": {
-      "name": "user",
+    "public.user_bookmark": {
+      "name": "user_bookmark",
       "schema": "",
       "columns": {
         "id": {
@@ -1081,16 +1076,87 @@
           "primaryKey": true,
           "notNull": true
         },
-        "first_name": {
-          "name": "first_name",
-          "type": "varchar(255)",
+        "user_id": {
+          "name": "user_id",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
-        "last_name": {
-          "name": "last_name",
-          "type": "varchar(255)",
+        "post_id": {
+          "name": "post_id",
+          "type": "bigint",
           "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "bookmark_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'post'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_bookmark_user_id_user_id_fk": {
+          "name": "user_bookmark_user_id_user_id_fk",
+          "tableFrom": "user_bookmark",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_bookmark_post_id_post_id_fk": {
+          "name": "user_bookmark_post_id_post_id_fk",
+          "tableFrom": "user_bookmark",
+          "tableTo": "post",
+          "columnsFrom": [
+            "post_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "user_bookmark_user_id_post_id_type_unique": {
+          "name": "user_bookmark_user_id_post_id_type_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "post_id",
+            "type"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user": {
+      "name": "user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
           "notNull": true
         },
         "email": {
@@ -1153,6 +1219,22 @@
     }
   },
   "enums": {
+    "public.attachment_type": {
+      "name": "attachment_type",
+      "schema": "public",
+      "values": [
+        "image",
+        "video"
+      ]
+    },
+    "public.bookmark_type": {
+      "name": "bookmark_type",
+      "schema": "public",
+      "values": [
+        "post",
+        "comment"
+      ]
+    },
     "public.friend_request_status": {
       "name": "friend_request_status",
       "schema": "public",
@@ -1191,7 +1273,77 @@
   "sequences": {},
   "roles": {},
   "policies": {},
-  "views": {},
+  "views": {
+    "public.user_view": {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL"
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_verified": {
+          "name": "email_verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "avatar": {
+          "name": "avatar",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL"
+        },
+        "dob": {
+          "name": "dob",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "definition": "select \"user\".\"id\", \"profile\".\"name\", \"user\".\"email\", \"user\".\"email_verified\", \"profile\".\"avatar\", \"user\".\"dob\", \"user\".\"created_at\", \"user\".\"updated_at\", \"profile\".\"username\" from \"user\" inner join \"profile\" on \"user\".\"id\" = \"profile\".\"user_id\"",
+      "name": "user_view",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    }
+  },
   "_meta": {
     "columns": {},
     "schemas": {},

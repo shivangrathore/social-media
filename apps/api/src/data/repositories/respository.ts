@@ -1,6 +1,9 @@
 import { ProviderUser } from "@/auth_providers/base";
-import { RegisterUserSchemaType } from "@repo/request-schemas";
-import { IUser } from "@repo/types";
+import {
+  RegisterUserSchemaType,
+  AddAttachmentSchemaType,
+} from "@repo/request-schemas";
+import { IAttachment, IUser } from "@repo/types";
 
 export interface IAccount {
   id: number;
@@ -33,4 +36,13 @@ export interface IAuthRepository {
     provider: string,
   ): Promise<IUser | null>;
   createSession(userId: number, token: string, expires: Date): Promise<void>;
+}
+
+export interface IAttachmentRepository {
+  addAttachment(
+    payload: AddAttachmentSchemaType,
+    userId: number,
+    postId: number,
+  ): Promise<IAttachment>;
+  deleteAttachment(attachmentId: number, userId: number): Promise<void>;
 }

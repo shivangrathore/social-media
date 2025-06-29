@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
+import {} from "@repo/api-types";
 
 export const fetchFeed = async () => {
   const res = await apiClient.get("/feed", {});
