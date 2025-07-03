@@ -10,7 +10,7 @@ import {
   updateOptions,
 } from "./controller";
 
-export const router: Router = Router();
+const router: Router = Router();
 
 router.get("/", getDraft);
 router.post("/", createDraft);
@@ -20,3 +20,5 @@ router.get("/:postId/poll", getPoll);
 router.post("/:postId/poll/options", updateOptions);
 router.post("/:postId/publish", publishDraft);
 router.post("/:postId/comments", addComment);
+
+export { router as postRouter };

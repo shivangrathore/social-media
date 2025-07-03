@@ -27,18 +27,15 @@ export function SuggestionPanel() {
           <div>
             <h1 className="text-lg font-medium mt-6">Who to follow</h1>
             <div className="flex flex-col gap-4 mt-4">
-              <div className="flex gap-2 items-center justify-between">
-                <UserProfile />
-                <Button variant="secondary">Follow</Button>
-              </div>
-              <div className="flex gap-2 items-center justify-between">
-                <UserProfile />
-                <Button variant="secondary">Follow</Button>
-              </div>
-              <div className="flex gap-2 items-center justify-between">
-                <UserProfile />
-                <Button variant="secondary">Follow</Button>
-              </div>
+              {new Array(3).fill(0).map((_, index) => (
+                <div
+                  key={index}
+                  className="flex gap-2 items-center justify-between"
+                >
+                  <UserProfile username={`User${index + 1}`} />
+                  <Button variant="secondary">Follow</Button>
+                </div>
+              ))}
             </div>
           </div>
           <div>

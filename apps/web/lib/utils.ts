@@ -11,3 +11,12 @@ export function pluralize(count: number, singular: string, plural?: string) {
   }
   return `${count} ${plural || singular + "s"}`;
 }
+
+export function getInitials(name: string, maxInitials = 2): string {
+  const initials = name
+    .split(" ")
+    .slice(0, maxInitials)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join("");
+  return initials;
+}

@@ -89,3 +89,7 @@ export interface ICommentsRepository {
   ): Promise<IComment>;
   removeComment(commentId: number): Promise<void>;
 }
+
+export interface IUserRepository {
+  getById(userId: number): Promise<IUser | null>;
+}

@@ -1,9 +1,5 @@
 import { authRepository } from "@/data/repositories";
-import {
-  RegisterUserSchema,
-  LoginUserSchema,
-  LoginUserSchemaType,
-} from "@repo/request-schemas";
+import { RegisterUserSchema, LoginUserSchema } from "@repo/request-schemas";
 import { Request, Response } from "express";
 import { comparePassword, hashPassword } from "@/utils/crypto";
 import { ServiceError } from "@/utils/errors";
@@ -34,6 +30,7 @@ async function createSession(res: Response, user: IUser): Promise<void> {
   const expires = dateFns.add(new Date(), { seconds: JWT_EXPIRE_TIME });
   await authRepository.createSession(user.id, token, expires);
   res.cookie("token", token, { expires, httpOnly: true });
+  console.log("Session created for user:", user.id);
 }
 
 export const login = async (
@@ -88,7 +85,8 @@ export const providerRedirect = async (
     throw ServiceError.BadRequest("Provider not found");
   }
   const redirectUrl = req.query.redirectUrl;
-  res.redirect(provider.oAuthUrl({ state: { redirectUrl } }));
+  console.log("Redirect URL:", redirectUrl);
+  res.redirect(provider.oAuthUrl({ redirectUrl }));
 };
 
 export const providerCallback = async (
@@ -112,6 +110,7 @@ export const providerCallback = async (
   await createSession(res, user);
   if (state?.redirectUrl) {
     res.redirect(state.redirectUrl);
+    return;
   }
   res.status(200).json({
     message: "Login successful",
