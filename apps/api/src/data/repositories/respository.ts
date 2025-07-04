@@ -1,5 +1,9 @@
 import { ProviderUser } from "@/auth_providers/base";
-import { RegisterUserSchemaType, AddAttachmentSchemaType } from "@repo/types";
+import {
+  RegisterUserSchemaType,
+  AddAttachmentSchemaType,
+  PollMeta,
+} from "@repo/types";
 import { Attachment, Comment, User } from "@repo/types";
 import { PostType } from "@repo/types";
 
@@ -73,13 +77,9 @@ export interface IPostRepository {
 }
 
 export interface IPollRepository {
-  createPoll(postId: number, question: string, expiresAt?: Date): Promise<void>;
+  createPoll(postId: number, expiresAt?: Date): Promise<void>;
   setOptions(postId: number, options: string[]): Promise<void>;
-  getPollMeta(postId: number): Promise<{
-    question: string;
-    options: string[];
-    expiresAt: Date | null;
-  } | null>;
+  getPollMeta(postId: number): Promise<PollMeta | null>;
 }
 
 export interface ICommentsRepository {

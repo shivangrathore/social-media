@@ -1,17 +1,16 @@
 "use client";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { saveDraftPoll } from "../api/polls";
+import { saveOptions } from "../api/polls";
 
-export function useAutoSaveDraft(
+export function useAutoSaveDraftPoll(
   isDirty: boolean,
   postId: number | undefined,
-  question: string,
   optionsValues: { value: string }[],
 ) {
   const { mutateAsync, isPending: isSaving } = useMutation({
-    mutationKey: ["saveDraftPoll"],
-    mutationFn: saveDraftPoll,
+    mutationKey: ["saveDraftPollOptions"],
+    mutationFn: saveOptions,
   });
 
   useEffect(() => {
@@ -19,7 +18,6 @@ export function useAutoSaveDraft(
     const timeout = setTimeout(() => {
       mutateAsync({
         postId,
-        question,
         options: optionsValues
           .map((o) => o.value)
           .filter((v) => v.trim() !== ""),
@@ -27,7 +25,7 @@ export function useAutoSaveDraft(
     }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [isDirty, question, optionsValues]);
+  }, [isDirty, optionsValues]);
 
   return { isSaving };
 }

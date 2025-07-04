@@ -50,3 +50,8 @@ export interface DraftPost extends BasePost {}
 export interface Post extends BasePost {
   attachments: Attachment[];
 }
+
+export interface PollMeta {
+  options: string[];
+  expiresAt: Date | null;
+}

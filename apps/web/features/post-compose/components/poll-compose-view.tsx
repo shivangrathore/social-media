@@ -2,16 +2,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { XIcon } from "lucide-react";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Form } from "@/components/ui/form";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { usePollDraft } from "../hooks/use-poll-draft";
-import { useAutoSaveDraft } from "../hooks/use-auto-save-poll";
+import { useAutoSaveDraftPoll } from "../hooks/use-auto-save-poll";
 import { useMutation } from "@tanstack/react-query";
-import { publishPoll } from "../api/polls";
+// import { publishPoll } from "../api/polls";
 import { PollLoadingSkeleton } from "./poll-loading-skeleton";
+import { useAutosavePost } from "../hooks/use-auto-save-post";
 
 const ComposePollSchema = z.object({
   question: z.string().min(1, "Question is required"),
@@ -29,7 +30,8 @@ const MIN_OPTIONS = 2;
 const MAX_OPTIONS = 4;
 
 export function PollComposeView() {
-  const { draft, isLoading: isDraftLoading } = usePollDraft();
+  const { draft, isLoading: isDraftLoading, create } = usePollDraft();
+  console.log(draft);
   const form = useForm({
     resolver: zodResolver(ComposePollSchema),
     defaultValues: {
@@ -37,9 +39,10 @@ export function PollComposeView() {
       options: Array.from({ length: MIN_OPTIONS }, () => ({ value: "" })),
     },
   });
-
+  //
   const isDirty = form.formState.isDirty;
-
+  const question = useWatch({ control: form.control, name: "question" });
+  useAutosavePost(isDirty, draft?.id, question, create);
   const {
     append: addOption,
     remove: removeOption,
@@ -48,7 +51,6 @@ export function PollComposeView() {
     control: form.control,
     name: "options",
   });
-
   useEffect(() => {
     if (draft) {
       const options = [
@@ -56,23 +58,24 @@ export function PollComposeView() {
         ...Array.from({ length: MIN_OPTIONS - draft.options.length }, () => ""),
       ];
       form.reset({
-        question: draft.question || "",
+        question: draft.content || "",
         options: options.map((option) => ({ value: option })),
       });
     }
   }, [draft]);
 
-  const question = useWatch({ control: form.control, name: "question" });
   const optionsValues = useWatch({
     control: form.control,
     name: "options",
   });
 
-  useAutoSaveDraft(isDirty, draft?.id, question, optionsValues);
+  useAutoSaveDraftPoll(isDirty, draft?.id, optionsValues);
 
   const { mutateAsync, isPending: isCreating } = useMutation({
     mutationKey: ["publishPoll"],
-    mutationFn: publishPoll,
+    mutationFn: async () => {
+      return {};
+    }, // publish
     onSuccess: () => {
       console.log("Poll published successfully");
       form.reset({
@@ -84,7 +87,7 @@ export function PollComposeView() {
 
   const handleSubmit = async () => {
     if (!draft?.id) return;
-    await mutateAsync(draft.id);
+    await mutateAsync();
   };
 
   const errorPublishing = (e: any) => {

@@ -1,7 +1,8 @@
 "use client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createDraftPoll } from "../api/polls";
-import { CreatePollDraftResponse } from "@repo/api-types/poll";
+import { createDraftPoll, getPollDraft, getPollMeta } from "../api/polls";
+import { Post } from "@repo/types";
+import { useMemo } from "react";
 
 export function usePollDraft() {
   const {
@@ -9,9 +10,20 @@ export function usePollDraft() {
     isLoading,
     error,
     refetch,
-  } = useQuery<CreatePollDraftResponse>({
+  } = useQuery<Post>({
     queryKey: ["pollDraft"],
-    queryFn: createDraftPoll,
+    queryFn: getPollDraft,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  const { data: meta } = useQuery({
+    queryKey: ["pollDraftOptions", draft?.id],
+    queryFn: async () => {
+      if (!draft?.id) throw new Error("Draft ID is not available");
+      return getPollMeta(draft.id);
+    },
+    enabled: !!draft?.id,
     refetchOnWindowFocus: false,
     retry: false,
   });
@@ -24,8 +36,17 @@ export function usePollDraft() {
     },
   });
 
+  const mergedDraft = useMemo(() => {
+    if (!draft) return undefined;
+    return {
+      ...draft,
+      options: meta?.options || [],
+      expiresAt: meta?.expiresAt || null,
+    };
+  }, [draft, meta?.options, meta?.expiresAt]);
+
   return {
-    draft,
+    draft: mergedDraft,
     create: mutateAsync,
     isLoading,
     error,

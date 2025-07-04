@@ -2,16 +2,12 @@ import { db } from "@/db";
 import { IPollRepository } from "./respository";
 import { pollOptionTable, pollTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { PollMeta } from "@repo/types";
 
 export class PollRepository implements IPollRepository {
-  async createPoll(
-    postId: number,
-    question: string,
-    expiresAt?: Date,
-  ): Promise<void> {
+  async createPoll(postId: number, expiresAt?: Date): Promise<void> {
     await db.insert(pollTable).values({
       postId,
-      question,
       expiresAt: expiresAt ?? null,
     });
   }
@@ -32,15 +28,10 @@ export class PollRepository implements IPollRepository {
     await db.insert(pollOptionTable).values(values);
   }
 
-  async getPollMeta(postId: number): Promise<{
-    question: string;
-    options: string[];
-    expiresAt: Date | null;
-  } | null> {
+  async getPollMeta(postId: number): Promise<PollMeta | null> {
     const poll = await db.query.pollTable.findFirst({
       where: (table) => eq(table.postId, postId),
       columns: {
-        question: true,
         id: true,
         expiresAt: true,
       },
@@ -58,7 +49,6 @@ export class PollRepository implements IPollRepository {
     });
 
     return {
-      question: poll.question,
       options: options.map((opt) => opt.option),
       expiresAt: poll.expiresAt,
     };

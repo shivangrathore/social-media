@@ -1,7 +1,7 @@
 "use client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createDraftPost, getDraftPost } from "../api/posts";
-import { IPost } from "@repo/types";
+import { Post } from "@repo/types";
 
 export function usePostDraft() {
   const {
@@ -9,7 +9,7 @@ export function usePostDraft() {
     isLoading,
     error,
     refetch,
-  } = useQuery<IPost>({
+  } = useQuery<Post>({
     queryKey: ["postDraft"],
     queryFn: getDraftPost,
     refetchOnWindowFocus: false,

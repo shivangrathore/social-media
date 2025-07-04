@@ -12,12 +12,13 @@ import { ComposePostLoadingSkeleton } from "./post-loading-skeleton";
 import { ImageIcon } from "lucide-react";
 import EmojiPicker from "./emoji-picker";
 import { useUploadFiles } from "../hooks/use-upload-files";
-import { attachAttachmentToPost, deleteAttachment } from "../api/upload";
+import { deleteAttachment } from "../api/upload";
 import { Attachment } from "@repo/types";
 import { AttachmentGrid } from "./attachment-grid";
 import { Button } from "@/components/ui/button";
 import { publishPost } from "../api/posts";
 import { useAttachments } from "../hooks/use-attachments";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AttachmentSchema = z.object({
   id: z.number(),
@@ -94,12 +95,13 @@ export function PostComposeView() {
       shouldTouch: true,
     });
   };
-  useAutosavePost(isDirty, draft?.id, content, [], create);
+  useAutosavePost(isDirty, draft?.id, content, create);
   useEffect(() => {
     if (draft) {
       refetchAttachments();
-      form.reset({
-        content: draft.content || "",
+      form.setValue("content", draft.content || "", {
+        shouldDirty: true,
+        shouldTouch: true,
       });
     }
   }, [draft]);
@@ -142,6 +144,7 @@ export function PostComposeView() {
             handleFileSelect(e.target.files);
           }}
         />
+        {isDraftAttachmentLoading && <Skeleton className="h-64 w-full mt-2" />}
         <AttachmentGrid
           attachments={attachments}
           uploadingFiles={uploadingFiles}

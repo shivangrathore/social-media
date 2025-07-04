@@ -1,14 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { saveDraftPost } from "../api/posts";
-import { IPost } from "@repo/types";
+import { Post } from "@repo/types";
 
 export function useAutosavePost(
   isDirty: boolean,
   postId: number | undefined,
   content: string,
-  attachments: { id: number; url: string; type: "image" | "video" }[],
-  create: (content: string | undefined) => Promise<IPost>,
+  create: (content: string | undefined) => Promise<Post>,
 ) {
   const { mutateAsync, isPending: isSaving } = useMutation({
     mutationKey: ["saveDraftPost"],
@@ -29,7 +28,7 @@ export function useAutosavePost(
     }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [isDirty, content, attachments, postId, mutateAsync]);
+  }, [isDirty, content, postId, mutateAsync]);
 
   return { isSaving };
 }

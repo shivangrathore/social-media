@@ -1,26 +1,35 @@
 import { apiClient } from "@/lib/apiClient";
-import { CreatePollDraftResponse } from "@repo/api-types/poll";
+import { CreateDraftSchemaType, PollMeta } from "@repo/types";
+import { Post } from "@repo/types";
 
-export async function createDraftPoll() {
-  const req = await apiClient.post<CreatePollDraftResponse>("/polls", {});
+export async function createDraftPoll(
+  content: string | undefined = undefined,
+): Promise<Post> {
+  const data: CreateDraftSchemaType = {
+    type: "poll",
+    content,
+  };
+  const req = await apiClient.post<Post>("/posts/draft", data);
   return req.data;
 }
 
-export async function saveDraftPoll({
+export async function getPollDraft(): Promise<Post> {
+  const req = await apiClient.get<Post>("/posts/draft?type=poll");
+  return req.data;
+}
+
+export async function getPollMeta(postId: number) {
+  const req = await apiClient.get<PollMeta>(`/posts/${postId}/poll`);
+  return req.data;
+}
+
+export async function saveOptions({
   postId,
-  question,
   options,
 }: {
   postId: number;
-  question: string;
   options: string[];
-}) {
-  await apiClient.patch(`/polls/${postId}`, {
-    question,
-    options,
-  });
-}
-
-export async function publishPoll(postId: number) {
-  await apiClient.post(`/polls/${postId}/publish`);
+}): Promise<void> {
+  const data = { options };
+  await apiClient.put(`/posts/${postId}/poll/options`, data);
 }

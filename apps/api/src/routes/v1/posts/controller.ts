@@ -7,7 +7,7 @@ import {
 } from "@/data/repositories";
 import { IPost } from "@/data/repositories/respository";
 import { ServiceError } from "@/utils/errors";
-import { Attachment, Comment } from "@repo/types";
+import { Attachment, Comment, PollMeta } from "@repo/types";
 import {
   AddAttachmentSchema,
   CreateDraftSchema,
@@ -33,7 +33,7 @@ export const createDraft = async (req: Request, res: Response<IPost>) => {
     body.content,
   );
   if (body.type === "poll") {
-    await pollRepository.createPoll(post.id, "");
+    await pollRepository.createPoll(post.id);
   }
   res.status(201).json(post);
 };
@@ -95,7 +95,7 @@ export const publishDraft = async (req: Request, res: Response<IPost>) => {
   res.status(200).json(publishedPost!);
 };
 
-export const getPoll = async (req: Request, res: Response) => {
+export const getPoll = async (req: Request, res: Response<PollMeta>) => {
   const postId = parseInt(req.params.postId, 10);
   const post = await postRepository.getById(postId);
   if (!post) {

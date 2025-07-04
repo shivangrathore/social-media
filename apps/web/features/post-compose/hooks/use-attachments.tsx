@@ -15,7 +15,6 @@ export function useAttachments(postId: number | undefined) {
     enabled: !!postId,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    initialData: [],
   });
   const { mutateAsync: addAttachment } = useMutation({
     mutationKey: ["addAttachment", postId],
