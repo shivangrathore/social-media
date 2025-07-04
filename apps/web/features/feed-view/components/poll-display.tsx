@@ -8,13 +8,9 @@ import { FeedPost, GetFeedResponse } from "@repo/types";
 type Poll = Extract<FeedPost, { postType: "poll" }>;
 
 export function PollDisplay({ poll }: { poll: Poll }) {
-  console.log("PollDisplay", poll);
   const selectedOption = poll.selectedOption;
   const options = poll.options;
-  const totalVotes = options.reduce(
-    (acc, option) => acc + option.votesCount,
-    0,
-  );
+  const totalVotes = options.reduce((acc, option) => acc + option.voteCount, 0);
   const queryClient = useQueryClient();
   const changeSelectedVote = useCallback(
     (optionId: number) => {

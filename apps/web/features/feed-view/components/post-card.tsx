@@ -85,20 +85,20 @@ export function PostCard({ post }: { post: FeedPost }) {
       </div>
       <div className="flex gap-3 px-4">
         {/* TODO: Singular and plural logic for likes */}
-        {post.likesCount > 0 && (
+        {post.likeCount > 0 && (
           <p className="text-gray-500 text-sm">
-            {pluralize(post.likesCount, "like")}
+            {pluralize(post.likeCount, "like")}
           </p>
         )}
         <p className="text-gray-500 text-sm">
-          {pluralize(post.viewsCount, "view")}
+          {pluralize(post.viewCount, "view")}
         </p>
-        {post.commentsCount > 0 && (
+        {post.commentCount > 0 && (
           <Link
             href={`/posts/${post.id}`}
             className="text-gray-500 text-sm hover:underline cursor-pointer"
           >
-            view {pluralize(post.commentsCount, "comment")}
+            view {pluralize(post.commentCount, "comment")}
           </Link>
         )}
       </div>

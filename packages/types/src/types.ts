@@ -59,7 +59,7 @@ export interface PollMeta {
 interface PollOption {
   id: number;
   text: string;
-  votesCount: number;
+  voteCount: number;
 }
 
 export type FeedPost = {
@@ -68,9 +68,9 @@ export type FeedPost = {
   content: string | null;
   createdAt: Date;
   updatedAt: Date | null;
-  likesCount: number;
-  commentsCount: number;
-  viewsCount: number;
+  likeCount: number;
+  commentCount: number;
+  viewCount: number;
   publishedAt: Date | null;
   bookmarkedByMe: boolean;
   likedByMe: boolean;
@@ -82,7 +82,6 @@ export type FeedPost = {
     }
   | {
       postType: "poll";
-      question: string;
       options: PollOption[];
       selectedOption: number | null;
       expiresAt: Date | null;

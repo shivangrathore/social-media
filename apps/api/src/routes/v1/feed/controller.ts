@@ -1,19 +1,17 @@
 import { attachmentRepository, feedRepository } from "@/data/repositories";
 import { postTable } from "@/db/schema";
-import { GetFeedResponse, User } from "@repo/types";
+import { FeedPost, GetFeedResponse, User } from "@repo/types";
 import { InferSelectModel } from "drizzle-orm";
 import { Request, Response } from "express";
 import { z } from "zod";
 
-type FeedResponse = any;
-type FeedPost = any;
 type PostWithoutAttachments = InferSelectModel<typeof postTable>;
 
 async function getFeed(
   currentUserId: number,
   cursor?: number,
   limit: number = 10,
-): Promise<FeedResponse> {
+): Promise<GetFeedResponse> {
   const records = await feedRepository.getFeedPosts(
     currentUserId,
     cursor,
@@ -59,15 +57,16 @@ async function buildPollEntry(
   }
   const options = await feedRepository.getPollOptions(poll.id);
   const userVote = await feedRepository.getUserPollVote(poll.id, userId);
-  const liked = await feedRepository.getUserLikeStatus(post.id, userId);
+  const likedByMe = await feedRepository.getUserLikeStatus(post.id, userId);
   const record: FeedPost = {
     ...post,
-    bookmarked: bookmarked ?? false,
+    bookmarkedByMe: bookmarked ?? false,
     author,
     options,
     selectedOption: userVote,
-    liked,
+    likedByMe,
     postType: "poll",
+    expiresAt: poll.expiresAt,
   };
   return record;
 }
@@ -81,13 +80,13 @@ async function buildRegularEntry(
   const attachments = await attachmentRepository.getAttachmentsByPostId(
     post.id,
   );
-  const liked = await feedRepository.getUserLikeStatus(post.id, userId);
+  const likedByMe = await feedRepository.getUserLikeStatus(post.id, userId);
   const record: FeedPost = {
     ...post,
-    bookmarked: bookmarked ?? false,
+    bookmarkedByMe: bookmarked ?? false,
     author,
     attachments,
-    liked,
+    likedByMe,
     postType: "regular",
   };
   return record;
