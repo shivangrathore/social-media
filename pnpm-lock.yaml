@@ -20,9 +20,9 @@ importers:
 
   apps/api:
     dependencies:
-      '@repo/request-schemas':
+      '@repo/types':
         specifier: workspace:*
-        version: link:../../packages/request-schemas
+        version: link:../../packages/types
       '@types/cookie-parser':
         specifier: ^1.4.8
         version: 1.4.8(@types/express@5.0.1)
@@ -66,15 +66,9 @@ importers:
       '@jest/globals':
         specifier: 30.0.0-beta.3
         version: 30.0.0-beta.3
-      '@repo/api-types':
-        specifier: workspace:*
-        version: link:../../packages/api-types
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@repo/types':
-        specifier: workspace:*
-        version: link:../../packages/types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -135,6 +129,9 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.2.3
         version: 1.2.3(@types/react@19.1.0)(react@19.1.0)
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@svgr/webpack':
         specifier: ^8.1.0
         version: 8.1.0(typescript@5.8.2)
@@ -202,15 +199,9 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5(@types/react@19.1.0)(immer@10.1.1)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))
     devDependencies:
-      '@repo/api-types':
-        specifier: workspace:*
-        version: link:../../packages/api-types
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@repo/types':
-        specifier: workspace:*
-        version: link:../../packages/types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -232,22 +223,6 @@ importers:
       typescript:
         specifier: 5.8.2
         version: 5.8.2
-
-  packages/api-types:
-    dependencies:
-      zod:
-        specifier: ^3.24.3
-        version: 3.24.3
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      bunchee:
-        specifier: ^6.5.3
-        version: 6.5.3(typescript@5.8.3)
 
   packages/eslint-config:
     devDependencies:
@@ -285,26 +260,11 @@ importers:
         specifier: ^8.29.0
         version: 8.31.0(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.2)
 
-  packages/request-schemas:
+  packages/types:
     dependencies:
       zod:
         specifier: ^3.24.3
         version: 3.24.3
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      bunchee:
-        specifier: ^6.5.3
-        version: 6.5.3(typescript@5.8.3)
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
-
-  packages/types:
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*

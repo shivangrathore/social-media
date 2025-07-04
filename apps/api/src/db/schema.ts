@@ -15,7 +15,6 @@ import {
   foreignKey,
   unique,
   pgEnum,
-  check,
   pgView,
 } from "drizzle-orm/pg-core";
 
@@ -105,8 +104,7 @@ export const postTable = pgTable("post", {
   userId: bigint("user_id", { mode: "number" })
     .notNull()
     .references(() => userTable.id),
-  content: text("content"),
-  published: boolean("published").notNull().default(false),
+  content: text("content"), // Acts as question for polls
   postType: postTypeEnum("post_type").notNull().default("regular"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
@@ -115,6 +113,7 @@ export const postTable = pgTable("post", {
   likes: integer("likes").notNull().default(0),
   comments: integer("comments").notNull().default(0),
   views: integer("views").notNull().default(0),
+  publishedAt: timestamp("published_at").default(sql`NULL`),
 });
 
 export const likeTable = pgTable(
@@ -169,49 +168,12 @@ export const attachmentTable = pgTable("attachment", {
   type: attachmentTypeEnum("type").notNull().default("image"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
-
-export const friendRequestTable = pgTable(
-  "friend_request",
-  {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    senderId: bigint("sender_id", { mode: "number" })
-      .notNull()
-      .references(() => userTable.id),
-    recipientId: bigint("recipient_id", { mode: "number" })
-      .notNull()
-      .references(() => userTable.id),
-    status: friendRequestStatusEnum("status").notNull().default("pending"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-  },
-  (t) => [
-    unique().on(t.senderId, t.recipientId),
-    check("no_self_request", sql`${t.senderId} != ${t.recipientId}`),
-  ],
-);
-
-export const friendTable = pgTable(
-  "friend",
-  {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    user1Id: bigint("user_1_id", { mode: "number" })
-      .notNull()
-      .references(() => userTable.id),
-    user2Id: bigint("user_2_id", { mode: "number" })
-      .notNull()
-      .references(() => userTable.id),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-  },
-  (t) => [check("ordered_friend_ids", sql`${t.user1Id} < ${t.user2Id}`)],
-);
-
 export const pollTable = pgTable("poll", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
   postId: bigint("post_id", { mode: "number" })
     .notNull()
     .references(() => postTable.id)
     .unique(),
-  question: text("question").notNull(),
   expiresAt: timestamp("expires_at").default(sql`NULL`),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

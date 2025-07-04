@@ -1,6 +1,7 @@
 import { postTable } from "@/db/schema";
-import { IPost, IPostRepository, PostType } from "./respository";
-import { and, eq, InferSelectModel } from "drizzle-orm";
+import { IPost, IPostRepository } from "./respository";
+import { PostType } from "@repo/types";
+import { and, eq, InferSelectModel, isNull } from "drizzle-orm";
 import { db } from "@/db";
 
 type DBPost = InferSelectModel<typeof postTable>;
@@ -12,9 +13,9 @@ export class PostRepository implements IPostRepository {
       userId: dbPost.userId,
       content: dbPost.content,
       createdAt: dbPost.createdAt,
-      published: dbPost.published,
       updatedAt: dbPost.updatedAt,
-      postType: dbPost.postType,
+      type: dbPost.postType,
+      publishedAt: dbPost.publishedAt,
     };
   }
   async getDraftByUserAndType(
@@ -25,18 +26,23 @@ export class PostRepository implements IPostRepository {
       where: and(
         eq(postTable.userId, userId),
         eq(postTable.postType, type),
-        eq(postTable.published, false),
+        isNull(postTable.publishedAt),
       ),
     });
     return result ? this.mapDbPostToIPost(result) : null;
   }
 
-  async createDraft(userId: number, type: PostType): Promise<IPost> {
+  async createDraft(
+    userId: number,
+    type: PostType,
+    content?: string,
+  ): Promise<IPost> {
     const dbPost = await db
       .insert(postTable)
       .values({
         userId,
         postType: type,
+        content,
       })
       .returning();
     return this.mapDbPostToIPost(dbPost[0]);
@@ -66,7 +72,7 @@ export class PostRepository implements IPostRepository {
     const result = await db
       .update(postTable)
       .set({
-        published: true,
+        publishedAt: new Date(),
       })
       .where(eq(postTable.id, postId))
       .returning();

@@ -1,4 +1,4 @@
-import { AttachmentFile } from "@repo/api-types";
+import { Attachment } from "@repo/types";
 import { UploadFile } from "../types";
 import { CircularProgress } from "@/components/circular-progress";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ export function AttachmentGrid({
   removeUploadingFile,
   removeAttachment,
 }: {
-  attachments: AttachmentFile[];
+  attachments: Attachment[];
   uploadingFiles: UploadFile[];
   removeUploadingFile: (file: string) => void;
   removeAttachment: (attachment: number) => void;
@@ -21,7 +21,7 @@ export function AttachmentGrid({
     return null;
   }
 
-  const onRemove = (file: AttachmentFile | UploadFile) => {
+  const onRemove = (file: Attachment | UploadFile) => {
     if ("progress" in file) {
       if (file.attachment) {
         removeAttachment(file.attachment.id);
@@ -33,7 +33,7 @@ export function AttachmentGrid({
   };
 
   return (
-    <div className={"grid grid-cols-2 gap-2 mt-2"}>
+    <div className={"grid grid-cols-2 gap-2 mt-2 h-[400px]"}>
       {attachments.map((attachment) => (
         <AttachmentItem
           key={attachment.id}
@@ -53,7 +53,7 @@ export function AttachmentGrid({
 }
 
 type AttachmentItemProps = {
-  attachment: AttachmentFile;
+  attachment: Attachment;
   onRemove?: () => void;
 };
 
@@ -91,10 +91,14 @@ function UploadingFileItem({ file, onRemove }: UploadingFileItemProps) {
         <img
           src={file.url || "/placeholder.svg"}
           alt={file.file.name}
-          className="w-full h-auto rounded-lg"
+          className="w-full h-auto rounded-lg object-cover"
         />
       ) : (
-        <video src={file.url} controls className="w-full h-auto rounded-lg " />
+        <video
+          src={file.url}
+          controls
+          className="w-full h-auto rounded-lg object-cover"
+        />
       )}
 
       {!file.uploaded && (
@@ -118,7 +122,7 @@ function Container({
   onRemove?: () => void;
 }) {
   return (
-    <div className="relative rounded-lg last:odd:col-span-2">
+    <div className="relative h-full w-full rounded-lg last:odd:col-span-2 overflow-hidden">
       <div className="absolute top-2 right-2 z-10">
         <Button
           onClick={onRemove}

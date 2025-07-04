@@ -1,5 +1,5 @@
 import { authRepository } from "@/data/repositories";
-import { RegisterUserSchema, LoginUserSchema } from "@repo/request-schemas";
+import { RegisterUserSchema, LoginUserSchema } from "@repo/types";
 import { Request, Response } from "express";
 import { comparePassword, hashPassword } from "@/utils/crypto";
 import { ServiceError } from "@/utils/errors";
@@ -9,7 +9,7 @@ import { JWT_EXPIRE_TIME } from "@/data/constants";
 import { usernameFromName } from "@/utils/db";
 import { providers } from "@/auth_providers";
 import { z } from "zod";
-import { IUser, LoginResponse, RegisterResponse } from "@repo/types";
+import { User, LoginResponse, RegisterResponse } from "@repo/types";
 
 const ProviderCallbackQuery = z.object({
   code: z.string(),
@@ -25,7 +25,7 @@ const ProviderCallbackQuery = z.object({
   }),
 });
 
-async function createSession(res: Response, user: IUser): Promise<void> {
+async function createSession(res: Response, user: User): Promise<void> {
   const token = await signJWT(user.id);
   const expires = dateFns.add(new Date(), { seconds: JWT_EXPIRE_TIME });
   await authRepository.createSession(user.id, token, expires);
@@ -37,7 +37,7 @@ export const login = async (
   req: Request,
   res: Response<LoginResponse>,
 ): Promise<void> => {
-  let user: IUser | null = null;
+  let user: User | null = null;
   const payload = await LoginUserSchema.parseAsync(req.body);
   user = await authRepository.findUserByUsername(payload.id);
   if (!user) {

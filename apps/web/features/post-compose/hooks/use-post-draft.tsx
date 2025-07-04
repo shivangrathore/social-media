@@ -1,7 +1,7 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
-import { createDraftPost } from "../api/posts";
-import { CreateDraftPostResponse } from "@repo/api-types/post";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createDraftPost, getDraftPost } from "../api/posts";
+import { IPost } from "@repo/types";
 
 export function usePostDraft() {
   const {
@@ -9,11 +9,19 @@ export function usePostDraft() {
     isLoading,
     error,
     refetch,
-  } = useQuery<CreateDraftPostResponse>({
+  } = useQuery<IPost>({
     queryKey: ["postDraft"],
-    queryFn: createDraftPost,
+    queryFn: getDraftPost,
     refetchOnWindowFocus: false,
     retry: false,
+  });
+
+  const { mutateAsync: create } = useMutation({
+    mutationKey: ["createDraftPost"],
+    mutationFn: createDraftPost,
+    onSuccess: () => {
+      refetch();
+    },
   });
 
   return {
@@ -21,5 +29,6 @@ export function usePostDraft() {
     isLoading,
     error,
     refetch,
+    create,
   };
 }

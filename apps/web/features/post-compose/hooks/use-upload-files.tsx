@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getUploadSignature } from "../api/upload";
 import { apiClient } from "@/lib/apiClient";
 import { AxiosProgressEvent } from "axios";

@@ -24,9 +24,11 @@ export const PostTypeSchema = z.enum(["regular", "poll"]);
 
 export const CreateDraftSchema = z.object({
   type: PostTypeSchema,
+  content: z.string().optional(),
 });
 
 export type RegisterUserSchemaType = z.infer<typeof RegisterUserSchema>;
 export type LoginUserSchemaType = z.infer<typeof LoginUserSchema>;
 export type AddAttachmentSchemaType = z.infer<typeof AddAttachmentSchema>;
 export type PostType = z.infer<typeof PostTypeSchema>;
+export type CreateDraftSchemaType = z.infer<typeof CreateDraftSchema>;

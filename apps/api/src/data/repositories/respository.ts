@@ -1,10 +1,11 @@
 import { ProviderUser } from "@/auth_providers/base";
-import {
-  RegisterUserSchemaType,
-  AddAttachmentSchemaType,
-} from "@repo/request-schemas";
-import { IAttachment, IComment, IUser } from "@repo/types";
-import { PostType } from "@repo/request-schemas";
+import { RegisterUserSchemaType, AddAttachmentSchemaType } from "@repo/types";
+import { Attachment, Comment, User } from "@repo/types";
+import { PostType } from "@repo/types";
+
+export type IUser = User;
+export type IAttachment = Attachment;
+export type IComment = Comment;
 
 export interface IAccount {
   id: number;
@@ -56,15 +57,15 @@ export interface IAttachmentRepository {
 export interface IPost {
   id: number;
   userId: number;
+  type: PostType;
   content: string | null;
   createdAt: Date;
-  published: boolean;
   updatedAt: Date | null;
-  postType: PostType;
+  publishedAt: Date | null;
 }
 
 export interface IPostRepository {
-  createDraft(userId: number, type: PostType): Promise<IPost>;
+  createDraft(userId: number, type: PostType, content?: string): Promise<IPost>;
   getDraftByUserAndType(userId: number, type: PostType): Promise<IPost | null>;
   updateContent(postId: number, content: string | null): Promise<IPost | null>;
   publish(postId: number): Promise<IPost | null>;

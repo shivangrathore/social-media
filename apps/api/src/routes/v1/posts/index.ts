@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  addAttachment,
   addComment,
   createDraft,
   getAttachments,
@@ -12,9 +13,10 @@ import {
 
 const router: Router = Router();
 
-router.get("/", getDraft);
-router.post("/", createDraft);
+router.get("/draft", getDraft);
+router.post("/draft", createDraft);
 router.get("/:postId/attachments", getAttachments);
+router.post("/:postId/attachments", addAttachment);
 router.patch("/:postId", updateDraftContent);
 router.get("/:postId/poll", getPoll);
 router.post("/:postId/poll/options", updateOptions);

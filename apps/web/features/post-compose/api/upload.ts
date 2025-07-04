@@ -1,37 +1,39 @@
 import { apiClient } from "@/lib/apiClient";
-import { AttachmentFile } from "@repo/api-types";
-
-// TODO: Define in api-types package
-type SignatureResponse = {
-  signature: string;
-  apiKey: string;
-  folder: string;
-  timestamp: string;
-  context: string;
-  uploadUrl: string;
-};
+import {
+  GetSignatureResponse,
+  AddAttachmentSchemaType,
+  Attachment,
+} from "@repo/types";
 
 export async function getUploadSignature(postId: number) {
-  const res = await apiClient.post("/upload/signature", {
+  const res = await apiClient.post<GetSignatureResponse>("/uploads/signature", {
     postId: postId,
   });
 
-  return res.data as SignatureResponse;
+  return res.data;
 }
 
 export async function attachAttachmentToPost(postId: number, file: any) {
-  const res = await apiClient.post(`/posts/${postId}/attachments`, {
+  const body: AddAttachmentSchemaType = {
     url: file.url,
     assetId: file.asset_id,
     publicId: file.public_id,
     type: file.resource_type,
-  });
+  };
+  const res = await apiClient.post<Attachment>(
+    `/posts/${postId}/attachments`,
+    body,
+  );
 
-  return res.data as AttachmentFile;
+  return res.data;
 }
 
 export async function deleteAttachment(attachmentId: number) {
-  console.log("Deleting attachment with ID:", attachmentId);
   const res = await apiClient.delete(`/attachments/${attachmentId}`);
+  return res.data;
+}
+
+export async function getAttachments(postId: number) {
+  const res = await apiClient.get<Attachment[]>(`/posts/${postId}/attachments`);
   return res.data;
 }

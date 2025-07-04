@@ -1,7 +1,7 @@
 "use client";
 import { useUser } from "@/store/auth";
 import { Input } from "./ui/input";
-import { UserProfile } from "./user-profile";
+import { UserProfile, UserProfileSkeleton } from "./user-profile";
 import { Button } from "./ui/button";
 import Link from "next/link";
 
@@ -14,7 +14,11 @@ export function SuggestionPanel() {
         <div className="flex flex-col p-4 rounded-md mt-4 bg-background border border-border">
           <div className="flex justify-between mt-4">
             <div className="flex gap-2 items-center">
-              {user ? <UserProfile {...user} /> : <></>}
+              {isLoading ? (
+                <UserProfileSkeleton />
+              ) : (
+                user && <UserProfile user={user} />
+              )}
             </div>
             <Link
               prefetch={false}
@@ -32,7 +36,11 @@ export function SuggestionPanel() {
                   key={index}
                   className="flex gap-2 items-center justify-between"
                 >
-                  <UserProfile username={`User${index + 1}`} />
+                  {isLoading ? (
+                    <UserProfileSkeleton />
+                  ) : (
+                    user && <UserProfile user={user} />
+                  )}
                   <Button variant="secondary">Follow</Button>
                 </div>
               ))}

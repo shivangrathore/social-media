@@ -36,7 +36,7 @@ export async function generateSignature(
   );
 
   return {
-    timestamp,
+    timestamp: timestamp.toString(),
     signature,
     apiKey: config.CLOUDINARY_API_KEY,
     folder,

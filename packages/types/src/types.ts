@@ -1,11 +1,13 @@
-export interface IUser {
+import { PostType } from "./request";
+
+export interface User {
   id: number;
   username: string;
   createdAt: Date;
   avatar: string | null;
   name: string | null;
 }
-export interface IAttachment {
+export interface Attachment {
   id: number;
   url: string;
   assetId: string;
@@ -16,20 +18,35 @@ export interface IAttachment {
   createdAt: Date;
 }
 
-export interface IPost {
+export interface Post {
   id: number;
   userId: number;
   content: string;
   createdAt: Date;
   updatedAt: Date | null;
-  attachments: IAttachment[];
+  attachments: Attachment[];
 }
 
-export interface IComment {
+export interface Comment {
   id: number;
   userId: number;
   postId: number;
   parentId: number | null;
   content: string;
   createdAt: Date;
+}
+
+interface BasePost {
+  id: number;
+  userId: number;
+  type: PostType;
+  content: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+  publishedAt: Date | null;
+}
+
+export interface DraftPost extends BasePost {}
+export interface Post extends BasePost {
+  attachments: Attachment[];
 }

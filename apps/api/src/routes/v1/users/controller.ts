@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import { userRepository } from "@/data/repositories";
 import { ServiceError } from "@/utils/errors";
-import { IUser } from "@repo/types";
+import { User } from "@repo/types";
 
 export const getCurrentUser = async (
   req: Request,
-  res: Response<IUser>,
+  res: Response<User>,
 ): Promise<void> => {
   const userId = res.locals["userId"];
   const user = await userRepository.getById(userId);

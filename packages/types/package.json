@@ -8,16 +8,13 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "bunchee": "^6.5.3",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "zod": "^3.24.3"
   }
 }

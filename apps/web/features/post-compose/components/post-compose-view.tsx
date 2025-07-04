@@ -13,10 +13,11 @@ import { ImageIcon } from "lucide-react";
 import EmojiPicker from "./emoji-picker";
 import { useUploadFiles } from "../hooks/use-upload-files";
 import { attachAttachmentToPost, deleteAttachment } from "../api/upload";
-import { AttachmentFile } from "@repo/api-types";
+import { Attachment } from "@repo/types";
 import { AttachmentGrid } from "./attachment-grid";
 import { Button } from "@/components/ui/button";
 import { publishPost } from "../api/posts";
+import { useAttachments } from "../hooks/use-attachments";
 
 const AttachmentSchema = z.object({
   id: z.number(),
@@ -43,16 +44,16 @@ export function PostComposeView() {
     draft,
     isLoading: isDraftLoading,
     refetch: refetchDraft,
+    create,
   } = usePostDraft();
   const form = useForm({ resolver: zodResolver(PostComposeSchema) });
   const content = useWatch({ control: form.control, name: "content" });
-  const onAttachmentUploaded = async (
-    file: any,
-  ): Promise<AttachmentFile | undefined> => {
-    if (!draft) return undefined;
-    const attach = await attachAttachmentToPost(draft.id, file);
-    return attach;
-  };
+  const {
+    draftAttachments,
+    isLoading: isDraftAttachmentLoading,
+    addAttachment,
+    refetchAttachments,
+  } = useAttachments(draft?.id);
   const {
     files: uploadingFiles,
     addFiles,
@@ -60,13 +61,17 @@ export function PostComposeView() {
     reset: resetFiles,
     remove: removeUploadingFile,
   } = useUploadFiles({
-    onAttachmentUploaded,
+    onAttachmentUploaded: addAttachment,
   });
-  const attachments = form.watch("attachments", []) as AttachmentFile[];
-  function handleFileSelect(files: FileList | null) {
-    if (!draft || !files) return;
+  const attachments = form.watch("attachments", []) as Attachment[];
+  async function handleFileSelect(files: FileList | null) {
+    if (!files) return;
+    let post = draft;
+    if (!post) {
+      post = await create(content);
+    }
     const filesArray = Array.from(files);
-    addFiles(draft.id, ...filesArray);
+    addFiles(post.id, ...filesArray);
   }
   const isValid = form.formState.isValid;
   const onSubmit = async () => {
@@ -89,15 +94,21 @@ export function PostComposeView() {
       shouldTouch: true,
     });
   };
-  useAutosavePost(isDirty, draft?.id, content, []);
+  useAutosavePost(isDirty, draft?.id, content, [], create);
   useEffect(() => {
     if (draft) {
+      refetchAttachments();
       form.reset({
         content: draft.content || "",
-        attachments: draft.attachments || [],
       });
     }
   }, [draft]);
+  useEffect(() => {
+    form.setValue("attachments", draftAttachments, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+  }, [draftAttachments]);
   const handleDeleteAttachment = async (attachmentId: number) => {
     await deleteAttachment(attachmentId);
     const currentAttachments = form.getValues("attachments") || [];
