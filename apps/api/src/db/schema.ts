@@ -110,9 +110,9 @@ export const postTable = pgTable("post", {
   updatedAt: timestamp("updated_at")
     .default(sql`NULL`)
     .$onUpdate(() => new Date()),
-  likes: integer("likes").notNull().default(0),
-  comments: integer("comments").notNull().default(0),
-  views: integer("views").notNull().default(0),
+  likeCount: integer("like_count").notNull().default(0),
+  commentCount: integer("comment_count").notNull().default(0),
+  viewCount: integer("view_count").notNull().default(0),
   publishedAt: timestamp("published_at").default(sql`NULL`),
 });
 
@@ -183,8 +183,8 @@ export const pollOptionTable = pgTable("poll_option", {
   pollId: bigint("poll_id", { mode: "number" })
     .notNull()
     .references(() => pollTable.id),
-  option: text("option").notNull(),
-  votes: integer("votes").notNull().default(0),
+  text: text("text").notNull(),
+  voteCount: integer("vote_count").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

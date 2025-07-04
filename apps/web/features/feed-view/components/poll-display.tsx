@@ -1,20 +1,24 @@
 "use client";
 import { cn, pluralize } from "@/lib/utils";
-import { FeedEntry, FeedResponse } from "@repo/api-types/feed";
 import { castVote } from "../api";
 import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { FeedPost, GetFeedResponse } from "@repo/types";
 
-type Poll = Extract<FeedEntry, { postType: "poll" }>;
+type Poll = Extract<FeedPost, { postType: "poll" }>;
 
 export function PollDisplay({ poll }: { poll: Poll }) {
+  console.log("PollDisplay", poll);
   const selectedOption = poll.selectedOption;
   const options = poll.options;
-  const totalVotes = options.reduce((acc, option) => acc + option.votes, 0);
+  const totalVotes = options.reduce(
+    (acc, option) => acc + option.votesCount,
+    0,
+  );
   const queryClient = useQueryClient();
   const changeSelectedVote = useCallback(
     (optionId: number) => {
-      queryClient.setQueryData(["feed"], (old: FeedResponse) => {
+      queryClient.setQueryData(["feed"], (old: GetFeedResponse) => {
         if (!old) return old;
         return {
           ...old,
@@ -25,10 +29,10 @@ export function PollDisplay({ poll }: { poll: Poll }) {
                 selectedOption: optionId,
                 options: entry.options.map((option) => {
                   if (option.id === optionId) {
-                    return { ...option, votes: option.votes + 1 };
+                    return { ...option, votes: option.votesCount + 1 };
                   }
                   if (option.id === selectedOption) {
-                    return { ...option, votes: option.votes - 1 };
+                    return { ...option, votes: option.votesCount - 1 };
                   }
                   return option;
                 }),
@@ -46,7 +50,7 @@ export function PollDisplay({ poll }: { poll: Poll }) {
       if (selectedOption === optionId) {
         return;
       }
-      const oldData = queryClient.getQueryData<FeedResponse>(["feed"]);
+      const oldData = queryClient.getQueryData<GetFeedResponse>(["feed"]);
       changeSelectedVote(optionId);
       try {
         await castVote(poll.id, optionId);
@@ -59,7 +63,7 @@ export function PollDisplay({ poll }: { poll: Poll }) {
 
   return (
     <div className="p-4">
-      <h3 className="font-semibold">{poll.question}</h3>
+      <h3 className="font-semibold">{poll.content}</h3>
       <p className="text-sm text-gray-500 mt-1">
         {pluralize(totalVotes, "vote")}
       </p>
@@ -87,11 +91,13 @@ export function PollDisplay({ poll }: { poll: Poll }) {
                   width:
                     totalVotes == 0
                       ? 0
-                      : `${(option.votes / totalVotes) * 100}%`,
+                      : `${(option.votesCount / totalVotes) * 100}%`,
                 }}
               />
-              <span>{option.option}</span>
-              <span>{option.votes > 0 && pluralize(option.votes, "vote")}</span>
+              <span>{option.text}</span>
+              <span>
+                {option.votesCount > 0 && pluralize(option.votesCount, "vote")}
+              </span>
             </button>
           </li>
         ))}

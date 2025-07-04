@@ -1,7 +1,7 @@
 "use client";
 import { UserProfile } from "@/components/user-profile";
 import { BookmarkIcon, HeartIcon, SendIcon } from "lucide-react";
-import { FeedPost } from "@repo/api-types/feed";
+import { FeedPost } from "@repo/types";
 import { PollDisplay } from "./poll-display";
 import { PostDisplay } from "./post-display";
 import { useEffect, useRef } from "react";
@@ -11,18 +11,17 @@ import { cn, pluralize } from "@/lib/utils";
 import { CommentDialog } from "./comment-dialog";
 import Link from "next/link";
 import { useComments } from "../hooks/use-comments";
-import { bookmarkPost, unbookmarkPost } from "../api";
 import { useBookmarked } from "../hooks/use-bookmarked";
 
 export function PostCard({ post }: { post: FeedPost }) {
   const ref = useRef<HTMLDivElement>(null);
   const author = post.author;
   const { logView, isLogged } = useLogView(post.id);
-  const { toggleLike } = useLikes(post.id, post.liked);
+  const { toggleLike } = useLikes(post.id, post.likedByMe);
   const { addComment } = useComments(post.id);
   const { bookmarked, toggleBookmark } = useBookmarked(
     post.id,
-    post.bookmarked,
+    post.bookmarkedByMe,
   );
   useEffect(() => {
     if (isLogged) return;
@@ -43,7 +42,7 @@ export function PostCard({ post }: { post: FeedPost }) {
   return (
     <div className="flex flex-col py-2 border-b" ref={ref}>
       <div className="flex gap-2 items-center px-4">
-        <UserProfile {...author} />
+        <UserProfile user={author} />
       </div>
       {post.postType === "regular" && <PostDisplay post={post} />}
       {post.postType === "poll" && <PollDisplay poll={post} />}
@@ -51,17 +50,21 @@ export function PostCard({ post }: { post: FeedPost }) {
         <button
           className={cn(
             "p-2 rounded-full hover:bg-primary/10 transition-colors cursor-pointer text-white hover:text-gray-200 text-sm flex",
-            post.liked && "text-red-500 hover:bg-red-500/10 hover:text-red-500",
+            post.likedByMe &&
+              "text-red-500 hover:bg-red-500/10 hover:text-red-500",
           )}
           onClick={() => toggleLike()}
         >
           <HeartIcon
-            className={cn("size-5", post.liked && "fill-red-500 animate-pop")}
+            className={cn(
+              "size-5",
+              post.likedByMe && "fill-red-500 animate-pop",
+            )}
           />
         </button>
         <CommentDialog
           author={post.author}
-          content={post.postType == "regular" ? post.content : post.question}
+          content={post.content}
           postId={post.id}
           addComment={addComment}
         />
@@ -82,18 +85,20 @@ export function PostCard({ post }: { post: FeedPost }) {
       </div>
       <div className="flex gap-3 px-4">
         {/* TODO: Singular and plural logic for likes */}
-        {post.likes > 0 && (
+        {post.likesCount > 0 && (
           <p className="text-gray-500 text-sm">
-            {pluralize(post.likes, "like")}
+            {pluralize(post.likesCount, "like")}
           </p>
         )}
-        <p className="text-gray-500 text-sm">{pluralize(post.views, "view")}</p>
-        {post.comments > 0 && (
+        <p className="text-gray-500 text-sm">
+          {pluralize(post.viewsCount, "view")}
+        </p>
+        {post.commentsCount > 0 && (
           <Link
             href={`/posts/${post.id}`}
             className="text-gray-500 text-sm hover:underline cursor-pointer"
           >
-            view {pluralize(post.comments, "comment")}
+            view {pluralize(post.commentsCount, "comment")}
           </Link>
         )}
       </div>

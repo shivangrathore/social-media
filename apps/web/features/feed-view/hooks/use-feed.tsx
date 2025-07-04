@@ -1,10 +1,10 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { fetchFeed } from "../api";
-import { FeedResponse } from "@repo/api-types/feed";
+import { GetFeedResponse } from "@repo/types";
 
 export default function useFeed() {
-  const { data, isLoading } = useQuery<FeedResponse>({
+  const { data, isLoading } = useQuery<GetFeedResponse>({
     queryFn: fetchFeed,
     queryKey: ["feed"],
   });

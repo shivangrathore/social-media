@@ -1,4 +1,5 @@
 import { ProviderUser } from "@/auth_providers/base";
+import { postTable, userView } from "@/db/schema";
 import {
   RegisterUserSchemaType,
   AddAttachmentSchemaType,
@@ -6,6 +7,7 @@ import {
 } from "@repo/types";
 import { Attachment, Comment, User } from "@repo/types";
 import { PostType } from "@repo/types";
+import { InferSelectModel, InferSelectViewModel } from "drizzle-orm";
 
 export type IUser = User;
 export type IAttachment = Attachment;
@@ -93,4 +95,37 @@ export interface ICommentsRepository {
 
 export interface IUserRepository {
   getById(userId: number): Promise<IUser | null>;
+}
+
+export interface IFeedPost {
+  post: InferSelectModel<typeof postTable>;
+  user: InferSelectViewModel<typeof userView>;
+  bookmarkedByMe: boolean;
+}
+
+export interface IPollData {
+  id: number;
+  postId: number;
+  expiresAt: Date | null;
+  createdAt: Date;
+}
+
+export interface IPollOption {
+  id: number;
+  pollId: number;
+  text: string;
+  voteCount: number;
+}
+
+export interface IFeedRepository {
+  getFeedPosts(
+    userId: number,
+    cursor?: number,
+    limit?: number,
+  ): Promise<IFeedPost[]>;
+  getPollData(postId: number): Promise<IPollData | null>;
+  getPollOptions(pollId: number): Promise<IPollOption[]>;
+  getUserPollVote(pollId: number, userId: number): Promise<number | null>;
+  getUserLikeStatus(postId: number, userId: number): Promise<boolean>;
+  getUserPollVote(pollId: number, userId: number): Promise<number | null>;
 }

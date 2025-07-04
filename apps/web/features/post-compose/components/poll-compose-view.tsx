@@ -10,7 +10,7 @@ import { z } from "zod";
 import { usePollDraft } from "../hooks/use-poll-draft";
 import { useAutoSaveDraftPoll } from "../hooks/use-auto-save-poll";
 import { useMutation } from "@tanstack/react-query";
-// import { publishPoll } from "../api/polls";
+import { publishPost } from "../api/posts";
 import { PollLoadingSkeleton } from "./poll-loading-skeleton";
 import { useAutosavePost } from "../hooks/use-auto-save-post";
 
@@ -74,8 +74,9 @@ export function PollComposeView() {
   const { mutateAsync, isPending: isCreating } = useMutation({
     mutationKey: ["publishPoll"],
     mutationFn: async () => {
-      return {};
-    }, // publish
+      if (!draft?.id) throw new Error("Draft ID is required to publish");
+      return publishPost(draft.id);
+    },
     onSuccess: () => {
       console.log("Poll published successfully");
       form.reset({

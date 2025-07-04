@@ -23,7 +23,7 @@ export class PollRepository implements IPollRepository {
     await db.delete(pollOptionTable).where(eq(pollOptionTable.pollId, poll.id));
     const values = options.map((option) => ({
       pollId: poll.id,
-      option,
+      text: option,
     }));
     await db.insert(pollOptionTable).values(values);
   }
@@ -44,12 +44,12 @@ export class PollRepository implements IPollRepository {
     const options = await db.query.pollOptionTable.findMany({
       where: (table) => eq(table.pollId, poll.id),
       columns: {
-        option: true,
+        text: true,
       },
     });
 
     return {
-      options: options.map((opt) => opt.option),
+      options: options.map((opt) => opt.text),
       expiresAt: poll.expiresAt,
     };
   }

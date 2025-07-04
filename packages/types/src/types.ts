@@ -55,3 +55,36 @@ export interface PollMeta {
   options: string[];
   expiresAt: Date | null;
 }
+
+interface PollOption {
+  id: number;
+  text: string;
+  votesCount: number;
+}
+
+export type FeedPost = {
+  id: number;
+  userId: number;
+  content: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+  likesCount: number;
+  commentsCount: number;
+  viewsCount: number;
+  publishedAt: Date | null;
+  bookmarkedByMe: boolean;
+  likedByMe: boolean;
+  author: User;
+} & (
+  | {
+      postType: "regular";
+      attachments: Attachment[];
+    }
+  | {
+      postType: "poll";
+      question: string;
+      options: PollOption[];
+      selectedOption: number | null;
+      expiresAt: Date | null;
+    }
+);

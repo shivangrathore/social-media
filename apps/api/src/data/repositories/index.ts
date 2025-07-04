@@ -1,6 +1,7 @@
 import { AttachmentRepository } from "./attachment.repository";
 import { AuthRepository } from "./auth.repository";
 import { CommentRepository } from "./comment.repository";
+import { FeedRepository } from "./feed.repository";
 import { PollRepository } from "./poll.repository";
 import { PostRepository } from "./post.repository";
 import { UserRepository } from "./user.repository";
@@ -11,3 +12,4 @@ export const postRepository = new PostRepository();
 export const pollRepository = new PollRepository();
 export const commentRepository = new CommentRepository();
 export const userRepository = new UserRepository();
+export const feedRepository = new FeedRepository();

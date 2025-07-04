@@ -1,4 +1,4 @@
-import { User } from "./types";
+import { FeedPost, User } from "./types";
 
 export type LoginResponse = {
   message: string;
@@ -16,4 +16,9 @@ export type GetSignatureResponse = {
   timestamp: string;
   context: string;
   uploadUrl: string;
+};
+
+export type GetFeedResponse = {
+  data: FeedPost[];
+  nextCursor: number | null;
 };

@@ -47,7 +47,10 @@ export function PostComposeView() {
     refetch: refetchDraft,
     create,
   } = usePostDraft();
-  const form = useForm({ resolver: zodResolver(PostComposeSchema) });
+  const form = useForm({
+    resolver: zodResolver(PostComposeSchema),
+    defaultValues: { content: "" },
+  });
   const content = useWatch({ control: form.control, name: "content" });
   const {
     draftAttachments,
@@ -78,8 +81,9 @@ export function PostComposeView() {
   const onSubmit = async () => {
     if (!draft) return;
     await publishPost(draft.id);
-    await refetchDraft();
     resetFiles();
+    form.reset();
+    refetchDraft();
   };
   const isDirty = form.formState.isDirty;
   const inputId = useId();
@@ -93,6 +97,7 @@ export function PostComposeView() {
     form.setValue("content", newContent, {
       shouldDirty: true,
       shouldTouch: true,
+      shouldValidate: true,
     });
   };
   useAutosavePost(isDirty, draft?.id, content, create);
@@ -102,6 +107,7 @@ export function PostComposeView() {
       form.setValue("content", draft.content || "", {
         shouldDirty: true,
         shouldTouch: true,
+        shouldValidate: true,
       });
     }
   }, [draft]);
@@ -109,6 +115,7 @@ export function PostComposeView() {
     form.setValue("attachments", draftAttachments, {
       shouldDirty: true,
       shouldTouch: true,
+      shouldValidate: true,
     });
   }, [draftAttachments]);
   const handleDeleteAttachment = async (attachmentId: number) => {
