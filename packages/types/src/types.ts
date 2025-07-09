@@ -52,6 +52,7 @@ export interface Post extends BasePost {
 }
 
 export interface PollMeta {
+  id: number;
   options: string[];
   expiresAt: Date | null;
 }
@@ -87,3 +88,11 @@ export type FeedPost = {
       expiresAt: Date | null;
     }
 );
+
+export interface Like {
+  id: number;
+  userId: number;
+  targetId: number;
+  createdAt: Date;
+  targetType: "post" | "comment";
+}

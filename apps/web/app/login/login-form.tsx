@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { apiClient } from "@/lib/apiClient";
 import { loadUser } from "@/store/auth";
-import { LoginFormSchema } from "@/lib/types";
+import { LoginUserSchema, LoginUserSchemaType } from "@repo/types";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircleIcon } from "lucide-react";
@@ -21,7 +21,7 @@ import { z } from "zod";
 export function LoginForm() {
   const router = useRouter();
   const form = useForm({
-    resolver: zodResolver(LoginFormSchema),
+    resolver: zodResolver(LoginUserSchema),
     defaultValues: { id: "", password: "" },
     mode: "onTouched",
   });
@@ -29,7 +29,7 @@ export function LoginForm() {
   const watchedValues = form.watch();
   const { errors, touchedFields } = form.formState;
 
-  function getFieldStatus(fieldName: keyof z.infer<typeof LoginFormSchema>) {
+  function getFieldStatus(fieldName: keyof LoginUserSchemaType) {
     const hasError = errors[fieldName];
     const isTouched = touchedFields[fieldName];
     const hasValue = watchedValues[fieldName];
@@ -54,7 +54,7 @@ export function LoginForm() {
     }
   }
 
-  async function handleSubmit(data: z.infer<typeof LoginFormSchema>) {
+  async function handleSubmit(data: LoginUserSchemaType) {
     await apiClient.post("/auth/login", data);
     await loadUser();
     const next = new URLSearchParams(window.location.search).get("next") || "/";
@@ -64,7 +64,7 @@ export function LoginForm() {
   return (
     <Form {...form}>
       <form
-        className="flex p-4 flex-col space-y-4 w-full"
+        className="flex p-4 flex-col space-y-4 w-full text-foreground"
         onSubmit={form.handleSubmit(handleSubmit)}
       >
         <FormField

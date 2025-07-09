@@ -46,6 +46,7 @@ export const profileTable = pgTable("profile", {
   username: varchar("username", { length: 255 }).notNull().unique(),
   userId: bigint("user_id", { mode: "number" })
     .notNull()
+    .unique()
     .references(() => userTable.id),
   avatar: varchar("avatar", { length: 255 }).default(sql`NULL`),
   bio: text("bio").default(sql`NULL`),

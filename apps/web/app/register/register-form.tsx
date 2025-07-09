@@ -11,20 +11,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { apiClient } from "@/lib/apiClient";
-import { RegisterFormSchema } from "@/lib/types";
+import { RegisterUserSchema, RegisterUserSchemaType } from "@repo/types";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 export function RegisterForm() {
   const form = useForm({
-    resolver: zodResolver(RegisterFormSchema),
+    resolver: zodResolver(RegisterUserSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      name: "",
       email: "",
       password: "",
       dob: new Date(),
@@ -35,7 +33,7 @@ export function RegisterForm() {
   const watchedValues = form.watch();
   const { errors, touchedFields } = form.formState;
 
-  function getFieldStatus(fieldName: keyof z.infer<typeof RegisterFormSchema>) {
+  function getFieldStatus(fieldName: keyof RegisterUserSchemaType) {
     const hasError = errors[fieldName];
     const isTouched = touchedFields[fieldName];
     const hasValue = watchedValues[fieldName];
@@ -59,7 +57,7 @@ export function RegisterForm() {
         return "";
     }
   }
-  async function handleSubmit(data: z.infer<typeof RegisterFormSchema>) {
+  async function handleSubmit(data: RegisterUserSchemaType) {
     try {
       await apiClient.post("/auth/register", data);
     } catch {
@@ -71,51 +69,29 @@ export function RegisterForm() {
   return (
     <Form {...form}>
       <form
-        className="space-y-4 w-full"
+        className="space-y-4 w-full text-foreground"
         onSubmit={form.handleSubmit(handleSubmit)}
       >
-        <div className="flex gap-4 w-full">
-          <FormField
-            name="firstName"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Firstname</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    className={cn(getFieldStyle(getFieldStatus("firstName")))}
-                  />
-                </FormControl>
-                {errors["firstName"] && (
-                  <p className="text-red-500 text-sm" role="alert">
-                    <AlertCircleIcon className="inline mr-1 size-4" />
-                    {errors["firstName"].message}
-                  </p>
-                )}
-              </FormItem>
-            )}
-          />
-          <FormField
-            name="lastName"
-            render={({ field }) => (
-              <FormItem className="w-full">
-                <FormLabel>Lastname</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    className={cn(getFieldStyle(getFieldStatus("lastName")))}
-                  />
-                </FormControl>
-                {errors["lastName"] && (
-                  <p className="text-red-500 text-sm" role="alert">
-                    <AlertCircleIcon className="inline mr-1 size-4" />
-                    {errors["lastName"].message}
-                  </p>
-                )}
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          name="name"
+          render={({ field }) => (
+            <FormItem className="w-full">
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  className={cn(getFieldStyle(getFieldStatus("name")))}
+                />
+              </FormControl>
+              {errors["name"] && (
+                <p className="text-red-500 text-sm" role="alert">
+                  <AlertCircleIcon className="inline mr-1 size-4" />
+                  {errors["name"].message}
+                </p>
+              )}
+            </FormItem>
+          )}
+        />
         <FormField
           name="email"
           render={({ field }) => (

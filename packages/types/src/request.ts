@@ -2,15 +2,18 @@ import { z } from "zod";
 
 // TODO: Learn what strict mode do in zod
 export const RegisterUserSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters" }),
   name: z.string().min(1),
-  dob: z.coerce.date(),
+  dob: z.coerce.date({ message: "Invalid date of birth" }),
+  agreeToTerms: z.boolean().default(false),
 });
 
 export const LoginUserSchema = z.object({
   id: z.string(),
-  password: z.string().min(8),
+  password: z.string(),
 });
 
 export const AddAttachmentSchema = z.object({

@@ -17,6 +17,7 @@ async function getFeed(
     cursor,
     limit,
   );
+  console.log("Get Feed Posts", records);
   const data = await Promise.all(
     records.slice(0, limit).map(async (record) => {
       const post = record.post;

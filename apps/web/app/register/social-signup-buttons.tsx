@@ -10,7 +10,11 @@ export function SocialSignupButtons() {
   return (
     <div className="flex flex-col w-full gap-2">
       <button
-        onClick={() => router.push("/api/v1/auth/provider/google")}
+        onClick={() =>
+          router.push(
+            `/api/v1/auth/provider/google?redirectUrl=${window.location.href}`,
+          )
+        }
         className={cn(
           buttonVariants({
             variant: "outline",

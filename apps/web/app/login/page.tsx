@@ -18,7 +18,7 @@ export const metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-blue-500 to-indigo-500 overflow-auto items-center justify-center">
+    <div className="flex min-h-screen bg-gradient-to-br from-blue-500 to-indigo-500 overflow-auto items-center justify-center light">
       <div className="grid lg:grid-cols-2 w-full max-w-7xl mx-auto h-fit relative items-center gap-10 p-10">
         <div className="size-30 bg-sky-300/20 rounded-full left-[600px] absolute bottom-2" />
         <div className="size-10 bg-sky-300/20 rounded-full right-10 absolute top-72" />
@@ -66,8 +66,12 @@ export default function LoginPage() {
               <div className="rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 p-3 mb-2 text-white">
                 <UsersIcon />
               </div>
-              <h2 className="text-2xl font-semibold">Welcome Back!</h2>
-              <p className="text-md">Sign in to continue your journey</p>
+              <h2 className="text-2xl font-semibold text-foreground">
+                Welcome Back!
+              </h2>
+              <p className="text-md text-foreground">
+                Sign in to continue your journey
+              </p>
             </div>
             <LoginForm />
             <div className="flex items-center gap-2 w-full">

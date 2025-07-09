@@ -29,7 +29,7 @@ export default function RegisterPage() {
     },
   ];
   return (
-    <div className="flex  min-h-screen bg-gradient-to-br from-blue-500 to-indigo-500 overflow-auto items-center justify-center p-10">
+    <div className="flex  min-h-screen bg-gradient-to-br from-blue-500 to-indigo-500 overflow-auto items-center justify-center p-10 light">
       <div className="grid xl:grid-cols-2 w-full max-w-7xl mx-auto h-fit relative items-center gap-10">
         <div className="size-30 bg-sky-300/20 rounded-full left-[600px] absolute bottom-2" />
         <div className="size-10 bg-sky-300/20 rounded-full right-10 absolute top-72" />
@@ -75,8 +75,10 @@ export default function RegisterPage() {
               <div className="rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 p-3 mb-2 text-white">
                 <UsersIcon />
               </div>
-              <h2 className="text-2xl font-semibold">Create Your Accont</h2>
-              <p className="text-md">
+              <h2 className="text-2xl font-semibold text-foreground">
+                Create Your Accont
+              </h2>
+              <p className="text-md text-foreground">
                 Join {process.env.NEXT_PUBLIC_APP_NAME} in just a few steps
               </p>
             </div>

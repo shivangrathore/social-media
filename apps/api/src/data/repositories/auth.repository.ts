@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { IAccount, IAuthRepository } from "./respository";
-import { IUser } from "@repo/types";
+import { User } from "@repo/types";
 import {
   accountTable,
   profileTable,
@@ -10,14 +10,14 @@ import {
 } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { DatabaseError } from "pg";
-import { RegisterUserSchemaType } from "@repo/request-schemas";
+import { RegisterUserSchemaType } from "@repo/types";
 import { ProviderUser } from "@/auth_providers/base";
 import { ServiceError } from "@/utils/errors";
 
 type DBUser = typeof userView.$inferSelect;
 
 export class AuthRepository implements IAuthRepository {
-  private mapUser(user: DBUser): IUser {
+  private mapUser(user: DBUser): User {
     return {
       id: user.id,
       username: user.username,
@@ -27,7 +27,7 @@ export class AuthRepository implements IAuthRepository {
     };
   }
 
-  async findUserByUsername(username: string): Promise<IUser | null> {
+  async findUserByUsername(username: string): Promise<User | null> {
     const user = await db
       .select()
       .from(userView)
@@ -36,7 +36,7 @@ export class AuthRepository implements IAuthRepository {
     return user.length ? this.mapUser(user[0]) : null;
   }
 
-  async findUserByEmail(email: string): Promise<IUser | null> {
+  async findUserByEmail(email: string): Promise<User | null> {
     const user = await db
       .select()
       .from(userView)
@@ -105,7 +105,7 @@ export class AuthRepository implements IAuthRepository {
     accessToken: string,
     username: string,
     provider: string,
-  ): Promise<IUser> {
+  ): Promise<User> {
     const userId = await db.transaction(async (tx) => {
       let userId: number;
       {
@@ -157,7 +157,7 @@ export class AuthRepository implements IAuthRepository {
     return user!;
   }
 
-  async findUserById(userId: number): Promise<IUser | null> {
+  async findUserById(userId: number): Promise<User | null> {
     const user = await db
       .select()
       .from(userView)
