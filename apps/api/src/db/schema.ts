@@ -204,7 +204,7 @@ export const pollVoteTable = pgTable(
       .references(() => pollOptionTable.id),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (t) => [unique().on(t.userId, t.pollOptionId)],
+  (t) => [unique().on(t.userId, t.pollId)],
 );
 
 export const postViewTable = pgTable("post_view", {

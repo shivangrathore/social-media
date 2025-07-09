@@ -1,22 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { postAddLike, postRemoveLike } from "../api/likes";
 import { useCallback } from "react";
-import { FeedResponse } from "@repo/api-types/feed";
+import { FeedPost, GetFeedResponse } from "@repo/types";
 
-export function useLikes(postId: number, liked: boolean) {
+export function useLikes(postId: number, likedByMe: boolean) {
   const queryClient = useQueryClient();
-  function markLiked(liked: boolean) {
-    queryClient.setQueryData(["feed"], (old: FeedResponse) => {
+  function markLiked(likedByMe: boolean) {
+    queryClient.setQueryData(["feed"], (old: GetFeedResponse) => {
       if (!old) return old;
-      const incr = liked ? 1 : -1;
+      const incr = likedByMe ? 1 : -1;
       const updatedFeed = {
         ...old,
-        data: old.data.map((post: any) => {
+        data: old.data.map((post: FeedPost) => {
           if (post.id === postId) {
             return {
               ...post,
-              likes: post.likes + incr,
-              liked: liked,
+              likedByMe,
+              likeCount: post.likeCount + incr,
             };
           }
           return post;
@@ -48,12 +48,12 @@ export function useLikes(postId: number, liked: boolean) {
   });
 
   const toggleLike = useCallback(() => {
-    if (liked) {
+    if (likedByMe) {
       removeLike();
     } else {
       addLike();
     }
-  }, [liked, addLike, removeLike]);
+  }, [likedByMe, addLike, removeLike]);
 
   return { toggleLike };
 }

@@ -76,12 +76,20 @@ export interface IPostRepository {
   updateContent(postId: number, content: string | null): Promise<IPost | null>;
   publish(postId: number): Promise<IPost | null>;
   getById(postId: number): Promise<IPost | null>;
+  logView(postId: number, userId: number): Promise<void>;
 }
 
 export interface IPollRepository {
+  getPollByPostId(postId: number): Promise<IPollData | null>;
   createPoll(postId: number, expiresAt?: Date): Promise<void>;
   setOptions(postId: number, options: string[]): Promise<void>;
   getPollMeta(postId: number): Promise<PollMeta | null>;
+  getOptionById(optionId: number): Promise<IPollOption | null>;
+  createVote(
+    pollId: number,
+    userId: number,
+    optionId: number,
+  ): Promise<IPollOption>;
 }
 
 export interface ICommentsRepository {
@@ -128,4 +136,30 @@ export interface IFeedRepository {
   getUserPollVote(pollId: number, userId: number): Promise<number | null>;
   getUserLikeStatus(postId: number, userId: number): Promise<boolean>;
   getUserPollVote(pollId: number, userId: number): Promise<number | null>;
+}
+
+export interface ILike {
+  id: number;
+  targetId: number;
+  userId: number;
+  targetType: "post" | "comment";
+  createdAt: Date;
+}
+
+export interface ILikeRepository {
+  findLike(
+    targetId: number,
+    userId: number,
+    target: "post" | "comment",
+  ): Promise<ILike | null>;
+  addLike(
+    targetId: number,
+    userId: number,
+    target: "post" | "comment",
+  ): Promise<ILike>;
+  removeLike(
+    targetId: number,
+    userId: number,
+    target: "post" | "comment",
+  ): Promise<ILike | null>;
 }

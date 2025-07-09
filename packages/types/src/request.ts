@@ -30,8 +30,20 @@ export const CreateDraftSchema = z.object({
   content: z.string().optional(),
 });
 
+export const CreateCommentSchema = z.object({
+  postId: z.number(),
+  content: z.string().min(1),
+  parentId: z.number().optional(),
+});
+
+export const CastVoteSchema = z.object({
+  optionId: z.number(),
+});
+
 export type RegisterUserSchemaType = z.infer<typeof RegisterUserSchema>;
 export type LoginUserSchemaType = z.infer<typeof LoginUserSchema>;
 export type AddAttachmentSchemaType = z.infer<typeof AddAttachmentSchema>;
 export type PostType = z.infer<typeof PostTypeSchema>;
 export type CreateDraftSchemaType = z.infer<typeof CreateDraftSchema>;
+export type CreateCommentSchemaType = z.infer<typeof CreateCommentSchema>;
+export type CastVoteSchemaType = z.infer<typeof CastVoteSchema>;

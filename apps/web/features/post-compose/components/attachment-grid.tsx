@@ -33,7 +33,7 @@ export function AttachmentGrid({
   };
 
   return (
-    <div className={"grid grid-cols-2 gap-2 mt-2 h-[600px]"}>
+    <div className={"grid grid-cols-2 gap-2 mt-2 h-fit"}>
       {attachments.map((attachment) => (
         <AttachmentItem
           key={attachment.id}
@@ -70,7 +70,7 @@ function AttachmentItem({ attachment, onRemove }: AttachmentItemProps) {
         <video
           src={attachment.url}
           controls
-          className="w-full h-auto object-cover"
+          className="w-full h-full object-cover"
         />
       )}
     </Container>
@@ -91,10 +91,10 @@ function UploadingFileItem({ file, onRemove }: UploadingFileItemProps) {
         <img
           src={file.url || "/placeholder.svg"}
           alt={file.file.name}
-          className="w-full h-auto object-cover"
+          className="w-full h-full object-cover"
         />
       ) : (
-        <video src={file.url} controls className="w-full h-auto object-cover" />
+        <video src={file.url} controls className="w-full h-full object-cover" />
       )}
 
       {!file.uploaded && (

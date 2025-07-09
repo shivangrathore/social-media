@@ -18,7 +18,6 @@ import { AttachmentGrid } from "./attachment-grid";
 import { Button } from "@/components/ui/button";
 import { publishPost } from "../api/posts";
 import { useAttachments } from "../hooks/use-attachments";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const AttachmentSchema = z.object({
   id: z.number(),
@@ -52,12 +51,8 @@ export function PostComposeView() {
     defaultValues: { content: "" },
   });
   const content = useWatch({ control: form.control, name: "content" });
-  const {
-    draftAttachments,
-    isLoading: isDraftAttachmentLoading,
-    addAttachment,
-    refetchAttachments,
-  } = useAttachments(draft?.id);
+  const { draftAttachments, addAttachment, refetchAttachments } =
+    useAttachments(draft?.id);
   const {
     files: uploadingFiles,
     addFiles,
@@ -151,7 +146,6 @@ export function PostComposeView() {
             handleFileSelect(e.target.files);
           }}
         />
-        {isDraftAttachmentLoading && <Skeleton className="h-64 w-full mt-2" />}
         <AttachmentGrid
           attachments={attachments}
           uploadingFiles={uploadingFiles}

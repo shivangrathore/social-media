@@ -1,8 +1,8 @@
-import { FeedEntry } from "@repo/api-types/feed";
+import { FeedPost } from "@repo/types";
 import PostAttachmentGrid from "./post-attachment-grid";
 import { cn } from "@/lib/utils";
 
-type Post = Extract<FeedEntry, { postType: "regular" }>;
+type Post = Extract<FeedPost, { postType: "regular" }>;
 export function PostDisplay({ post }: { post: Post }) {
   return (
     <>

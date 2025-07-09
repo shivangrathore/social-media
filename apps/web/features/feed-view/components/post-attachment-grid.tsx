@@ -1,11 +1,11 @@
 import { cn } from "@/lib/utils";
-import { AttachmentFile } from "@repo/api-types";
+import { Attachment } from "@repo/types";
 
 export default function PostAttachmentGrid({
   attachments,
   className,
 }: {
-  attachments: AttachmentFile[];
+  attachments: Attachment[];
   className?: string;
 }) {
   return (
@@ -25,7 +25,7 @@ export default function PostAttachmentGrid({
               <img
                 src={attachment.url}
                 alt=""
-                className="w-full h-auto object-cover"
+                className="w-full h-full object-cover"
               />
             ) : (
               <video

@@ -4,10 +4,17 @@ import {
   postRepository,
   attachmentRepository,
   commentRepository,
+  likeRepository,
 } from "@/data/repositories";
 import { IPost } from "@/data/repositories/respository";
 import { ServiceError } from "@/utils/errors";
-import { Attachment, Comment, PollMeta } from "@repo/types";
+import {
+  Attachment,
+  CastVoteSchema,
+  Comment,
+  Like,
+  PollMeta,
+} from "@repo/types";
 import {
   AddAttachmentSchema,
   CreateDraftSchema,
@@ -174,4 +181,81 @@ export const addAttachment = async (
   );
 
   res.json(attachment);
+};
+
+export const addLike = async (req: Request, res: Response<Like>) => {
+  const userId = res.locals["userId"];
+  const postId = parseInt(req.params.postId, 10);
+  const post = await postRepository.getById(postId);
+  if (!post) {
+    throw ServiceError.NotFound("Post not found");
+  }
+  if (!post.publishedAt) {
+    throw ServiceError.BadRequest("Cannot like a unpublished post");
+  }
+
+  const existingLike = await likeRepository.findLike(post.id, userId, "post");
+  if (existingLike) {
+    throw ServiceError.BadRequest("You have already liked this post");
+  }
+  const like = await likeRepository.addLike(postId, userId, "post");
+  res.status(201).json(like);
+};
+
+export const removeLike = async (req: Request, res: Response<Like>) => {
+  const userId = res.locals["userId"];
+  const postId = parseInt(req.params.postId, 10);
+  const post = await postRepository.getById(postId);
+  if (!post) {
+    throw ServiceError.NotFound("Post not found");
+  }
+  if (!post.publishedAt) {
+    throw ServiceError.BadRequest("Cannot remove like from a unpublished post");
+  }
+
+  const existingLike = await likeRepository.findLike(post.id, userId, "post");
+  if (!existingLike) {
+    throw ServiceError.NotFound("Like not found");
+  }
+
+  const like = await likeRepository.removeLike(existingLike.id, post.id);
+  res.status(204).send(like!);
+};
+
+export const logPostView = async (req: Request, res: Response) => {
+  const userId = res.locals["userId"];
+  const postId = parseInt(req.params.postId, 10);
+  const post = await postRepository.getById(postId);
+  if (!post) {
+    throw ServiceError.NotFound("Post not found");
+  }
+  if (!post.publishedAt) {
+    throw ServiceError.BadRequest("Cannot log view for an unpublished post");
+  }
+
+  await postRepository.logView(postId, userId);
+  res.status(204).send();
+};
+
+export const castVote = async (req: Request, res: Response) => {
+  const userId = res.locals["userId"];
+  const postId = parseInt(req.params.postId, 10);
+  const { optionId } = await CastVoteSchema.parseAsync(req.body);
+  const post = await postRepository.getById(postId);
+  if (!post || post.type !== "poll") {
+    throw ServiceError.NotFound("Poll not found");
+  }
+
+  const poll = await pollRepository.getPollMeta(postId);
+  if (!poll) {
+    throw ServiceError.NotFound("Poll not found for this post");
+  }
+
+  const option = await pollRepository.getOptionById(optionId);
+  if (!option || option.pollId !== poll.id) {
+    throw ServiceError.NotFound("Poll option not found");
+  }
+
+  const newOption = await pollRepository.createVote(userId, poll.id, option.id);
+  res.status(200).json(newOption);
 };

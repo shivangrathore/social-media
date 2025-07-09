@@ -25,10 +25,10 @@ export function PollDisplay({ poll }: { poll: Poll }) {
                 selectedOption: optionId,
                 options: entry.options.map((option) => {
                   if (option.id === optionId) {
-                    return { ...option, votes: option.votesCount + 1 };
+                    return { ...option, voteCount: option.voteCount + 1 };
                   }
                   if (option.id === selectedOption) {
-                    return { ...option, votes: option.votesCount - 1 };
+                    return { ...option, voteCount: option.voteCount - 1 };
                   }
                   return option;
                 }),
@@ -87,12 +87,12 @@ export function PollDisplay({ poll }: { poll: Poll }) {
                   width:
                     totalVotes == 0
                       ? 0
-                      : `${(option.votesCount / totalVotes) * 100}%`,
+                      : `${(option.voteCount / totalVotes) * 100}%`,
                 }}
               />
               <span>{option.text}</span>
               <span>
-                {option.votesCount > 0 && pluralize(option.votesCount, "vote")}
+                {option.voteCount > 0 && pluralize(option.voteCount, "vote")}
               </span>
             </button>
           </li>

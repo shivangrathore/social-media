@@ -5,8 +5,8 @@ export const fetchFeed = async () => {
   return res.data;
 };
 
-export const castVote = async (pollId: number, optionId: number) => {
-  const res = await apiClient.post(`/polls/${pollId}/vote`, { optionId });
+export const castVote = async (postId: number, optionId: number) => {
+  const res = await apiClient.post(`/posts/${postId}/poll/vote`, { optionId });
   return res.data;
 };
 

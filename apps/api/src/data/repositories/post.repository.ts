@@ -1,7 +1,7 @@
-import { postTable } from "@/db/schema";
+import { postTable, postViewTable, userBookmarkTable } from "@/db/schema";
 import { IPost, IPostRepository } from "./respository";
 import { PostType } from "@repo/types";
-import { and, eq, InferSelectModel, isNull } from "drizzle-orm";
+import { and, eq, InferSelectModel, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 
 type DBPost = InferSelectModel<typeof postTable>;
@@ -77,5 +77,26 @@ export class PostRepository implements IPostRepository {
       .where(eq(postTable.id, postId))
       .returning();
     return result.length ? this.mapDbPostToIPost(result[0]) : null;
+  }
+  async logView(postId: number, userId: number): Promise<void> {
+    await db.transaction(async (tx) => {
+      await tx.insert(postViewTable).values({
+        postId,
+        userId,
+      });
+      await tx
+        .update(postTable)
+        .set({
+          viewCount: sql`${postTable.viewCount} + 1`,
+        })
+        .where(eq(postTable.id, postId));
+    });
+  }
+
+  async bookmapPost(postId: number, userId: number): Promise<IPost | null> {
+    await db.insert(userBookmarkTable).values({
+      userId,
+      targetId: postId,
+    });
   }
 }
