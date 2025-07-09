@@ -16,7 +16,6 @@ export async function middleware(request: NextRequest) {
 
   // Authenticated route handling
   try {
-    console.log(token?.value);
     await apiClient.get("/users/@me", {
       headers: {
         Authorization: `Bearer ${token?.value}`,

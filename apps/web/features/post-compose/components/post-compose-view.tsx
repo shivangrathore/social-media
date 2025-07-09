@@ -73,14 +73,16 @@ export function PostComposeView() {
     addFiles(post.id, ...filesArray);
   }
   const isValid = form.formState.isValid;
-  const onSubmit = async () => {
+  const isDirty = form.formState.isDirty;
+  const { forceSave } = useAutosavePost(isDirty, draft?.id, content, create);
+  const onSubmit = async (data: PostComposeSchema) => {
     if (!draft) return;
+    await forceSave({ id: draft.id, content: data.content.trim() });
     await publishPost(draft.id);
     resetFiles();
     form.reset();
     refetchDraft();
   };
-  const isDirty = form.formState.isDirty;
   const inputId = useId();
   const onEmojiSelect = (emoji: string) => {
     const currentContent = form.getValues("content");
@@ -95,7 +97,6 @@ export function PostComposeView() {
       shouldValidate: true,
     });
   };
-  useAutosavePost(isDirty, draft?.id, content, create);
   useEffect(() => {
     if (draft) {
       refetchAttachments();

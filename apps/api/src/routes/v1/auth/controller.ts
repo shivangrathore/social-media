@@ -30,7 +30,6 @@ async function createSession(res: Response, user: User): Promise<void> {
   const expires = dateFns.add(new Date(), { seconds: JWT_EXPIRE_TIME });
   await authRepository.createSession(user.id, token, expires);
   res.cookie("token", token, { expires, httpOnly: true });
-  console.log("Session created for user:", user.id);
 }
 
 export const login = async (
@@ -85,7 +84,6 @@ export const providerRedirect = async (
     throw ServiceError.BadRequest("Provider not found");
   }
   const redirectUrl = req.query.redirectUrl;
-  console.log("Redirect URL:", redirectUrl);
   res.redirect(provider.oAuthUrl({ redirectUrl }));
 };
 

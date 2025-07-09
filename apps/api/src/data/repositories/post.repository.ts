@@ -78,6 +78,7 @@ export class PostRepository implements IPostRepository {
       .returning();
     return result.length ? this.mapDbPostToIPost(result[0]) : null;
   }
+
   async logView(postId: number, userId: number): Promise<void> {
     await db.transaction(async (tx) => {
       await tx.insert(postViewTable).values({
@@ -93,7 +94,7 @@ export class PostRepository implements IPostRepository {
     });
   }
 
-  async bookmapPost(postId: number, userId: number): Promise<IPost | null> {
+  async bookmarkPost(postId: number, userId: number): Promise<void> {
     await db.insert(userBookmarkTable).values({
       userId,
       targetId: postId,

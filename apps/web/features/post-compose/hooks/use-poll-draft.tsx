@@ -2,7 +2,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createDraftPoll, getPollDraft, getPollMeta } from "../api/polls";
 import { Post } from "@repo/types";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 export function usePollDraft() {
   const {
@@ -32,6 +32,7 @@ export function usePollDraft() {
     mutationKey: ["createPollDraft"],
     mutationFn: createDraftPoll,
     onSuccess: () => {
+      // TODO: Remove content blink on draft creation
       refetch();
     },
   });

@@ -23,14 +23,12 @@ export const authStore = create<AuthStore>((set) => {
 });
 
 export async function loadUser() {
-  console.log("Loading user...");
   const state = authStore.getState();
   try {
     state.setLoading(true);
     const res = await apiClient.get<IUser>("/users/@me");
     state.setUser(res.data);
   } catch (e) {
-    console.log("Failed to load user", e);
     state.clearUser();
   }
 }

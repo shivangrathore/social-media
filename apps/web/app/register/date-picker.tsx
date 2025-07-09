@@ -19,8 +19,6 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
   const [year, setYear] = React.useState("2020");
   const [date, setDate] = React.useState("1");
 
-  console.log(value);
-
   useEffect(() => {
     const today = new Date();
     setDate(today.getDate().toString());

@@ -14,21 +14,24 @@ export function useAutosavePost(
     mutationFn: saveDraftPost,
   });
 
+  function save() {
+    if (!postId) {
+      return create(content);
+    }
+    return mutateAsync({ id: postId, content: content.trim() });
+  }
+
   useEffect(() => {
     if (!isDirty) return;
     const timeout = setTimeout(async () => {
-      if (!postId) {
-        const post = await create(content);
-        postId = post.id;
-      }
-      await mutateAsync({
-        id: postId,
-        content: content.trim(),
-      });
+      await save();
     }, 1000);
 
     return () => clearTimeout(timeout);
   }, [isDirty, content, postId, mutateAsync]);
 
-  return { isSaving };
+  return {
+    isSaving,
+    forceSave: mutateAsync,
+  };
 }

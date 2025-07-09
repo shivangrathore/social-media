@@ -42,7 +42,7 @@ export class FeedRepository implements IFeedRepository {
           isNotNull(postTable.publishedAt),
         ),
       )
-      .orderBy(desc(postTable.createdAt))
+      .orderBy(desc(postTable.publishedAt))
       .innerJoin(userView, eq(userView.id, postTable.userId))
       .leftJoin(
         userBookmarkTable,

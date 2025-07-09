@@ -31,7 +31,6 @@ const MAX_OPTIONS = 4;
 
 export function PollComposeView() {
   const { draft, isLoading: isDraftLoading, create } = usePollDraft();
-  console.log(draft);
   const form = useForm({
     resolver: zodResolver(ComposePollSchema),
     defaultValues: {
@@ -42,7 +41,6 @@ export function PollComposeView() {
   //
   const isDirty = form.formState.isDirty;
   const question = useWatch({ control: form.control, name: "question" });
-  useAutosavePost(isDirty, draft?.id, question, create);
   const {
     append: addOption,
     remove: removeOption,
@@ -69,7 +67,12 @@ export function PollComposeView() {
     name: "options",
   });
 
-  useAutoSaveDraftPoll(isDirty, draft?.id, optionsValues);
+  const { forceSave } = useAutosavePost(isDirty, draft?.id, question, create);
+  const { save: forceSaveOptions } = useAutoSaveDraftPoll(
+    isDirty,
+    draft?.id,
+    optionsValues,
+  );
 
   const { mutateAsync, isPending: isCreating } = useMutation({
     mutationKey: ["publishPoll"],
@@ -78,7 +81,6 @@ export function PollComposeView() {
       return publishPost(draft.id);
     },
     onSuccess: () => {
-      console.log("Poll published successfully");
       form.reset({
         question: "",
         options: Array.from({ length: MIN_OPTIONS }, () => ({ value: "" })),
@@ -86,8 +88,10 @@ export function PollComposeView() {
     },
   });
 
-  const handleSubmit = async () => {
+  const onSubmit = async () => {
     if (!draft?.id) return;
+    await forceSave({ id: draft.id, content: question });
+    await forceSaveOptions({ postId: draft.id, optionsValues });
     await mutateAsync();
   };
 
@@ -103,7 +107,7 @@ export function PollComposeView() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit, errorPublishing)}>
+      <form onSubmit={form.handleSubmit(onSubmit, errorPublishing)}>
         <Label className="mb-2 text-sm font-medium">Poll Question</Label>
         <Input
           {...form.register("question")}

@@ -77,6 +77,7 @@ export interface IPostRepository {
   publish(postId: number): Promise<IPost | null>;
   getById(postId: number): Promise<IPost | null>;
   logView(postId: number, userId: number): Promise<void>;
+  bookmarkPost(postId: number, userId: number): Promise<void>;
 }
 
 export interface IPollRepository {

@@ -15,7 +15,6 @@ export function LoadMoreContent({
       ([entry]) => {
         if (entry.isIntersecting) {
           loadMore();
-          console.log("Load more triggered");
           observer.disconnect();
         }
       },
