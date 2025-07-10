@@ -174,3 +174,9 @@ export interface IHashtagRepository {
   upsert(name: string): Promise<Hashtag>;
   searchByName(name: string, limit?: number): Promise<Hashtag[]>;
 }
+
+export interface IFollowRepository {
+  followUser(followerId: number, followingId: number): Promise<void>;
+  unfollowUser(followerId: number, followingId: number): Promise<void>;
+  isFollowing(followerId: number, followingId: number): Promise<boolean>;
+}

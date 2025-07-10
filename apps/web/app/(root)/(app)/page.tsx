@@ -3,7 +3,7 @@ import FeedView from "@/features/feed-view/components";
 import { SuggestionPanel } from "@/components/suggestion-panel";
 
 export const metadata = {
-  title: process.env.NEXT_PUBLIC_APP_NAME || "Home",
+  title: "Feed",
 };
 
 export default function FeedPage() {

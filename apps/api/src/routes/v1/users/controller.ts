@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { userRepository } from "@/data/repositories";
+import { userRepository, followRepository } from "@/data/repositories";
 import { ServiceError } from "@/utils/errors";
 import { User } from "@repo/types";
 
@@ -34,4 +34,32 @@ export const getUserByUsername = async (
     throw ServiceError.NotFound("User not found");
   }
   res.json(user);
+};
+
+export const followUser = async (
+  req: Request,
+  res: Response<void>,
+): Promise<void> => {
+  const userId = res.locals["userId"];
+  const { username } = req.params;
+  const user = await userRepository.getByUsername(username);
+  if (!user) {
+    throw ServiceError.NotFound("User not found");
+  }
+  await followRepository.followUser(userId, user.id);
+  res.status(204).send();
+};
+
+export const unfollowUser = async (
+  req: Request,
+  res: Response<void>,
+): Promise<void> => {
+  const userId = res.locals["userId"];
+  const { username } = req.params;
+  const user = await userRepository.getByUsername(username);
+  if (!user) {
+    throw ServiceError.NotFound("User not found");
+  }
+  await followRepository.unfollowUser(userId, user.id);
+  res.status(204).send();
 };

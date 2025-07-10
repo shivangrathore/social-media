@@ -1,24 +1,11 @@
-"use client";
-import { useEffect } from "react";
 import "./globals.css";
-import { loadUser } from "@/store/auth";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import MainLayout from "./main-layout";
 
-const queryClient = new QueryClient({});
+export const metadata = {
+  title: {
+    default: "Social Connect",
+    template: "%s - Social Connect",
+  },
+};
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  useEffect(() => {
-    loadUser();
-  }, []);
-  return (
-    <html lang="en">
-      <QueryClientProvider client={queryClient}>
-        <body className="dark">{children}</body>
-      </QueryClientProvider>
-    </html>
-  );
-}
+export default MainLayout;

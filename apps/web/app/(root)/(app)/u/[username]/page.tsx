@@ -1,6 +1,5 @@
 import { SuggestionPanel } from "@/components/suggestion-panel";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { apiClient } from "@/lib/apiClient";
 import { getInitials } from "@/lib/utils";
 import { User } from "@repo/types";
@@ -14,6 +13,25 @@ async function getUserByUsername(username: string): Promise<User> {
   } catch (e) {
     notFound();
   }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}) {
+  const { username } = await params;
+  const user = await getUserByUsername(username);
+  return {
+    title: `${user.name} (@${user.username}) - Profile`,
+    description: `Profile page of ${user.name} (@${user.username}). View their posts, followers, and more.`,
+    openGraph: {
+      title: `${user.name} (@${user.username}) - Profile`,
+      description: `Profile page of ${user.name} (@${user.username}). View their posts, followers, and more.`,
+      url: `/users/${user.username}`,
+      images: user.avatar ? [user.avatar] : [],
+    },
+  };
 }
 
 export default async function UserProfilePage({
@@ -43,6 +61,7 @@ export default async function UserProfilePage({
           <ProfileControls profile={user} />
         </div>
         {user.bio && <p className="mt-4">{user.bio}</p>}
+        <hr className="my-6" />
       </div>
       <SuggestionPanel />
     </div>
