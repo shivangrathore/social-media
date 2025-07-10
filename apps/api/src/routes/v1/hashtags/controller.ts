@@ -5,7 +5,7 @@ import { Request, Response } from "express";
 export async function searchHashtags(req: Request, res: Response<Hashtag[]>) {
   const hashtags = await hashtagRepository.searchByName(
     req.query.query as string,
-    5,
+    10,
   );
   res.status(200).json(hashtags);
 }

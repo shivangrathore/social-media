@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import AutoHeightTextarea, {
   AutoHeightTextareaProps,
 } from "./auto-height-textarea";
@@ -7,16 +7,44 @@ import mergeRefs from "merge-refs";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/apiClient";
 import { Hashtag } from "@repo/types";
+import { cn } from "@/lib/utils";
 
 export function RichTextArea(props: AutoHeightTextareaProps) {
   const [isHashtaging, setIsHashtagging] = React.useState(false);
   const [hashtagSearch, setHashtagSearch] = React.useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mirrorRef = useRef<HTMLDivElement>(null);
+  const suggestionsRef = useRef<Map<number, HTMLLIElement>>(new Map());
+  const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [popupPosition, setPopupPosition] = React.useState<{
     x: number;
     y: number;
   }>({ x: 0, y: 0 });
+  const [selectedHashtagIdx, setSelectedHashtagIdx] = React.useState<
+    number | null
+  >(null);
+  const { isLoading, data } = useQuery({
+    queryKey: ["hashtagSuggestions", hashtagSearch],
+    queryFn: async () => {
+      if (!hashtagSearch) return [];
+      const res = await apiClient.get<Hashtag[]>("/hashtags/search", {
+        params: { query: hashtagSearch },
+      });
+      return res.data;
+    },
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    enabled: isHashtaging && hashtagSearch.length > 0,
+  });
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      setSelectedHashtagIdx(0);
+    } else {
+      setSelectedHashtagIdx(null);
+    }
+  }, [data]);
 
   const getCursorPosition = useCallback(
     (textarea: HTMLTextAreaElement, cursorIndex: number) => {
@@ -70,6 +98,18 @@ export function RichTextArea(props: AutoHeightTextareaProps) {
   }
 
   useEffect(() => {
+    if (suggestionsRef.current.size === 0 || selectedHashtagIdx === null) {
+      return;
+    }
+    const selectedElement = suggestionsRef.current.get(selectedHashtagIdx);
+    if (!selectedElement) return;
+    selectedElement.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+    });
+  }, [selectedHashtagIdx]);
+
+  useEffect(() => {
     if (!textareaRef.current) return;
     const textarea = textareaRef.current;
     const abortController = new AbortController();
@@ -85,6 +125,9 @@ export function RichTextArea(props: AutoHeightTextareaProps) {
     textarea.addEventListener(
       "focus",
       (e) => {
+        if (blurTimeoutRef.current) {
+          clearTimeout(blurTimeoutRef.current);
+        }
         const target = e.target as HTMLTextAreaElement;
         const cursorPos = target.selectionStart;
         detectHashtag(target.value, cursorPos);
@@ -94,8 +137,15 @@ export function RichTextArea(props: AutoHeightTextareaProps) {
     textarea.addEventListener(
       "blur",
       () => {
-        setIsHashtagging(false);
-        setHashtagSearch("");
+        if (blurTimeoutRef.current) {
+          clearTimeout(blurTimeoutRef.current);
+        }
+        blurTimeoutRef.current = setTimeout(() => {
+          if (isHashtaging) {
+            setIsHashtagging(false);
+            setHashtagSearch("");
+          }
+        }, 150);
       },
       { signal: abortController.signal },
     );
@@ -108,28 +158,63 @@ export function RichTextArea(props: AutoHeightTextareaProps) {
       },
       { signal: abortController.signal },
     );
+    textarea.addEventListener(
+      "keydown",
+      (e) => {
+        if (!isHashtaging) return;
+        if (e.key === "ArrowDown") {
+          if (!data || data.length === 0) return;
+          e.preventDefault();
+          setSelectedHashtagIdx((prev) => {
+            prev = prev === null ? 0 : prev;
+            return (prev + 1) % data.length;
+          });
+        } else if (e.key === "ArrowUp") {
+          if (!data || data.length === 0) return;
+          e.preventDefault();
+          setSelectedHashtagIdx((prev) => {
+            prev = prev === null ? data.length - 1 : prev;
+            return (prev - 1 + data.length) % data.length;
+          });
+        } else if (e.key === "Enter") {
+          if (!data || data.length === 0 || selectedHashtagIdx === null) return;
+          e.preventDefault();
+          const selectedHashtag = data[selectedHashtagIdx];
+          insertHashtag(selectedHashtag.name);
+        }
+      },
+      { signal: abortController.signal },
+    );
     return () => {
       abortController.abort();
     };
-  }, []);
+  }, [isHashtaging, data, selectedHashtagIdx, getCursorPosition]);
 
-  const { isLoading, data } = useQuery({
-    queryKey: ["hashtagSuggestions", hashtagSearch],
-    queryFn: async () => {
-      if (!hashtagSearch) return [];
-      const res = await apiClient.get<Hashtag[]>("/hashtags/search", {
-        params: { query: hashtagSearch },
-      });
-      return res.data;
-    },
-    enabled: isHashtaging && hashtagSearch.length > 0,
-  });
+  function insertHashtag(hashtag: string) {
+    if (!textareaRef.current) return;
+    const textarea = textareaRef.current;
+    const cursorPos = textarea.selectionStart;
+    const value = textarea.value;
+    const leftText = value
+      .slice(0, cursorPos)
+      .slice(0, -hashtagSearch.length - 1);
+    const rightText = value.slice(textarea.selectionEnd);
+    const newValue = `${leftText}#${hashtag} ${rightText}`;
+    textarea.value = newValue;
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    setIsHashtagging(false);
+    setHashtagSearch("");
+  }
 
   const HashTagSuggestions = useCallback(() => {
     if (isLoading) {
       return null;
     }
     if (!data) {
+      return null;
+    }
+
+    if (!data.length) {
       return null;
     }
 
@@ -142,10 +227,25 @@ export function RichTextArea(props: AutoHeightTextareaProps) {
         }}
       >
         <ul>
-          {data.map((hashtag) => (
+          {data.map((hashtag, idx) => (
             <li
+              ref={(node) => {
+                if (node) {
+                  suggestionsRef.current.set(idx, node);
+                } else {
+                  suggestionsRef.current.delete(idx);
+                }
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                insertHashtag(hashtag.name);
+              }}
               key={hashtag.id}
-              className="text-foreground p-2 hover:underline border-b border-border"
+              className={cn(
+                "text-foreground p-2 hover:underline border-b border-border hover:bg-accent/70",
+                idx == selectedHashtagIdx ? "bg-accent hover:bg-accent" : "",
+              )}
             >
               #{hashtag.name}
             </li>
@@ -153,7 +253,7 @@ export function RichTextArea(props: AutoHeightTextareaProps) {
         </ul>
       </div>
     );
-  }, [data, isLoading, popupPosition]);
+  }, [data, isLoading, popupPosition, selectedHashtagIdx]);
 
   return (
     <div className="relative">

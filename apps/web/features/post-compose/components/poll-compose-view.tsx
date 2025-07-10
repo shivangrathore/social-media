@@ -13,6 +13,7 @@ import { useMutation } from "@tanstack/react-query";
 import { publishPost } from "../api/posts";
 import { PollLoadingSkeleton } from "./poll-loading-skeleton";
 import { useAutosavePost } from "../hooks/use-auto-save-post";
+import { RichTextArea } from "@/components/rich-text-area";
 
 const ComposePollSchema = z.object({
   question: z.string().min(1, "Question is required"),
@@ -109,9 +110,8 @@ export function PollComposeView() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit, errorPublishing)}>
         <Label className="mb-2 text-sm font-medium">Poll Question</Label>
-        <Input
+        <RichTextArea
           {...form.register("question")}
-          type="text"
           placeholder={"Ask a question..."}
         />
         <Label className="mt-4 mb-2 text-sm font-medium">Options</Label>
