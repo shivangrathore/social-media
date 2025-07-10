@@ -246,6 +246,7 @@ export const userView = pgView("user_view").as((qb) =>
       createdAt: userTable.createdAt,
       updatedAt: userTable.updatedAt,
       username: profileTable.username,
+      bio: profileTable.bio,
     })
     .from(userTable)
     .innerJoin(profileTable, eq(userTable.id, profileTable.userId)),

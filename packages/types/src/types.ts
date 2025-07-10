@@ -6,6 +6,7 @@ export interface User {
   createdAt: Date;
   avatar: string | null;
   name: string | null;
+  bio: string | null;
 }
 export interface Attachment {
   id: number;

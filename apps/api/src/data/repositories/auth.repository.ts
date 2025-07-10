@@ -24,6 +24,7 @@ export class AuthRepository implements IAuthRepository {
       createdAt: user.createdAt,
       name: user.name,
       avatar: user.avatar,
+      bio: user.bio,
     };
   }
 

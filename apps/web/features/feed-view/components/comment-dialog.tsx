@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { User } from "@repo/api-types";
+import { User } from "@repo/types";
 import { MessageCircle } from "lucide-react";
 import { PostCommentForm } from "./post-comment-form";
 import React, { useCallback } from "react";
@@ -45,13 +45,11 @@ export function CommentDialog({
         <div className="flex flex-col relative">
           <div className="flex gap-2 items-start">
             <Avatar className="size-12">
-              <AvatarImage />
+              <AvatarImage src={author.avatar || undefined} />
               <AvatarFallback>SR</AvatarFallback>
             </Avatar>
             <div className="flex items-center gap-1 text-sm">
-              <p className="font-semibold text-gray-300">
-                {author.firstName + " " + author.lastName}
-              </p>
+              <p className="font-semibold text-gray-300">{author.name}</p>
               <p className="text-gray-400">@{author.username}</p>
             </div>
           </div>
@@ -61,7 +59,7 @@ export function CommentDialog({
           </div>
           <div className="flex gap-2">
             <Avatar className="size-12">
-              <AvatarImage />
+              <AvatarImage src={author.avatar || undefined} />
               <AvatarFallback>SR</AvatarFallback>
             </Avatar>
             <PostCommentForm postId={postId} onCommentAdd={onCommentAdd} />

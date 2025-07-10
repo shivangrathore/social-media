@@ -1,5 +1,5 @@
 {
-  "id": "3c0010bd-0581-4ffd-9747-c8cbfaa5a6a2",
+  "id": "156f6fc3-b2d8-4cc4-a298-2e9df6d580ce",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -209,7 +209,7 @@
           "name": "content",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "post_id": {
           "name": "post_id",
@@ -222,6 +222,13 @@
           "type": "bigint",
           "primaryKey": false,
           "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -272,8 +279,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.friend_request": {
-      "name": "friend_request",
+    "public.follower": {
+      "name": "follower",
       "schema": "",
       "columns": {
         "id": {
@@ -282,25 +289,92 @@
           "primaryKey": true,
           "notNull": true
         },
-        "sender_id": {
-          "name": "sender_id",
+        "follower_id": {
+          "name": "follower_id",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
-        "recipient_id": {
-          "name": "recipient_id",
+        "following_id": {
+          "name": "following_id",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
-        "status": {
-          "name": "status",
-          "type": "friend_request_status",
-          "typeSchema": "public",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "default": "'pending'"
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "follower_follower_id_user_id_fk": {
+          "name": "follower_follower_id_user_id_fk",
+          "tableFrom": "follower",
+          "tableTo": "user",
+          "columnsFrom": [
+            "follower_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "follower_following_id_user_id_fk": {
+          "name": "follower_following_id_user_id_fk",
+          "tableFrom": "follower",
+          "tableTo": "user",
+          "columnsFrom": [
+            "following_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "follower_follower_id_following_id_unique": {
+          "name": "follower_follower_id_following_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "follower_id",
+            "following_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.hashtag": {
+      "name": "hashtag",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "post_count": {
+          "name": "post_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         },
         "created_at": {
           "name": "created_at",
@@ -313,127 +387,24 @@
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "friend_request_sender_id_user_id_fk": {
-          "name": "friend_request_sender_id_user_id_fk",
-          "tableFrom": "friend_request",
-          "tableTo": "user",
-          "columnsFrom": [
-            "sender_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "friend_request_recipient_id_user_id_fk": {
-          "name": "friend_request_recipient_id_user_id_fk",
-          "tableFrom": "friend_request",
-          "tableTo": "user",
-          "columnsFrom": [
-            "recipient_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "friend_request_sender_id_recipient_id_unique": {
-          "name": "friend_request_sender_id_recipient_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "sender_id",
-            "recipient_id"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "no_self_request": {
-          "name": "no_self_request",
-          "value": "\"friend_request\".\"sender_id\" != \"friend_request\".\"recipient_id\""
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.friend": {
-      "name": "friend",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "bigserial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_1_id": {
-          "name": "user_1_id",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_2_id": {
-          "name": "user_2_id",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
           "notNull": true,
           "default": "now()"
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "friend_user_1_id_user_id_fk": {
-          "name": "friend_user_1_id_user_id_fk",
-          "tableFrom": "friend",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_1_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "friend_user_2_id_user_id_fk": {
-          "name": "friend_user_2_id_user_id_fk",
-          "tableFrom": "friend",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_2_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "ordered_friend_ids": {
-          "name": "ordered_friend_ids",
-          "value": "\"friend\".\"user_1_id\" < \"friend\".\"user_2_id\""
+      "uniqueConstraints": {
+        "hashtag_name_unique": {
+          "name": "hashtag_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.like": {
@@ -521,14 +492,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "option": {
-          "name": "option",
+        "text": {
+          "name": "text",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "votes": {
-          "name": "votes",
+        "vote_count": {
+          "name": "vote_count",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -577,12 +548,6 @@
         "post_id": {
           "name": "post_id",
           "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "question": {
-          "name": "question",
-          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -711,12 +676,79 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "poll_vote_user_id_poll_option_id_unique": {
-          "name": "poll_vote_user_id_poll_option_id_unique",
+        "poll_vote_user_id_poll_id_unique": {
+          "name": "poll_vote_user_id_poll_id_unique",
           "nullsNotDistinct": false,
           "columns": [
             "user_id",
-            "poll_option_id"
+            "poll_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.post_hashtag": {
+      "name": "post_hashtag",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hashtag_id": {
+          "name": "hashtag_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "post_hashtag_post_id_post_id_fk": {
+          "name": "post_hashtag_post_id_post_id_fk",
+          "tableFrom": "post_hashtag",
+          "tableTo": "post",
+          "columnsFrom": [
+            "post_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "post_hashtag_hashtag_id_hashtag_id_fk": {
+          "name": "post_hashtag_hashtag_id_hashtag_id_fk",
+          "tableFrom": "post_hashtag",
+          "tableTo": "hashtag",
+          "columnsFrom": [
+            "hashtag_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "post_hashtag_post_id_hashtag_id_unique": {
+          "name": "post_hashtag_post_id_hashtag_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "post_id",
+            "hashtag_id"
           ]
         }
       },
@@ -746,13 +778,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "published": {
-          "name": "published",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
         "post_type": {
           "name": "post_type",
           "type": "post_type",
@@ -775,26 +800,33 @@
           "notNull": false,
           "default": "NULL"
         },
-        "likes": {
-          "name": "likes",
+        "like_count": {
+          "name": "like_count",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 0
         },
-        "comments": {
-          "name": "comments",
+        "comment_count": {
+          "name": "comment_count",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 0
         },
-        "views": {
-          "name": "views",
+        "view_count": {
+          "name": "view_count",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL"
         }
       },
       "indexes": {},
@@ -980,6 +1012,13 @@
           "nullsNotDistinct": false,
           "columns": [
             "username"
+          ]
+        },
+        "profile_user_id_unique": {
+          "name": "profile_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id"
           ]
         }
       },
@@ -1335,9 +1374,16 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL"
         }
       },
-      "definition": "select \"user\".\"id\", \"profile\".\"name\", \"user\".\"email\", \"user\".\"email_verified\", \"profile\".\"avatar\", \"user\".\"dob\", \"user\".\"created_at\", \"user\".\"updated_at\", \"profile\".\"username\" from \"user\" inner join \"profile\" on \"user\".\"id\" = \"profile\".\"user_id\"",
+      "definition": "select \"user\".\"id\", \"profile\".\"name\", \"user\".\"email\", \"user\".\"email_verified\", \"profile\".\"avatar\", \"user\".\"dob\", \"user\".\"created_at\", \"user\".\"updated_at\", \"profile\".\"username\", \"profile\".\"bio\" from \"user\" inner join \"profile\" on \"user\".\"id\" = \"profile\".\"user_id\"",
       "name": "user_view",
       "schema": "public",
       "isExisting": false,

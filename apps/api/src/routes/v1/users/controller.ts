@@ -23,3 +23,15 @@ export const suggestUsers = async (
   const users = await userRepository.suggestUsers(userId);
   res.json(users);
 };
+
+export const getUserByUsername = async (
+  req: Request,
+  res: Response<User>,
+): Promise<void> => {
+  const { username } = req.params;
+  const user = await userRepository.getByUsername(username);
+  if (!user) {
+    throw ServiceError.NotFound("User not found");
+  }
+  res.json(user);
+};

@@ -2,13 +2,13 @@
 import { create, useStore } from "zustand";
 import { apiClient } from "@/lib/apiClient";
 import { useShallow } from "zustand/shallow";
-import { IUser } from "@repo/types";
+import { User } from "@repo/types";
 
 type AuthStore = {
-  user: IUser | null;
+  user: User | null;
   isLoading: boolean;
   setLoading: (isLoading: boolean) => void;
-  setUser: (user: IUser) => void;
+  setUser: (user: User) => void;
   clearUser: () => void;
 };
 
@@ -16,7 +16,7 @@ export const authStore = create<AuthStore>((set) => {
   return {
     user: null,
     isLoading: true,
-    setUser: (user: IUser) => set({ user, isLoading: false }),
+    setUser: (user: User) => set({ user, isLoading: false }),
     clearUser: () => set({ user: null, isLoading: false }),
     setLoading: (isLoading: boolean) => set({ isLoading }),
   };
@@ -26,7 +26,7 @@ export async function loadUser() {
   const state = authStore.getState();
   try {
     state.setLoading(true);
-    const res = await apiClient.get<IUser>("/users/@me");
+    const res = await apiClient.get<User>("/users/@me");
     state.setUser(res.data);
   } catch (e) {
     state.clearUser();

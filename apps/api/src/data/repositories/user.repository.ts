@@ -14,6 +14,7 @@ export class UserRepository implements IUserRepository {
       avatar: data.avatar,
       createdAt: data.createdAt,
       name: data.name,
+      bio: data.bio,
     };
   }
   async getById(userId: number): Promise<User | null> {
@@ -51,5 +52,17 @@ export class UserRepository implements IUserRepository {
       .orderBy(sql`random()`)
       .limit(10);
     return result.map(this.mapToUser);
+  }
+
+  async getByUsername(username: string): Promise<User | null> {
+    const result = await db
+      .select()
+      .from(userView)
+      .where(eq(userView.username, username));
+
+    if (result.length === 0) {
+      return null;
+    }
+    return this.mapToUser(result[0]);
   }
 }

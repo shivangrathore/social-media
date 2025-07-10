@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { apiClient } from "./apiClient";
+import { User } from "@repo/types";
 
 async function getAuthorizationHeader() {
   const ck = await cookies();
@@ -9,7 +10,7 @@ async function getAuthorizationHeader() {
 
 export async function fetchCurrentUser() {
   try {
-    var res = await apiClient.get("users/@me", {
+    var res = await apiClient.get<User>("users/@me", {
       headers: { Authorization: await getAuthorizationHeader() },
     });
   } catch {

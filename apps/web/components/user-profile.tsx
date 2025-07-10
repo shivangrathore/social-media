@@ -2,6 +2,7 @@ import { User } from "@repo/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { getInitials } from "@/lib/utils";
 import { Skeleton } from "./ui/skeleton";
+import Link from "next/link";
 
 export function UserProfileSkeleton() {
   return (
@@ -21,7 +22,7 @@ export function UserProfile({
   user: User;
 }) {
   return (
-    <div className="flex gap-2 items-center">
+    <Link className="flex gap-2 items-center" href={`/u/${username}`}>
       <Avatar className="rounded-full size-10">
         <AvatarImage src={avatar || undefined} />
         <AvatarFallback>{getInitials(name || "")}</AvatarFallback>
@@ -30,6 +31,6 @@ export function UserProfile({
         <h2 className="text-sm font-medium">{name}</h2>
         <p className="text-xs text-gray-500">@{username}</p>
       </div>
-    </div>
+    </Link>
   );
 }

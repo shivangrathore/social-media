@@ -14,7 +14,7 @@ export function PostDisplay({ post }: { post: Post }) {
       {post.attachments.length > 0 && (
         <PostAttachmentGrid
           attachments={post.attachments}
-          className={cn(post.content && "mt-2")}
+          className={cn("mt-2")}
         />
       )}
     </>

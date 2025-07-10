@@ -106,6 +106,8 @@ export interface ICommentsRepository {
 
 export interface IUserRepository {
   getById(userId: number): Promise<IUser | null>;
+  suggestUsers(userId: number): Promise<IUser[]>;
+  getByUsername(username: string): Promise<IUser | null>;
 }
 
 export interface IFeedPost {

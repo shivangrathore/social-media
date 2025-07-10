@@ -217,7 +217,7 @@ export function RichTextArea(props: AutoHeightTextareaProps) {
   }
 
   const HashTagSuggestions = useCallback(() => {
-    if (isLoading) {
+    if (isLoading || !data || !data.length || !isHashtaging) {
       return null;
     }
     if (!data) {
