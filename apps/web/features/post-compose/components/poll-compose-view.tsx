@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { XIcon } from "lucide-react";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { Form } from "@/components/ui/form";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +14,7 @@ import { publishPost } from "../api/posts";
 import { PollLoadingSkeleton } from "./poll-loading-skeleton";
 import { useAutosavePost } from "../hooks/use-auto-save-post";
 import { RichTextArea } from "@/components/rich-text-area";
+import { cn } from "@/lib/utils";
 
 const ComposePollSchema = z.object({
   question: z.string().min(1, "Question is required"),
@@ -113,6 +114,10 @@ export function PollComposeView() {
         <RichTextArea
           {...form.register("question")}
           placeholder={"Ask a question..."}
+          className={cn(
+            "p-4 rounded-lg border border-border w-full resize-none overflow-hidden text-base",
+          )}
+          rows={1}
         />
         <Label className="mt-4 mb-2 text-sm font-medium">Options</Label>
         <div className="gap-2 flex flex-col">

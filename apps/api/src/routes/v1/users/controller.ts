@@ -14,3 +14,12 @@ export const getCurrentUser = async (
   }
   res.json(user);
 };
+
+export const suggestUsers = async (
+  req: Request,
+  res: Response<User[]>,
+): Promise<void> => {
+  const userId = res.locals["userId"];
+  const users = await userRepository.suggestUsers(userId);
+  res.json(users);
+};

@@ -4,7 +4,6 @@ import {
   BookmarkIcon,
   CircleEllipsisIcon,
   CompassIcon,
-  FileIcon,
   HomeIcon,
   MessageSquareIcon,
   UserIcon,
@@ -14,7 +13,6 @@ import {
 export default function AppSidebar() {
   const sidebarItems = [
     { name: "Feed", href: "/", icon: HomeIcon },
-    { name: "Pages", href: "/pages", icon: FileIcon },
     { name: "Explore", href: "/explore", icon: CompassIcon },
     { name: "Friends", href: "/friends", icon: UsersIcon },
     { name: "Messages", href: "/messages", icon: MessageSquareIcon },

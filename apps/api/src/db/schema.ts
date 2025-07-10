@@ -272,3 +272,18 @@ export const postHashtagTable = pgTable(
   },
   (t) => [unique().on(t.postId, t.hashtagId)],
 );
+
+export const followerTable = pgTable(
+  "follower",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    followerId: bigint("follower_id", { mode: "number" })
+      .notNull()
+      .references(() => userTable.id),
+    followingId: bigint("following_id", { mode: "number" })
+      .notNull()
+      .references(() => userTable.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [unique().on(t.followerId, t.followingId)],
+);

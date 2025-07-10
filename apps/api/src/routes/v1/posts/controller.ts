@@ -275,3 +275,35 @@ export const castVote = async (req: Request, res: Response) => {
   const newOption = await pollRepository.createVote(userId, poll.id, option.id);
   res.status(200).json(newOption);
 };
+
+export const bookmarkPost = async (req: Request, res: Response) => {
+  const userId = res.locals["userId"];
+  const postId = parseInt(req.params.postId, 10);
+  const post = await postRepository.getById(postId);
+  if (!post) {
+    throw ServiceError.NotFound("Post not found");
+  }
+  if (!post.publishedAt) {
+    throw ServiceError.BadRequest("Cannot bookmark an unpublished post");
+  }
+
+  await postRepository.bookmarkPost(userId, postId);
+  res.status(204).send();
+};
+
+export const removeBookmark = async (req: Request, res: Response) => {
+  const userId = res.locals["userId"];
+  const postId = parseInt(req.params.postId, 10);
+  const post = await postRepository.getById(postId);
+  if (!post) {
+    throw ServiceError.NotFound("Post not found");
+  }
+  if (!post.publishedAt) {
+    throw ServiceError.BadRequest(
+      "Cannot remove bookmark from an unpublished post",
+    );
+  }
+
+  await postRepository.unbookmarkPost(userId, postId);
+  res.status(204).send();
+};

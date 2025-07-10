@@ -1,9 +1,9 @@
 import { Router } from "express";
 import express from "express";
+import authMiddleware from "@/middlewares/auth";
 import { authRouter } from "./auth/";
 import { userRouter } from "./users/";
 import { postRouter } from "./posts/";
-import authMiddleware from "@/middlewares/auth";
 import { uploadRouter } from "./uploads/";
 import { feedRouter } from "./feed/";
 import { commentRouter } from "./comments/";

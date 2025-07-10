@@ -94,10 +94,20 @@ export class PostRepository implements IPostRepository {
     });
   }
 
-  async bookmarkPost(postId: number, userId: number): Promise<void> {
+  async bookmarkPost(userId: number, postId: number): Promise<void> {
     await db.insert(userBookmarkTable).values({
       userId,
       targetId: postId,
     });
+  }
+  async unbookmarkPost(userId: number, postId: number): Promise<void> {
+    await db
+      .delete(userBookmarkTable)
+      .where(
+        and(
+          eq(userBookmarkTable.userId, userId),
+          eq(userBookmarkTable.targetId, postId),
+        ),
+      );
   }
 }

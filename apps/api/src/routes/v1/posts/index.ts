@@ -3,6 +3,7 @@ import {
   addAttachment,
   addComment,
   addLike,
+  bookmarkPost,
   castVote,
   createDraft,
   getAttachments,
@@ -10,6 +11,7 @@ import {
   getPoll,
   logPostView,
   publishDraft,
+  removeBookmark,
   removeLike,
   updateDraftContent,
   updateOptions,
@@ -30,5 +32,7 @@ router.post("/:postId/likes", addLike);
 router.delete("/:postId/likes", removeLike);
 router.post("/:postId/views", logPostView);
 router.post("/:postId/poll/vote", castVote);
+router.post("/:postId/bookmark", bookmarkPost);
+router.delete("/:postId/bookmark", removeBookmark);
 
 export { router as postRouter };

@@ -23,19 +23,29 @@ export function RichTextArea(props: AutoHeightTextareaProps) {
   const [selectedHashtagIdx, setSelectedHashtagIdx] = React.useState<
     number | null
   >(null);
+  const [hashtagSearchDebounced, setHashtagSearchDebounced] =
+    React.useState("");
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setHashtagSearchDebounced(hashtagSearch);
+    }, 300);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [hashtagSearch]);
   const { isLoading, data } = useQuery({
-    queryKey: ["hashtagSuggestions", hashtagSearch],
+    queryKey: ["hashtagSuggestions", hashtagSearchDebounced],
     queryFn: async () => {
       if (!hashtagSearch) return [];
       const res = await apiClient.get<Hashtag[]>("/hashtags/search", {
-        params: { query: hashtagSearch },
+        params: { query: hashtagSearchDebounced },
       });
       return res.data;
     },
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchOnMount: false,
-    enabled: isHashtaging && hashtagSearch.length > 0,
+    enabled: isHashtaging && hashtagSearchDebounced.length > 0,
   });
 
   useEffect(() => {
