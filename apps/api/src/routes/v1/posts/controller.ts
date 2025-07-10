@@ -5,6 +5,7 @@ import {
   attachmentRepository,
   commentRepository,
   likeRepository,
+  hashtagRepository,
 } from "@/data/repositories";
 import { IPost } from "@/data/repositories/respository";
 import { ServiceError } from "@/utils/errors";
@@ -99,6 +100,21 @@ export const publishDraft = async (req: Request, res: Response<IPost>) => {
   }
 
   const publishedPost = await postRepository.publish(postId);
+  if (!publishedPost) {
+    throw ServiceError.BadRequest("Post cannot be published");
+  }
+  const content = publishedPost.content;
+  // FIXME: content should not be null, but handle it gracefully
+  const hashtagMatches =
+    content?.match(/#([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/g) || [];
+  console.log("Hashtag matches:", hashtagMatches);
+  const hashtags = hashtagMatches.map((tag) => tag.slice(1).toLowerCase());
+  console.log("Extracted hashtags:", hashtags);
+
+  for (const hashtag of hashtags) {
+    const htag = await hashtagRepository.upsert(hashtag);
+    await hashtagRepository.linkHashtagToPost(htag.id, publishedPost.id);
+  }
   res.status(200).json(publishedPost!);
 };
 

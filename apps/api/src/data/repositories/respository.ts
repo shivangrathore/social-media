@@ -4,6 +4,7 @@ import {
   RegisterUserSchemaType,
   AddAttachmentSchemaType,
   PollMeta,
+  Hashtag,
 } from "@repo/types";
 import { Attachment, Comment, User } from "@repo/types";
 import { PostType } from "@repo/types";
@@ -163,4 +164,10 @@ export interface ILikeRepository {
     userId: number,
     target: "post" | "comment",
   ): Promise<ILike | null>;
+}
+
+export interface IHashtagRepository {
+  linkHashtagToPost(hashtagId: number, postId: number): Promise<void>;
+  upsert(name: string): Promise<Hashtag>;
+  searchByName(name: string, limit?: number): Promise<Hashtag[]>;
 }

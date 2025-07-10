@@ -250,3 +250,25 @@ export const userView = pgView("user_view").as((qb) =>
     .from(userTable)
     .innerJoin(profileTable, eq(userTable.id, profileTable.userId)),
 );
+
+export const hashtagTable = pgTable("hashtag", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  postCount: integer("post_count").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const postHashtagTable = pgTable(
+  "post_hashtag",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    postId: bigint("post_id", { mode: "number" })
+      .notNull()
+      .references(() => postTable.id),
+    hashtagId: bigint("hashtag_id", { mode: "number" })
+      .notNull()
+      .references(() => hashtagTable.id),
+  },
+  (t) => [unique().on(t.postId, t.hashtagId)],
+);

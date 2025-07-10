@@ -96,3 +96,10 @@ export interface Like {
   createdAt: Date;
   targetType: "post" | "comment";
 }
+
+export interface Hashtag {
+  id: number;
+  name: string;
+  postCount: number;
+  createdAt: Date;
+}

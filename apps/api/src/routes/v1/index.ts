@@ -7,6 +7,7 @@ import authMiddleware from "@/middlewares/auth";
 import { uploadRouter } from "./uploads/";
 import { feedRouter } from "./feed/";
 import { commentRouter } from "./comments/";
+import { hashtagsRouter } from "./hashtags";
 
 const router: Router = Router();
 router.use("/auth", express.json(), authRouter);
@@ -15,5 +16,6 @@ router.use("/posts", express.json(), authMiddleware, postRouter);
 router.use("/uploads", express.json(), uploadRouter);
 router.use("/feed", express.json(), authMiddleware, feedRouter);
 router.use("/comments", express.json(), authMiddleware, commentRouter);
+router.use("/hashtags", express.json(), authMiddleware, hashtagsRouter);
 
 export default router;

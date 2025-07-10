@@ -1,26 +1,16 @@
-import React, { useCallback, useEffect } from "react";
+import React, { ComponentProps, useCallback, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import mergeRefs from "merge-refs";
 
-type AutoHeightTextareaProps =
+export type AutoHeightTextareaProps = ComponentProps<"textarea"> &
   React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
     minRows?: number;
     maxRows?: number;
   };
 
 // TODO: use the minRows and maxRows props to adjust the height of the textarea
-const AutoHeightTextarea = React.forwardRef<
-  HTMLTextAreaElement,
-  AutoHeightTextareaProps
->(({ minRows, maxRows, ...props }, ref) => {
+const AutoHeightTextarea = ({ ref, ...props }: AutoHeightTextareaProps) => {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null!);
-  const multipleRefs = (el: HTMLTextAreaElement) => {
-    if (typeof ref === "function") {
-      ref(el);
-    } else if (ref) {
-      ref.current = el;
-    }
-    textareaRef.current = el;
-  };
   const adjustHeight = useCallback(() => {
     const target = textareaRef.current;
     if (target) {
@@ -36,8 +26,14 @@ const AutoHeightTextarea = React.forwardRef<
   const handleInput = () => {
     adjustHeight();
   };
-  return <Textarea {...props} ref={multipleRefs} onInput={handleInput} />;
-});
+  return (
+    <Textarea
+      {...props}
+      ref={mergeRefs(ref, textareaRef)}
+      onInput={handleInput}
+    />
+  );
+};
 
 AutoHeightTextarea.displayName = "AutoHeightTextarea";
 export default AutoHeightTextarea;

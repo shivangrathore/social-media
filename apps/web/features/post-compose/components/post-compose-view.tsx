@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useId } from "react";
 import { useAutosavePost } from "../hooks/use-auto-save-post";
-import AutoHeightTextarea from "@/components/auto-height-textarea";
 import { z } from "zod";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +17,7 @@ import { AttachmentGrid } from "./attachment-grid";
 import { Button } from "@/components/ui/button";
 import { publishPost } from "../api/posts";
 import { useAttachments } from "../hooks/use-attachments";
+import { RichTextArea } from "@/components/rich-text-area";
 
 const AttachmentSchema = z.object({
   id: z.number(),
@@ -129,7 +129,7 @@ export function PostComposeView() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <AutoHeightTextarea
+        <RichTextArea
           {...form.register("content")}
           className={cn(
             "p-4 rounded-lg border border-border w-full resize-none overflow-hidden text-base",
