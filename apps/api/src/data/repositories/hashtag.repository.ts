@@ -29,9 +29,7 @@ export class HashtagRepository implements IHashtagRepository {
   }
 
   async upsert(name: string): Promise<Hashtag> {
-    const hashtag = await db.query.hashtagTable.findFirst({
-      where: (table, { eq }) => eq(table.name, name),
-    });
+    const hashtag = await this.getByName(name);
     if (hashtag) {
       return hashtag;
     }
@@ -51,5 +49,15 @@ export class HashtagRepository implements IHashtagRepository {
       limit,
     });
     return hashtags;
+  }
+
+  async getByName(name: string): Promise<Hashtag | null> {
+    const hashtag = await db.query.hashtagTable.findFirst({
+      where: (table, { eq }) => eq(table.name, name),
+    });
+    if (!hashtag) {
+      return null;
+    }
+    return hashtag;
   }
 }

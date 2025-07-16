@@ -10,7 +10,7 @@ import { Attachment, Comment, User } from "@repo/types";
 import { PostType } from "@repo/types";
 import { InferSelectModel, InferSelectViewModel } from "drizzle-orm";
 
-export type IUser = User;
+export type IUser = Omit<User, "isFollowing">;
 export type IAttachment = Attachment;
 export type IComment = Comment;
 
@@ -108,6 +108,7 @@ export interface IUserRepository {
   getById(userId: number): Promise<IUser | null>;
   suggestUsers(userId: number): Promise<IUser[]>;
   getByUsername(username: string): Promise<IUser | null>;
+  searchUsers(userId: number, query: string): Promise<IUser[]>;
 }
 
 export interface IFeedPost {

@@ -1,7 +1,7 @@
 import { postTable, postViewTable, userBookmarkTable } from "@/db/schema";
 import { IPost, IPostRepository } from "./respository";
 import { PostType } from "@repo/types";
-import { and, eq, InferSelectModel, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, InferSelectModel, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 
 type DBPost = InferSelectModel<typeof postTable>;

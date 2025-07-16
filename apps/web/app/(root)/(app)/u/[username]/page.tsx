@@ -5,12 +5,20 @@ import { getInitials } from "@/lib/utils";
 import { User } from "@repo/types";
 import { notFound } from "next/navigation";
 import { ProfileControls } from "./profile-controls";
+import { cookies } from "next/headers";
+import { ProfileInfo } from "./profile-info";
 
 async function getUserByUsername(username: string): Promise<User> {
+  const cookieStore = await cookies();
   try {
-    const res = await apiClient.get<User>(`/users/username/${username}`);
+    const res = await apiClient.get<User>(`/users/username/${username}`, {
+      headers: {
+        Authorization: `Bearer ${cookieStore.get("token")?.value || ""}`,
+      },
+    });
     return res.data;
   } catch (e) {
+    console.error("Error fetching user by username:", e);
     notFound();
   }
 }
@@ -61,7 +69,14 @@ export default async function UserProfilePage({
           <ProfileControls profile={user} />
         </div>
         {user.bio && <p className="mt-4">{user.bio}</p>}
-        <hr className="my-6" />
+        <div className="mt-6" />
+        {user.isProfilePublic ? (
+          <ProfileInfo id={user.id} />
+        ) : (
+          <div className="text-muted-foreground">
+            <p>This profile is private.</p>
+          </div>
+        )}
       </div>
       <SuggestionPanel />
     </div>

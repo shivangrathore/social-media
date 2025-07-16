@@ -4,17 +4,18 @@ import { castVote } from "../api";
 import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { FeedPost, GetFeedResponse } from "@repo/types";
+import { RichPostContent } from "./rich-post-content";
 
 type Poll = Extract<FeedPost, { postType: "poll" }>;
 
-export function PollDisplay({ poll }: { poll: Poll }) {
+export function PollDisplay({ poll, query }: { poll: Poll; query: string }) {
   const selectedOption = poll.selectedOption;
   const options = poll.options;
   const totalVotes = options.reduce((acc, option) => acc + option.voteCount, 0);
   const queryClient = useQueryClient();
   const changeSelectedVote = useCallback(
     (optionId: number) => {
-      queryClient.setQueryData(["feed"], (old: GetFeedResponse) => {
+      queryClient.setQueryData([query], (old: GetFeedResponse) => {
         if (!old) return old;
         return {
           ...old,
@@ -46,20 +47,20 @@ export function PollDisplay({ poll }: { poll: Poll }) {
       if (selectedOption === optionId) {
         return;
       }
-      const oldData = queryClient.getQueryData<GetFeedResponse>(["feed"]);
+      const oldData = queryClient.getQueryData<GetFeedResponse>([query]);
       changeSelectedVote(optionId);
       try {
         await castVote(poll.id, optionId);
       } catch (e) {
-        queryClient.setQueryData(["feed"], oldData);
+        queryClient.setQueryData([query], oldData);
       }
     },
     [poll.id, poll.selectedOption, poll.options, selectedOption],
   );
 
   return (
-    <div className="p-4">
-      <h3 className="font-semibold">{poll.content}</h3>
+    <div className="py-4">
+      <RichPostContent content={poll.content || ""} className="mb-2" />
       <p className="text-sm text-gray-500 mt-1">
         {pluralize(totalVotes, "vote")}
       </p>

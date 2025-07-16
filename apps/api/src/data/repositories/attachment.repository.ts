@@ -1,6 +1,6 @@
-import { AddAttachmentSchemaType } from "@repo/request-schemas";
+import { AddAttachmentSchemaType } from "@repo/types";
 import { IAttachmentRepository } from "./respository";
-import { IAttachment } from "@repo/types";
+import { Attachment } from "@repo/types";
 import { db } from "@/db";
 import { and, eq, InferSelectModel } from "drizzle-orm";
 import { attachmentTable } from "@/db/schema";
@@ -9,7 +9,7 @@ import { ServiceError } from "@/utils/errors";
 type DBAttachment = InferSelectModel<typeof attachmentTable>;
 
 export class AttachmentRepository implements IAttachmentRepository {
-  private mapAttachment(attachment: DBAttachment): IAttachment {
+  private mapAttachment(attachment: DBAttachment): Attachment {
     return {
       id: attachment.id,
       postId: attachment.postId,
@@ -25,7 +25,7 @@ export class AttachmentRepository implements IAttachmentRepository {
     payload: AddAttachmentSchemaType,
     userId: number,
     postId: number,
-  ): Promise<IAttachment> {
+  ): Promise<Attachment> {
     const attachment = await db.transaction(async (tx) => {
       const attachment = await tx
         .insert(attachmentTable)
@@ -60,7 +60,7 @@ export class AttachmentRepository implements IAttachmentRepository {
     });
     return;
   }
-  async getAttachmentsByPostId(postId: number): Promise<IAttachment[]> {
+  async getAttachmentsByPostId(postId: number): Promise<Attachment[]> {
     const attachments = await db.query.attachmentTable.findMany({
       where: eq(attachmentTable.postId, postId),
     });

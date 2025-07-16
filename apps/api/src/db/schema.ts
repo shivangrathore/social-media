@@ -54,6 +54,7 @@ export const profileTable = pgTable("profile", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   type: profileTypeEnum("type").notNull().default("user"),
+  public: boolean("public").notNull().default(true),
 });
 
 export const accountTable = pgTable(
@@ -247,6 +248,7 @@ export const userView = pgView("user_view").as((qb) =>
       updatedAt: userTable.updatedAt,
       username: profileTable.username,
       bio: profileTable.bio,
+      isProfilePublic: profileTable.public,
     })
     .from(userTable)
     .innerJoin(profileTable, eq(userTable.id, profileTable.userId)),

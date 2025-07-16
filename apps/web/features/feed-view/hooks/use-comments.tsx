@@ -3,17 +3,16 @@
 import { useCallback } from "react";
 import { useCreateComment } from "@/features/comments/hooks/use-create-comment";
 import { useQueryClient } from "@tanstack/react-query";
-import { FeedResponse } from "@repo/api-types/feed";
+import { GetFeedResponse } from "@repo/types";
 
-export function useComments(postId: number) {
+export function useComments(postId: number, query: string = "feed") {
   const { create } = useCreateComment({ postId });
   const queryClient = useQueryClient();
 
   const addComment = useCallback(
     async (content: string) => {
-      const previousFeed = queryClient.getQueryData<FeedResponse>(["feed"]);
-      // TODO: Relook at this, it might not be the best way to update the feed
-      queryClient.setQueryData(["feed"], (old: FeedResponse) => {
+      const previousFeed = queryClient.getQueryData<GetFeedResponse>([query]);
+      queryClient.setQueryData([query], (old: GetFeedResponse) => {
         if (!old) return old;
         const updatedFeed = {
           ...old,
@@ -21,7 +20,7 @@ export function useComments(postId: number) {
             if (post.id === postId) {
               return {
                 ...post,
-                comments: post.comments + 1,
+                commentCount: post.commentCount + 1,
               };
             }
             return post;
@@ -33,7 +32,7 @@ export function useComments(postId: number) {
         await create(content);
       } catch (error) {
         console.error("Error adding comment:", error);
-        queryClient.setQueryData(["feed"], () => {
+        queryClient.setQueryData([query], () => {
           return previousFeed;
         });
       }

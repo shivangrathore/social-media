@@ -1,4 +1,9 @@
-import { attachmentRepository, feedRepository } from "@/data/repositories";
+import {
+  attachmentRepository,
+  feedRepository,
+  postRepository,
+} from "@/data/repositories";
+import { IFeedPost, IPost } from "@/data/repositories/respository";
 import { postTable } from "@/db/schema";
 import { FeedPost, GetFeedResponse, User } from "@repo/types";
 import { InferSelectModel } from "drizzle-orm";
@@ -7,16 +12,11 @@ import { z } from "zod";
 
 type PostWithoutAttachments = InferSelectModel<typeof postTable>;
 
-async function getFeed(
+async function prepareFeedPosts(
   currentUserId: number,
-  cursor?: number,
-  limit: number = 10,
-): Promise<GetFeedResponse> {
-  const records = await feedRepository.getFeedPosts(
-    currentUserId,
-    cursor,
-    limit,
-  );
+  records: IFeedPost[],
+  limit: number,
+) {
   const data = await Promise.all(
     records.slice(0, limit).map(async (record) => {
       const post = record.post;
@@ -43,6 +43,20 @@ async function getFeed(
     data,
     nextCursor: records.length > limit ? records.at(-1)!.post.id : null,
   };
+}
+
+async function getFeed(
+  currentUserId: number,
+  cursor?: number,
+  limit: number = 10,
+): Promise<GetFeedResponse> {
+  const records = await feedRepository.getFeedPosts(
+    currentUserId,
+    cursor,
+    limit,
+  );
+
+  return await prepareFeedPosts(currentUserId, records, limit);
 }
 
 async function buildPollEntry(
@@ -107,4 +121,34 @@ export const getUserFeed = async (
   const userId = res.locals["userId"];
   const feed = await getFeed(userId, cursor, limit);
   res.status(200).json(feed);
+};
+
+export const getSavedPosts = async (
+  req: Request,
+  res: Response<GetFeedResponse>,
+) => {
+  const feedQuery = await feedQuerySchema.parseAsync(req.query);
+  const cursor = feedQuery.cursor;
+  const limit = feedQuery.limit;
+  const userId = res.locals["userId"];
+  const records = await feedRepository.getUserBookmarkedPosts(
+    userId,
+    cursor,
+    limit,
+  );
+  const data = await prepareFeedPosts(userId, records, limit);
+  res.status(200).json(data);
+};
+
+export const getUserPosts = async (
+  req: Request,
+  res: Response<GetFeedResponse>,
+) => {
+  const feedQuery = await feedQuerySchema.parseAsync(req.query);
+  const cursor = feedQuery.cursor;
+  const limit = feedQuery.limit;
+  const userId = res.locals["userId"];
+  const records = await feedRepository.getUserPosts(userId, cursor, limit);
+  const data = await prepareFeedPosts(userId, records, limit);
+  res.status(200).json(data);
 };

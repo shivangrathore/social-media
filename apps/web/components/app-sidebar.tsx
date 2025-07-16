@@ -8,7 +8,7 @@ import {
   HomeIcon,
   MessageSquareIcon,
   UserIcon,
-  UsersIcon,
+  BellIcon,
 } from "lucide-react";
 import { useUser } from "@/store/auth";
 
@@ -17,9 +17,9 @@ export default function AppSidebar() {
   const sidebarItems = [
     { name: "Feed", href: "/", icon: HomeIcon },
     { name: "Explore", href: "/explore", icon: CompassIcon },
-    { name: "Friends", href: "/friends", icon: UsersIcon },
     { name: "Messages", href: "/messages", icon: MessageSquareIcon },
     { name: "Saved", href: "/saved", icon: BookmarkIcon },
+    { name: "Notifications", href: "/notifications", icon: BellIcon },
     { name: "Profile", href: `/u/${user?.username}`, icon: UserIcon },
     { name: "More", href: "#", icon: CircleEllipsisIcon, type: "button" },
   ];

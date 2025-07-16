@@ -1,3 +1,5 @@
+import { getTrendingTags } from "@/features/explore/api";
+import { pluralize } from "@/lib/utils";
 import Link from "next/link";
 
 export const metadata = {
@@ -12,7 +14,7 @@ function WhoToFollow() {
     { username: "user4", name: "User Four" },
   ];
   return (
-    <div className="p-4 mt-4 bg-white rounded-md w-full">
+    <div className="p-4 mt-4 rounded-md w-full">
       <h3 className="text-lg font-semibold">Who to follow</h3>
       <ul className="mt-4 space-y-2">
         {users.map((user, index) => (
@@ -35,28 +37,23 @@ function WhoToFollow() {
   );
 }
 
-function Trending() {
-  const trendingTags = [
-    { tag: "#India", count: 1200 },
-    { tag: "#Technology", count: 800 },
-    { tag: "#Health", count: 600 },
-    { tag: "#Finance", count: 500 },
-  ];
+async function Trending() {
+  const tags = await getTrendingTags();
   return (
-    <div className="p-4 mt-4 bg-white rounded-md w-full">
+    <div className="p-4 mt-4 rounded-md w-full">
       <h3 className="text-lg font-semibold">Trending</h3>
       <p className="text-sm text-gray-500">Explore what's tending in India</p>
       <div>
         <ul className="mt-4 space-y-2 grid">
-          {trendingTags.map((item, index) => (
-            <Link href={`/trending/${item.tag}`} key={index}>
-              <li
-                key={index}
-                className="p-2 bg-gray-100 rounded-md hover:bg-gray-200"
-              >
-                <h4 className="font-semibold">{item.tag}</h4>
+          {tags.map((item, index) => (
+            <Link
+              href={`/search?query=${encodeURIComponent(`#${item.tag}`)}`}
+              key={index}
+            >
+              <li key={index} className="rounded-md">
+                <h4 className="font-semibold text-sm">#{item.tag}</h4>
                 <p className="text-sm text-gray-600">
-                  {item.count.toLocaleString()} mentions
+                  {pluralize(item.postCount, "post")}
                 </p>
               </li>
             </Link>
@@ -66,40 +63,13 @@ function Trending() {
     </div>
   );
 }
-function SuggestedCommunities() {
-  const communities = [
-    { name: "Tech Enthusiasts", description: "Discuss the latest in tech" },
-    { name: "Health & Wellness", description: "Share health tips and advice" },
-    { name: "Travel Lovers", description: "Explore travel stories and tips" },
-    {
-      name: "Foodies",
-      description: "Share your favorite recipes and restaurants",
-    },
-  ];
-  return (
-    <div className="p-4 mt-4 bg-white rounded-md w-full">
-      <h3 className="text-lg font-semibold">Suggested Communities</h3>
-      <ul className="mt-4 space-y-2">
-        {communities.map((community, index) => (
-          <li
-            key={index}
-            className="p-2 bg-gray-100 rounded-md hover:bg-gray-200"
-          >
-            <h4 className="font-semibold">{community.name}</h4>
-            <p className="text-sm text-gray-600">{community.description}</p>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 export default function ExplorePage() {
   return (
     <div className="w-2xl my-4">
       <Trending />
+      <hr />
       <WhoToFollow />
-      <SuggestedCommunities />
     </div>
   );
 }

@@ -15,12 +15,15 @@ import {
   Comment,
   Like,
   PollMeta,
+  Post,
 } from "@repo/types";
 import {
   AddAttachmentSchema,
   CreateDraftSchema,
   PostTypeSchema,
 } from "@repo/types";
+import { redis } from "@/db/redis";
+import { extractHashtags } from "@/utils";
 
 export const getDraft = async (req: Request, res: Response<IPost>) => {
   const userId = res.locals["userId"];
@@ -103,17 +106,11 @@ export const publishDraft = async (req: Request, res: Response<IPost>) => {
   if (!publishedPost) {
     throw ServiceError.BadRequest("Post cannot be published");
   }
-  const content = publishedPost.content;
-  // FIXME: content should not be null, but handle it gracefully
-  const hashtagMatches =
-    content?.match(/#([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/g) || [];
-  console.log("Hashtag matches:", hashtagMatches);
-  const hashtags = hashtagMatches.map((tag) => tag.slice(1).toLowerCase());
-  console.log("Extracted hashtags:", hashtags);
-
+  const hashtags = extractHashtags(publishedPost.content);
   for (const hashtag of hashtags) {
     const htag = await hashtagRepository.upsert(hashtag);
     await hashtagRepository.linkHashtagToPost(htag.id, publishedPost.id);
+    await redis.zincrby("trending_hashtags", 1, htag.name);
   }
   res.status(200).json(publishedPost!);
 };
@@ -171,6 +168,10 @@ export const addComment = async (req: Request, res: Response<Comment>) => {
   }
 
   const comment = await commentRepository.addComment(userId, postId, content);
+  const hashtags = extractHashtags(content);
+  for (const hashtag of hashtags) {
+    await redis.zincrby("trending_hashtags", 2, hashtag);
+  }
   res.status(201).json(comment);
 };
 
@@ -215,6 +216,11 @@ export const addLike = async (req: Request, res: Response<Like>) => {
     throw ServiceError.BadRequest("You have already liked this post");
   }
   const like = await likeRepository.addLike(postId, userId, "post");
+  const content = post.content;
+  const hashtags = extractHashtags(content);
+  for (const hashtag of hashtags) {
+    await redis.zincrby("trending_hashtags", 2, hashtag);
+  }
   res.status(201).json(like);
 };
 
@@ -234,6 +240,11 @@ export const removeLike = async (req: Request, res: Response<Like>) => {
     throw ServiceError.NotFound("Like not found");
   }
 
+  const hashtags = extractHashtags(post.content);
+  for (const hashtag of hashtags) {
+    await redis.zincrby("trending_hashtags", -2, hashtag);
+  }
+
   const like = await likeRepository.removeLike(existingLike.id, post.id);
   res.status(204).send(like!);
 };
@@ -250,6 +261,9 @@ export const logPostView = async (req: Request, res: Response) => {
   }
 
   await postRepository.logView(postId, userId);
+  for (const hashtag of extractHashtags(post.content)) {
+    await redis.zincrby("trending_hashtags", 0.01, hashtag);
+  }
   res.status(204).send();
 };
 

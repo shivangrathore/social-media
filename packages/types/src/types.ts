@@ -7,6 +7,8 @@ export interface User {
   avatar: string | null;
   name: string | null;
   bio: string | null;
+  isFollowing?: boolean; // Indicates if the current user is following this user
+  isProfilePublic?: boolean; // Indicates if the profile is public, then we further fetch the profile details like posts/comments
 }
 export interface Attachment {
   id: number;
@@ -17,15 +19,6 @@ export interface Attachment {
   userId: number;
   postId: number;
   createdAt: Date;
-}
-
-export interface Post {
-  id: number;
-  userId: number;
-  content: string;
-  createdAt: Date;
-  updatedAt: Date | null;
-  attachments: Attachment[];
 }
 
 export interface Comment {
@@ -103,4 +96,9 @@ export interface Hashtag {
   name: string;
   postCount: number;
   createdAt: Date;
+}
+
+export interface TrendingTag {
+  tag: string;
+  postCount: number;
 }

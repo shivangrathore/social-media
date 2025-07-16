@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { followerTable, userView } from "@/db/schema";
 import { and, eq, InferSelectViewModel, ne, notExists, sql } from "drizzle-orm";
 
+// TOOD: Make limit configurable
+
 type DBUser = InferSelectViewModel<typeof userView>;
 
 export class UserRepository implements IUserRepository {
@@ -15,6 +17,7 @@ export class UserRepository implements IUserRepository {
       createdAt: data.createdAt,
       name: data.name,
       bio: data.bio,
+      isProfilePublic: data.isProfilePublic ?? true,
     };
   }
   async getById(userId: number): Promise<User | null> {
@@ -64,5 +67,20 @@ export class UserRepository implements IUserRepository {
       return null;
     }
     return this.mapToUser(result[0]);
+  }
+
+  async searchUsers(userId: number, query: string): Promise<User[]> {
+    const result = await db
+      .select()
+      .from(userView)
+      .where(
+        and(
+          eq(userView.isProfilePublic, true),
+          sql`lower(${userView.username}) like lower(${`%${query}%`})`,
+        ),
+      )
+      .limit(10);
+
+    return result.map(this.mapToUser);
   }
 }

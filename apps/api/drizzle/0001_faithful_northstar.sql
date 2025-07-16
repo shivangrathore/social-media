@@ -1,0 +1,3 @@
+DROP VIEW "public"."user_view";--> statement-breakpoint
+ALTER TABLE "profile" ADD COLUMN "public" boolean DEFAULT true NOT NULL;--> statement-breakpoint
+CREATE VIEW "public"."user_view" AS (select "user"."id", "profile"."name", "user"."email", "user"."email_verified", "profile"."avatar", "user"."dob", "user"."created_at", "user"."updated_at", "profile"."username", "profile"."bio", "profile"."public" from "user" inner join "profile" on "user"."id" = "profile"."user_id");

@@ -1,7 +1,13 @@
 import { Request, Response } from "express";
-import { userRepository, followRepository } from "@/data/repositories";
+import {
+  userRepository,
+  followRepository,
+  postRepository,
+  commentRepository,
+} from "@/data/repositories";
 import { ServiceError } from "@/utils/errors";
-import { User } from "@repo/types";
+import { Comment, Post, User } from "@repo/types";
+import { z } from "zod";
 
 export const getCurrentUser = async (
   req: Request,
@@ -28,12 +34,16 @@ export const getUserByUsername = async (
   req: Request,
   res: Response<User>,
 ): Promise<void> => {
+  const userId = res.locals["userId"];
   const { username } = req.params;
   const user = await userRepository.getByUsername(username);
   if (!user) {
+    console.log("User not found:", username);
     throw ServiceError.NotFound("User not found");
   }
-  res.json(user);
+  let isFollowing = false;
+  isFollowing = await followRepository.isFollowing(userId, user.id);
+  res.json({ ...user, isFollowing });
 };
 
 export const followUser = async (
@@ -62,4 +72,17 @@ export const unfollowUser = async (
   }
   await followRepository.unfollowUser(userId, user.id);
   res.status(204).send();
+};
+
+export const searchUsers = async (
+  req: Request,
+  res: Response<User[]>,
+): Promise<void> => {
+  const userId = res.locals["userId"];
+  const { query } = req.query;
+  if (!query || typeof query !== "string") {
+    throw ServiceError.BadRequest("Query parameter is required");
+  }
+  const users = await userRepository.searchUsers(userId, query);
+  res.json(users);
 };

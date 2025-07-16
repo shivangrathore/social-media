@@ -13,12 +13,18 @@ import Link from "next/link";
 import { useComments } from "../hooks/use-comments";
 import { useBookmarked } from "../hooks/use-bookmarked";
 
-export function PostCard({ post }: { post: FeedPost }) {
+export function PostCard({
+  post,
+  query = "feed",
+}: {
+  post: FeedPost;
+  query?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const author = post.author;
   const { logView, isLogged } = useLogView(post.id);
-  const { toggleLike } = useLikes(post.id, post.likedByMe);
-  const { addComment } = useComments(post.id);
+  const { toggleLike } = useLikes(post.id, post.likedByMe, query);
+  const { addComment } = useComments(post.id, query);
   const { bookmarked, toggleBookmark } = useBookmarked(
     post.id,
     post.bookmarkedByMe,
@@ -41,12 +47,12 @@ export function PostCard({ post }: { post: FeedPost }) {
   }, [isLogged, logView]);
   return (
     <div className="flex flex-col py-2 border-b" ref={ref}>
-      <div className="flex gap-2 items-center px-4">
+      <div className="flex gap-2 items-center">
         <UserProfile user={author} />
       </div>
       {post.postType === "regular" && <PostDisplay post={post} />}
-      {post.postType === "poll" && <PollDisplay poll={post} />}
-      <div className="flex mt-2 items-center px-2">
+      {post.postType === "poll" && <PollDisplay poll={post} query={query} />}
+      <div className="flex mt-2 items-center">
         <button
           className={cn(
             "p-2 rounded-full hover:bg-primary/10 transition-colors cursor-pointer text-white hover:text-gray-200 text-sm flex",
@@ -83,7 +89,7 @@ export function PostCard({ post }: { post: FeedPost }) {
           <BookmarkIcon className="size-5" />
         </button>
       </div>
-      <div className="flex gap-3 px-4">
+      <div className="flex gap-3">
         {/* TODO: Singular and plural logic for likes */}
         {post.likeCount > 0 && (
           <p className="text-gray-500 text-sm">

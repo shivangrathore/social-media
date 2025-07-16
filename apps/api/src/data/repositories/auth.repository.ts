@@ -1,6 +1,5 @@
 import { db } from "@/db";
-import { IAccount, IAuthRepository } from "./respository";
-import { User } from "@repo/types";
+import { IAccount, IAuthRepository, IUser } from "./respository";
 import {
   accountTable,
   profileTable,
@@ -17,7 +16,7 @@ import { ServiceError } from "@/utils/errors";
 type DBUser = typeof userView.$inferSelect;
 
 export class AuthRepository implements IAuthRepository {
-  private mapUser(user: DBUser): User {
+  private mapUser(user: DBUser): IUser {
     return {
       id: user.id,
       username: user.username,
@@ -28,7 +27,7 @@ export class AuthRepository implements IAuthRepository {
     };
   }
 
-  async findUserByUsername(username: string): Promise<User | null> {
+  async findUserByUsername(username: string): Promise<IUser | null> {
     const user = await db
       .select()
       .from(userView)
@@ -37,7 +36,7 @@ export class AuthRepository implements IAuthRepository {
     return user.length ? this.mapUser(user[0]) : null;
   }
 
-  async findUserByEmail(email: string): Promise<User | null> {
+  async findUserByEmail(email: string): Promise<IUser | null> {
     const user = await db
       .select()
       .from(userView)
@@ -106,7 +105,7 @@ export class AuthRepository implements IAuthRepository {
     accessToken: string,
     username: string,
     provider: string,
-  ): Promise<User> {
+  ): Promise<IUser> {
     const userId = await db.transaction(async (tx) => {
       let userId: number;
       {
@@ -158,7 +157,7 @@ export class AuthRepository implements IAuthRepository {
     return user!;
   }
 
-  async findUserById(userId: number): Promise<User | null> {
+  async findUserById(userId: number): Promise<IUser | null> {
     const user = await db
       .select()
       .from(userView)

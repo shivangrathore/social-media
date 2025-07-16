@@ -96,4 +96,66 @@ export class FeedRepository implements IFeedRepository {
       );
     return like ? true : false;
   }
+
+  async getUserBookmarkedPosts(
+    userId: number,
+    cursor?: number,
+    limit: number = 10,
+  ): Promise<IFeedPost[]> {
+    return await db
+      .select({
+        post: postTable,
+        user: getViewSelectedFields(userView),
+        bookmarkedByMe: sql<boolean>`user_bookmark.id IS NOT NULL`.as(
+          "bookmarked",
+        ),
+      })
+      .from(userBookmarkTable)
+      .innerJoin(postTable, eq(userBookmarkTable.targetId, postTable.id))
+      .innerJoin(userView, eq(userView.id, postTable.userId))
+      .where(
+        and(
+          eq(userBookmarkTable.userId, userId),
+          eq(userBookmarkTable.type, "post"),
+          cursor ? gt(postTable.id, cursor) : undefined,
+        ),
+      )
+      .orderBy(desc(postTable.publishedAt))
+      .limit(limit + 1);
+  }
+
+  async getUserPosts(
+    userId: number,
+    cursor?: number,
+    limit: number = 10,
+  ): Promise<IFeedPost[]> {
+    return await db
+      .select({
+        post: postTable,
+        user: getViewSelectedFields(userView),
+        bookmarkedByMe: sql<boolean>`user_bookmark.id IS NOT NULL`.as(
+          "bookmarked",
+        ),
+      })
+      .from(postTable)
+      .innerJoin(userView, eq(userView.id, postTable.userId))
+      .leftJoin(
+        userBookmarkTable,
+        and(
+          eq(userBookmarkTable.targetId, postTable.id),
+          eq(userBookmarkTable.type, "post"),
+          eq(userBookmarkTable.userId, userId),
+        ),
+      )
+      .where(
+        and(
+          eq(postTable.userId, userId),
+          cursor ? gt(postTable.id, cursor) : undefined,
+          isNotNull(postTable.publishedAt),
+          eq(userView.id, userId),
+        ),
+      )
+      .orderBy(desc(postTable.publishedAt))
+      .limit(limit + 1);
+  }
 }

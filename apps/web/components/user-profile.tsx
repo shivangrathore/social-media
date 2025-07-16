@@ -1,6 +1,6 @@
 import { User } from "@repo/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { getInitials } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import { Skeleton } from "./ui/skeleton";
 import Link from "next/link";
 
@@ -18,11 +18,16 @@ export function UserProfileSkeleton() {
 
 export function UserProfile({
   user: { username, avatar, name },
+  className,
 }: {
   user: User;
+  className?: string;
 }) {
   return (
-    <Link className="flex gap-2 items-center" href={`/u/${username}`}>
+    <Link
+      className={cn("flex gap-2 items-center", className)}
+      href={`/u/${username}`}
+    >
       <Avatar className="rounded-full size-10">
         <AvatarImage src={avatar || undefined} />
         <AvatarFallback>{getInitials(name || "")}</AvatarFallback>

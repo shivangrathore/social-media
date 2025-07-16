@@ -3,10 +3,14 @@ import { postAddLike, postRemoveLike } from "../api/likes";
 import { useCallback } from "react";
 import { FeedPost, GetFeedResponse } from "@repo/types";
 
-export function useLikes(postId: number, likedByMe: boolean) {
+export function useLikes(
+  postId: number,
+  likedByMe: boolean,
+  query: string = "feed",
+) {
   const queryClient = useQueryClient();
   function markLiked(likedByMe: boolean) {
-    queryClient.setQueryData(["feed"], (old: GetFeedResponse) => {
+    queryClient.setQueryData([query], (old: GetFeedResponse) => {
       if (!old) return old;
       const incr = likedByMe ? 1 : -1;
       const updatedFeed = {

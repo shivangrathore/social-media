@@ -8,6 +8,13 @@
       "when": 1752151230333,
       "tag": "0000_premium_smasher",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1752214849953,
+      "tag": "0001_faithful_northstar",
+      "breakpoints": true
     }
   ]
 }
