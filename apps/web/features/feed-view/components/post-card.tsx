@@ -18,10 +18,10 @@ import { useCommentStore } from "@/store/comment-store";
 function LikeButton({ liked, postId }: { liked: boolean; postId: number }) {
   const { toggleLike } = useLikes(postId);
   const setLiked = useLikeStore((state) => state.setLiked);
-  const isLiked = useLikeStore((state) => state.likedPosts[postId] ?? false);
+  const isLiked = useLikeStore((state) => state.likedPosts[postId] || liked);
 
   useEffect(() => {
-    setLiked(postId, liked);
+    setLiked(postId, isLiked);
   }, []);
 
   return (
@@ -47,10 +47,12 @@ function LikeCount({
   likeCount: number;
 }) {
   const setLikeCount = useLikeStore((state) => state.setLikeCount);
-  const likeCountValue = useLikeStore((state) => state.likeCounts[postId] || 0);
+  const likeCountValue = useLikeStore(
+    (state) => state.likeCounts[postId] || likeCount,
+  );
 
   useEffect(() => {
-    setLikeCount(postId, likeCount);
+    setLikeCount(postId, likeCountValue);
   }, []);
 
   if (likeCountValue === 0) {
@@ -70,12 +72,10 @@ function CommentCount({
   commentCount: number;
 }) {
   const setCommentCount = useCommentStore((state) => state.setCommentCount);
-  const commentCountValue = useCommentStore(
-    (state) => state.commentCount[postId] || 0,
-  );
-
+  const commentValue = useCommentStore((state) => state.commentCount[postId]);
+  const commentCountValue = commentValue || commentCount;
   useEffect(() => {
-    setCommentCount(postId, commentCount);
+    setCommentCount(postId, commentCountValue);
   }, []);
 
   if (commentCountValue === 0) {
