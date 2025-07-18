@@ -6,6 +6,7 @@ import {
   suggestUsers,
   unfollowUser,
   searchUsers,
+  getUserComments,
 } from "./controller";
 import authMiddleware from "@/middlewares/auth";
 
@@ -18,4 +19,5 @@ router.get("/username/:username", getUserByUsername);
 router.post("/:username/follow", followUser);
 router.delete("/:username/follow", unfollowUser);
 router.get("/search", searchUsers);
+router.get("/:id/comments", getUserComments);
 export { router as userRouter };

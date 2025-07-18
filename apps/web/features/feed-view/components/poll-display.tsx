@@ -8,7 +8,8 @@ import { RichPostContent } from "./rich-post-content";
 
 type Poll = Extract<FeedPost, { postType: "poll" }>;
 
-export function PollDisplay({ poll, query }: { poll: Poll; query: string }) {
+export function PollDisplay({ poll }: { poll: Poll }) {
+  const query = "feed";
   const selectedOption = poll.selectedOption;
   const options = poll.options;
   const totalVotes = options.reduce((acc, option) => acc + option.voteCount, 0);
@@ -60,7 +61,7 @@ export function PollDisplay({ poll, query }: { poll: Poll; query: string }) {
 
   return (
     <div className="py-4">
-      <RichPostContent content={poll.content || ""} className="mb-2" />
+      <RichPostContent content={poll.content || ""} className="mb-2 text-sm" />
       <p className="text-sm text-gray-500 mt-1">
         {pluralize(totalVotes, "vote")}
       </p>

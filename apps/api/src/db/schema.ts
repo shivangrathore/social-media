@@ -19,6 +19,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const likeTargetEnum = pgEnum("like_target", ["post", "comment"]);
+export const chatTypeEnum = pgEnum("chat_type", ["private", "group"]);
 export const friendRequestStatusEnum = pgEnum("friend_request_status", [
   "pending",
   "accepted",
@@ -289,4 +290,30 @@ export const followerTable = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => [unique().on(t.followerId, t.followingId)],
+);
+
+export const chatTable = pgTable("chat", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  name: varchar("name", { length: 255 }).default(sql`NULL`),
+  type: chatTypeEnum("type").notNull().default("private"),
+  ownerId: bigint("owner_id", { mode: "number" }).references(
+    () => userTable.id,
+  ),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const chatUserTable = pgTable(
+  "chat_user",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    chatId: bigint("chat_id", { mode: "number" })
+      .notNull()
+      .references(() => chatTable.id),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => userTable.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [unique().on(t.chatId, t.userId)],
 );

@@ -168,7 +168,7 @@ export const addComment = async (req: Request, res: Response<Comment>) => {
   }
 
   const comment = await commentRepository.addComment(userId, postId, content);
-  const hashtags = extractHashtags(content);
+  const hashtags = extractHashtags(post.content);
   for (const hashtag of hashtags) {
     await redis.zincrby("trending_hashtags", 2, hashtag);
   }

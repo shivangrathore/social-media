@@ -1,5 +1,6 @@
 import { AttachmentRepository } from "./attachment.repository";
 import { AuthRepository } from "./auth.repository";
+import { ChatRepository } from "./chat.repository";
 import { CommentRepository } from "./comment.repository";
 import { FeedRepository } from "./feed.repository";
 import { FollowRepository } from "./follow.repository";
@@ -19,3 +20,4 @@ export const feedRepository = new FeedRepository();
 export const likeRepository = new LikeRepository();
 export const hashtagRepository = new HashtagRepository();
 export const followRepository = new FollowRepository();
+export const chatRepository = new ChatRepository();

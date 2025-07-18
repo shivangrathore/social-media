@@ -7,10 +7,11 @@ export async function getTrendingTags(
   req: Request,
   res: Response<TrendingTag[]>,
 ): Promise<void> {
-  const data = await redis.zrevrange("trending_hashtags", 0, 9, "WITHSCORES");
+  const data = await redis.zrevrange("trending_hashtags", 0, 4, "WITHSCORES");
   const tags: TrendingTag[] = [];
 
   for (let i = 0; i < data.length; i += 2) {
+    console.log(data);
     const tag = data[i];
     tags.push({ tag, postCount: 0 });
   }
@@ -21,6 +22,8 @@ export async function getTrendingTags(
       tag.postCount = htag.postCount;
     }
   }
+
+  console.log("Trending tags:", tags);
 
   res.json(tags);
 }

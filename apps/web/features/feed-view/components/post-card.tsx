@@ -12,19 +12,91 @@ import { CommentDialog } from "./comment-dialog";
 import Link from "next/link";
 import { useComments } from "../hooks/use-comments";
 import { useBookmarked } from "../hooks/use-bookmarked";
+import { useLikeStore } from "@/store/like-store";
+import { useCommentStore } from "@/store/comment-store";
 
-export function PostCard({
-  post,
-  query = "feed",
+function LikeButton({ liked, postId }: { liked: boolean; postId: number }) {
+  const { toggleLike } = useLikes(postId);
+  const setLiked = useLikeStore((state) => state.setLiked);
+  const isLiked = useLikeStore((state) => state.likedPosts[postId] ?? false);
+
+  useEffect(() => {
+    setLiked(postId, liked);
+  }, []);
+
+  return (
+    <button
+      className={cn(
+        "p-2 rounded-full hover:bg-primary/10 transition-colors cursor-pointer text-white hover:text-gray-200 text-sm flex",
+        isLiked && "text-red-500 hover:bg-red-500/10 hover:text-red-500",
+      )}
+      onClick={() => toggleLike()}
+    >
+      <HeartIcon
+        className={cn("size-5", isLiked && "fill-red-500 animate-pop")}
+      />
+    </button>
+  );
+}
+
+function LikeCount({
+  postId,
+  likeCount,
 }: {
-  post: FeedPost;
-  query?: string;
+  postId: number;
+  likeCount: number;
 }) {
+  const setLikeCount = useLikeStore((state) => state.setLikeCount);
+  const likeCountValue = useLikeStore((state) => state.likeCounts[postId] || 0);
+
+  useEffect(() => {
+    setLikeCount(postId, likeCount);
+  }, []);
+
+  if (likeCountValue === 0) {
+    return null;
+  }
+
+  return (
+    <p className="text-gray-500 text-sm">{pluralize(likeCountValue, "like")}</p>
+  );
+}
+
+function CommentCount({
+  postId,
+  commentCount,
+}: {
+  postId: number;
+  commentCount: number;
+}) {
+  const setCommentCount = useCommentStore((state) => state.setCommentCount);
+  const commentCountValue = useCommentStore(
+    (state) => state.commentCount[postId] || 0,
+  );
+
+  useEffect(() => {
+    setCommentCount(postId, commentCount);
+  }, []);
+
+  if (commentCountValue === 0) {
+    return null;
+  }
+
+  return (
+    <Link
+      href={`/posts/${postId}`}
+      className="text-gray-500 text-sm hover:underline cursor-pointer"
+    >
+      view {pluralize(commentCountValue, "comment")}
+    </Link>
+  );
+}
+
+export function PostCard({ post }: { post: FeedPost }) {
   const ref = useRef<HTMLDivElement>(null);
   const author = post.author;
   const { logView, isLogged } = useLogView(post.id);
-  const { toggleLike } = useLikes(post.id, post.likedByMe, query);
-  const { addComment } = useComments(post.id, query);
+  const { addComment } = useComments(post.id);
   const { bookmarked, toggleBookmark } = useBookmarked(
     post.id,
     post.bookmarkedByMe,
@@ -51,23 +123,9 @@ export function PostCard({
         <UserProfile user={author} />
       </div>
       {post.postType === "regular" && <PostDisplay post={post} />}
-      {post.postType === "poll" && <PollDisplay poll={post} query={query} />}
+      {post.postType === "poll" && <PollDisplay poll={post} />}
       <div className="flex mt-2 items-center">
-        <button
-          className={cn(
-            "p-2 rounded-full hover:bg-primary/10 transition-colors cursor-pointer text-white hover:text-gray-200 text-sm flex",
-            post.likedByMe &&
-              "text-red-500 hover:bg-red-500/10 hover:text-red-500",
-          )}
-          onClick={() => toggleLike()}
-        >
-          <HeartIcon
-            className={cn(
-              "size-5",
-              post.likedByMe && "fill-red-500 animate-pop",
-            )}
-          />
-        </button>
+        <LikeButton postId={post.id} liked={post.likedByMe} />
         <CommentDialog
           author={post.author}
           content={post.content}
@@ -90,23 +148,11 @@ export function PostCard({
         </button>
       </div>
       <div className="flex gap-3">
-        {/* TODO: Singular and plural logic for likes */}
-        {post.likeCount > 0 && (
-          <p className="text-gray-500 text-sm">
-            {pluralize(post.likeCount, "like")}
-          </p>
-        )}
+        <LikeCount postId={post.id} likeCount={post.likeCount} />
         <p className="text-gray-500 text-sm">
           {pluralize(post.viewCount, "view")}
         </p>
-        {post.commentCount > 0 && (
-          <Link
-            href={`/posts/${post.id}`}
-            className="text-gray-500 text-sm hover:underline cursor-pointer"
-          >
-            view {pluralize(post.commentCount, "comment")}
-          </Link>
-        )}
+        <CommentCount postId={post.id} commentCount={post.commentCount} />
       </div>
     </div>
   );

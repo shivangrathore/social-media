@@ -50,4 +50,18 @@ export class CommentRepository implements ICommentsRepository {
         .where(eq(postTable.id, comment.postId));
     });
   }
+
+  async getByUserId(
+    userId: number,
+    limit: number = 20,
+    offset: number = 0,
+  ): Promise<Comment[]> {
+    const comments = await db
+      .select()
+      .from(commentTable)
+      .where(eq(commentTable.userId, userId))
+      .limit(limit)
+      .offset(offset);
+    return comments;
+  }
 }

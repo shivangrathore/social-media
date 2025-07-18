@@ -8,7 +8,7 @@ export function PostDisplay({ post }: { post: Post }) {
   return (
     <>
       {post.content && (
-        <RichPostContent content={post.content} className="mt-2" />
+        <RichPostContent content={post.content} className="mt-2 text-sm" />
       )}
       {post.attachments.length > 0 && (
         <PostAttachmentGrid

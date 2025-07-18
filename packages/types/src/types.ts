@@ -102,3 +102,11 @@ export interface TrendingTag {
   tag: string;
   postCount: number;
 }
+
+export interface Chat {
+  id: number;
+  users?: User[];
+  createdAt: Date;
+}
+
+export type ChatType = "group" | "private";

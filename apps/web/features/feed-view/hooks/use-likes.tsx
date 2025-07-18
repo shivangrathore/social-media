@@ -1,63 +1,38 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { postAddLike, postRemoveLike } from "../api/likes";
 import { useCallback } from "react";
-import { FeedPost, GetFeedResponse } from "@repo/types";
+import { useLikeStore } from "@/store/like-store";
+import { useLikePost } from "@/features/likes/hooks/use-like-post";
 
-export function useLikes(
-  postId: number,
-  likedByMe: boolean,
-  query: string = "feed",
-) {
-  const queryClient = useQueryClient();
-  function markLiked(likedByMe: boolean) {
-    queryClient.setQueryData([query], (old: GetFeedResponse) => {
-      if (!old) return old;
-      const incr = likedByMe ? 1 : -1;
-      const updatedFeed = {
-        ...old,
-        data: old.data.map((post: FeedPost) => {
-          if (post.id === postId) {
-            return {
-              ...post,
-              likedByMe,
-              likeCount: post.likeCount + incr,
-            };
-          }
-          return post;
-        }),
-      };
-      return updatedFeed;
-    });
-  }
-  const { mutateAsync: addLike } = useMutation({
-    mutationFn: async () => postAddLike(postId),
-    mutationKey: ["addLike", postId],
-    onMutate: () => {
-      markLiked(true);
-    },
-    onError: () => {
-      markLiked(false);
-    },
-  });
+export function useLikes(postId: number) {
+  const setLiked = useLikeStore((state) => state.setLiked);
+  const setLikeCount = useLikeStore((state) => state.setLikeCount);
+  const isLiked = useLikeStore((state) => state.likedPosts[postId] ?? false);
+  const likeCount = useLikeStore((state) => state.likeCounts[postId] || 0);
+  const { addLike, removeLike } = useLikePost(postId);
 
-  const { mutateAsync: removeLike } = useMutation({
-    mutationFn: async () => postRemoveLike(postId),
-    mutationKey: ["removeLike", postId],
-    onMutate: () => {
-      markLiked(false);
+  const setLikedState = useCallback(
+    (postId: number, liked: boolean) => {
+      if (liked) {
+        setLikeCount(postId, likeCount + 1);
+        setLiked(postId, true);
+      } else {
+        setLikeCount(postId, likeCount - 1);
+        setLiked(postId, false);
+      }
     },
-    onError: () => {
-      markLiked(true);
-    },
-  });
-
+    [setLiked, setLikeCount, likeCount],
+  );
   const toggleLike = useCallback(() => {
-    if (likedByMe) {
-      removeLike();
-    } else {
-      addLike();
+    setLikedState(postId, !isLiked);
+    try {
+      if (!isLiked) {
+        addLike();
+      } else {
+        removeLike();
+      }
+    } catch (error) {
+      setLikedState(postId, isLiked);
     }
-  }, [likedByMe, addLike, removeLike]);
+  }, [isLiked, addLike, removeLike]);
 
   return { toggleLike };
 }

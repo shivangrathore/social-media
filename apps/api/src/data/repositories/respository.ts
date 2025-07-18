@@ -5,6 +5,8 @@ import {
   AddAttachmentSchemaType,
   PollMeta,
   Hashtag,
+  Chat,
+  ChatType,
 } from "@repo/types";
 import { Attachment, Comment, User } from "@repo/types";
 import { PostType } from "@repo/types";
@@ -180,4 +182,14 @@ export interface IFollowRepository {
   followUser(followerId: number, followingId: number): Promise<void>;
   unfollowUser(followerId: number, followingId: number): Promise<void>;
   isFollowing(followerId: number, followingId: number): Promise<boolean>;
+}
+
+export interface IChatRepository {
+  createChat(
+    userIds: number[],
+    type: ChatType,
+    initiatorId: number,
+  ): Promise<Chat>;
+  getChats(userId: number, cursor?: number, limit?: number): Promise<Chat[]>;
+  getChatById(chatId: number): Promise<Chat | null>;
 }

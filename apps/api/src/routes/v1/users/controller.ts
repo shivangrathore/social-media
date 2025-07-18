@@ -86,3 +86,19 @@ export const searchUsers = async (
   const users = await userRepository.searchUsers(userId, query);
   res.json(users);
 };
+
+export const getUserComments = async (
+  req: Request,
+  res: Response<Comment[]>,
+): Promise<void> => {
+  const id = z.coerce.number().parse(req.params.id);
+  const user = await userRepository.getById(id);
+  if (!user) {
+    throw ServiceError.NotFound("User not found");
+  }
+  if (!user.isProfilePublic) {
+    throw ServiceError.Forbidden("User profile is private");
+  }
+  const comments = await commentRepository.getByUserId(user.id);
+  res.json(comments);
+};

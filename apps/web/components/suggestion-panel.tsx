@@ -12,7 +12,7 @@ import { Skeleton } from "./ui/skeleton";
 import { followUser, unfollowUser } from "@/lib/api";
 import { getTrendingTags } from "@/features/explore/api";
 
-function UserSuggestionEntry({ user }: { user: User }) {
+export function UserSuggestionEntry({ user }: { user: User }) {
   const [isFollowing, setIsFollowing] = useState(user.isFollowing);
   const handleUnfollow = async () => {
     setIsFollowing(false);
@@ -122,6 +122,7 @@ export function SuggestionPanel() {
             <Link
               href={`/search?query=${encodeURIComponent(`#${item.tag}`)}`}
               key={index}
+              className="flex p-2 gap-1 justify-between"
             >
               <h4 className="font-semibold text-sm">#{item.tag}</h4>
               <p className="text-sm text-gray-600">{item.postCount} posts</p>

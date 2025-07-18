@@ -21,14 +21,16 @@ function UserPosts({ id }: { id: number }) {
 
 function UserComments({ id }: { id: number }) {
   const { comments, isLoading } = useUserComments(id);
-  console.log(comments, isLoading);
   return (
-    <div className="p-4">
-      <h2 className="text-lg font-semibold">User Comments</h2>
-      <p className="text-gray-600">
-        Here you can find all the comments made by the user.
-      </p>
-      {/* Placeholder for user comments content */}
+    <div className="flex gap-2 flex-col">
+      {comments.map((comment) => (
+        <div key={comment.id} className="border-b p-4">
+          <p className="text-sm text-foreground">{comment.content}</p>
+          <span className="text-xs text-muted-foreground">
+            Posted on {new Date(comment.createdAt).toLocaleDateString()}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
