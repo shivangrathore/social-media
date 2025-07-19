@@ -14,11 +14,12 @@ import { useComments } from "../hooks/use-comments";
 import { useBookmarked } from "../hooks/use-bookmarked";
 import { useLikeStore } from "@/store/like-store";
 import { useCommentStore } from "@/store/comment-store";
+import { useBookmarkStore } from "@/store/bookmark-store";
 
 function LikeButton({ liked, postId }: { liked: boolean; postId: number }) {
   const { toggleLike } = useLikes(postId);
   const setLiked = useLikeStore((state) => state.setLiked);
-  const isLiked = useLikeStore((state) => state.likedPosts[postId] || liked);
+  const isLiked = useLikeStore((state) => state.likedPosts[postId] ?? liked);
 
   useEffect(() => {
     setLiked(postId, isLiked);
@@ -48,7 +49,7 @@ function LikeCount({
 }) {
   const setLikeCount = useLikeStore((state) => state.setLikeCount);
   const likeCountValue = useLikeStore(
-    (state) => state.likeCounts[postId] || likeCount,
+    (state) => state.likeCounts[postId] ?? likeCount,
   );
 
   useEffect(() => {
@@ -72,13 +73,14 @@ function CommentCount({
   commentCount: number;
 }) {
   const setCommentCount = useCommentStore((state) => state.setCommentCount);
-  const commentValue = useCommentStore((state) => state.commentCount[postId]);
-  const commentCountValue = commentValue || commentCount;
+  const commentValue = useCommentStore(
+    (state) => state.commentCount[postId] ?? commentCount,
+  );
   useEffect(() => {
-    setCommentCount(postId, commentCountValue);
+    setCommentCount(postId, commentValue);
   }, []);
 
-  if (commentCountValue === 0) {
+  if (commentValue === 0) {
     return null;
   }
 
@@ -87,8 +89,37 @@ function CommentCount({
       href={`/posts/${postId}`}
       className="text-gray-500 text-sm hover:underline cursor-pointer"
     >
-      view {pluralize(commentCountValue, "comment")}
+      view {pluralize(commentValue, "comment")}
     </Link>
+  );
+}
+
+function BookmarkButton({
+  postId,
+  bookmarked,
+}: {
+  postId: number;
+  bookmarked: boolean;
+}) {
+  const isBookmarked = useBookmarkStore(
+    (state) => state.bookmarkedPosts[postId] ?? bookmarked,
+  );
+  const setBookmarked = useBookmarkStore((state) => state.setBookmarked);
+  const { toggleBookmark } = useBookmarked(postId);
+  useEffect(() => {
+    setBookmarked(postId, isBookmarked);
+  }, []);
+  return (
+    <button
+      className={cn(
+        "text-white hover:text-gray-200 p-2 rounded-full hover:bg-primary/5 transition-colors cursor-pointer ml-auto",
+        isBookmarked &&
+          "bg-primary text-primary-foreground hover:bg-primary/80",
+      )}
+      onClick={toggleBookmark}
+    >
+      <BookmarkIcon className="size-5" />
+    </button>
   );
 }
 
@@ -97,10 +128,6 @@ export function PostCard({ post }: { post: FeedPost }) {
   const author = post.author;
   const { logView, isLogged } = useLogView(post.id);
   const { addComment } = useComments(post.id);
-  const { bookmarked, toggleBookmark } = useBookmarked(
-    post.id,
-    post.bookmarkedByMe,
-  );
   useEffect(() => {
     if (isLogged) return;
     const observer = new IntersectionObserver(
@@ -136,16 +163,7 @@ export function PostCard({ post }: { post: FeedPost }) {
           <SendIcon className="size-5" />
         </button>
 
-        <button
-          className={cn(
-            "text-white hover:text-gray-200 p-2 rounded-full hover:bg-primary/5 transition-colors cursor-pointer ml-auto",
-            bookmarked &&
-              "bg-primary text-primary-foreground hover:bg-primary/80",
-          )}
-          onClick={toggleBookmark}
-        >
-          <BookmarkIcon className="size-5" />
-        </button>
+        <BookmarkButton postId={post.id} bookmarked={post.bookmarkedByMe} />
       </div>
       <div className="flex gap-3">
         <LikeCount postId={post.id} likeCount={post.likeCount} />
