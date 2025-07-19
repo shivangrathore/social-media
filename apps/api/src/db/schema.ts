@@ -20,11 +20,7 @@ import {
 
 export const likeTargetEnum = pgEnum("like_target", ["post", "comment"]);
 export const chatTypeEnum = pgEnum("chat_type", ["private", "group"]);
-export const friendRequestStatusEnum = pgEnum("friend_request_status", [
-  "pending",
-  "accepted",
-  "rejected",
-]);
+export const chatStatusEnum = pgEnum("chat_status", ["accepted", "requested"]);
 export const profileTypeEnum = pgEnum("profile_type", ["user", "page"]);
 export const postTypeEnum = pgEnum("post_type", ["regular", "poll"]);
 // TODO: add audio support
@@ -314,6 +310,21 @@ export const chatUserTable = pgTable(
       .notNull()
       .references(() => userTable.id),
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    status: chatStatusEnum("status").notNull().default("requested"),
   },
   (t) => [unique().on(t.chatId, t.userId)],
 );
+
+export const messageTable = pgTable("message", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  chatId: bigint("chat_id", { mode: "number" })
+    .notNull()
+    .references(() => chatTable.id),
+  userId: bigint("user_id", { mode: "number" })
+    .notNull()
+    .references(() => userTable.id),
+  content: text("content").notNull(),
+  is_request: boolean("is_request").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});

@@ -30,8 +30,6 @@ export async function middleware(request: NextRequest) {
 
     return NextResponse.next();
   } catch {
-    console.log("Not logged in");
-
     // Allow unauthenticated access to the login page
     if (pathname === "/login" || pathname === "/register") {
       return NextResponse.next();
@@ -47,5 +45,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|static).*)"],
+  matcher: ["/((?!_next|static|socket.io).*)"],
 };

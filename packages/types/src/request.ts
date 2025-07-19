@@ -40,6 +40,10 @@ export const CastVoteSchema = z.object({
   optionId: z.number(),
 });
 
+export const CreateChatSchema = z.object({
+  userId: z.number(),
+});
+
 export type RegisterUserSchemaType = z.infer<typeof RegisterUserSchema>;
 export type LoginUserSchemaType = z.infer<typeof LoginUserSchema>;
 export type AddAttachmentSchemaType = z.infer<typeof AddAttachmentSchema>;
@@ -47,3 +51,4 @@ export type PostType = z.infer<typeof PostTypeSchema>;
 export type CreateDraftSchemaType = z.infer<typeof CreateDraftSchema>;
 export type CreateCommentSchemaType = z.infer<typeof CreateCommentSchema>;
 export type CastVoteSchemaType = z.infer<typeof CastVoteSchema>;
+export type CreateChatSchemaType = z.infer<typeof CreateChatSchema>;

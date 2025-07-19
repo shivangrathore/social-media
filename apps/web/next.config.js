@@ -11,10 +11,15 @@ const nextConfig = {
   },
   rewrites: () => {
     const url = new URL("api/:path*", process.env.NEXT_PUBLIC_API_URL);
+    const socketUrl = new URL("/socket.io/", process.env.NEXT_PUBLIC_API_URL);
     return [
       {
         source: "/api/:path*",
         destination: url.toString(),
+      },
+      {
+        source: "/socket.io",
+        destination: socketUrl.toString(),
       },
     ];
   },

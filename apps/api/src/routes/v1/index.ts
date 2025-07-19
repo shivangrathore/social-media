@@ -9,6 +9,7 @@ import { feedRouter } from "./feed/";
 import { commentRouter } from "./comments/";
 import { hashtagsRouter } from "./hashtags";
 import { trendingRouter } from "./trending";
+import { chatRouter } from "./chats";
 
 const router: Router = Router();
 router.use("/auth", express.json(), authRouter);
@@ -19,5 +20,6 @@ router.use("/feed", express.json(), authMiddleware, feedRouter);
 router.use("/comments", express.json(), authMiddleware, commentRouter);
 router.use("/hashtags", express.json(), authMiddleware, hashtagsRouter);
 router.use("/trending", express.json(), trendingRouter);
+router.use("/chats", express.json(), authMiddleware, chatRouter);
 
 export default router;

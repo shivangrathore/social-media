@@ -73,12 +73,7 @@ export class UserRepository implements IUserRepository {
     const result = await db
       .select()
       .from(userView)
-      .where(
-        and(
-          eq(userView.isProfilePublic, true),
-          sql`lower(${userView.username}) like lower(${`%${query}%`})`,
-        ),
-      )
+      .where(and(sql`lower(${userView.username}) like lower(${`%${query}%`})`))
       .limit(10);
 
     return result.map(this.mapToUser);

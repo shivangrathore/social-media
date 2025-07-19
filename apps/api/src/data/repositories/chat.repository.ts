@@ -2,7 +2,15 @@ import { Chat, ChatType, User } from "@repo/types";
 import { IChatRepository } from "./respository";
 import { db } from "@/db";
 import { chatTable, chatUserTable, userView } from "@/db/schema";
-import { and, desc, eq, getViewSelectedFields } from "drizzle-orm";
+import {
+  and,
+  countDistinct,
+  desc,
+  eq,
+  getViewSelectedFields,
+  inArray,
+  getTableColumns,
+} from "drizzle-orm";
 
 export class ChatRepository implements IChatRepository {
   async getChats(
@@ -22,7 +30,6 @@ export class ChatRepository implements IChatRepository {
           eq(chatUserTable.userId, userId),
         ),
       )
-      .innerJoin(chatUserTable, eq(chatUserTable.chatId, chatTable.id))
       .orderBy(desc(chatTable.createdAt))
       .limit(limit ?? 10);
 
@@ -44,21 +51,28 @@ export class ChatRepository implements IChatRepository {
   }
 
   async createChat(userIds: number[], type: ChatType): Promise<Chat> {
-    return await db.transaction<Chat>(async (tx) => {
+    const id = await db.transaction(async (tx) => {
       const newChat = await tx
         .insert(chatTable)
         .values({
           type,
         })
-        .returning();
+        .returning({ id: chatTable.id });
       for (const userId of userIds) {
         await tx.insert(chatUserTable).values({
           chatId: newChat[0].id,
           userId,
         });
       }
-      return newChat[0];
+      return newChat[0].id;
     });
+
+    const chat = await this.getChatById(id);
+    if (!chat) {
+      throw new Error("Chat not found after creation");
+    }
+
+    return chat;
   }
 
   async getChatById(chatId: number): Promise<Chat | null> {
@@ -84,5 +98,23 @@ export class ChatRepository implements IChatRepository {
       createdAt: chat.createdAt,
       users: users.map((u) => u.user as User),
     };
+  }
+
+  async getChatByUserIds(userIds: number[]): Promise<Chat | null> {
+    const records = await db
+      .select({ id: chatTable.id })
+      .from(chatUserTable)
+      .innerJoin(chatTable, eq(chatUserTable.chatId, chatTable.id))
+      .where(
+        and(
+          eq(chatTable.type, "private"),
+          inArray(chatUserTable.userId, userIds),
+        ),
+      )
+      .groupBy(chatTable.id)
+      .having(eq(countDistinct(chatUserTable.userId), userIds.length));
+    if (records.length == 0) return null;
+    const chatId = records[0].id;
+    return await this.getChatById(chatId);
   }
 }

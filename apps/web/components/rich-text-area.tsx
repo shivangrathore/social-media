@@ -7,9 +7,7 @@ import mergeRefs from "merge-refs";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/apiClient";
 import { Hashtag, User } from "@repo/types";
-import { cn, getInitials } from "@/lib/utils";
-import { Avatar, AvatarImage } from "./ui/avatar";
-import { AvatarFallback } from "@radix-ui/react-avatar";
+import { cn } from "@/lib/utils";
 import { UserProfile } from "./user-profile";
 
 export function RichTextArea(props: AutoHeightTextareaProps) {

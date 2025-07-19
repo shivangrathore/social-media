@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
-import { Comment, GetFeedResponse } from "@repo/types";
+import { Comment, GetFeedResponse, User } from "@repo/types";
 
 export async function getUserPosts(id: number) {
   const res = await apiClient.get<GetFeedResponse>(`/feed/user/${id}`, {});
@@ -8,5 +8,13 @@ export async function getUserPosts(id: number) {
 
 export async function getUserComments(id: number) {
   const res = await apiClient.get<Comment[]>(`/users/${id}/comments`, {});
+  return res.data;
+}
+
+export async function searchUsers(query: string) {
+  const res = await apiClient.get<User[]>(`/users/search`, {
+    params: { query },
+  });
+
   return res.data;
 }
