@@ -1,17 +1,28 @@
 import { Server } from "socket.io";
+import type { Server as HTTPServer } from "http";
 import { registerHandlers } from "./handlers";
 import { verifyToken } from "./middleware/auth";
-import http from "http";
 
-export function initSocket(server: http.Server) {
-  const io = new Server(server);
+let io: Server | null = null;
 
+export function initSocket(server: HTTPServer) {
+  if (io) return io;
+
+  io = new Server(server, {});
   io.use(verifyToken);
-
-  io.on("connection", (socket) => {
+  io.on("connection", async (socket) => {
     console.log(`User connected: ${socket.data.userId}`);
-    registerHandlers(io, socket);
+    await registerHandlers(io!, socket);
   });
+  console.log("Socket.io initialized");
+  return io;
+}
 
+export function getIO(): Server {
+  if (!io) {
+    throw new Error(
+      "Socket.io not initialized. Call initSocket(server) first.",
+    );
+  }
   return io;
 }

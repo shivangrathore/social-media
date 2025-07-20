@@ -1,20 +1,42 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import { createMessage } from "@/features/chat/api";
 import { useChat } from "@/features/chat/hooks/use-chat";
+import { useMessages } from "@/features/chat/hooks/use-messages";
 import socket from "@/lib/socket";
 import { cn, getInitials } from "@/lib/utils";
 import { useUser } from "@/store/auth";
 import { useChatStore } from "@/store/chat-store";
-import { Chat } from "@repo/types";
+import { useMessagesStore } from "@/store/messages-store";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Chat,
+  ChatMessage,
+  CreateMessageSchema,
+  CreateMessageSchemaType,
+} from "@repo/types";
+import { SendIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 
 function MessagesList({ chat }: { chat: Chat }) {
-  useEffect(() => {}, []);
+  const { messages } = useMessages(chat.id);
+  const addMessage = useMessagesStore((state) => state.addMessage);
+  useEffect(() => {
+    function onMessage(message: ChatMessage) {
+      addMessage(chat.id, message);
+    }
+    socket.on("message:new", onMessage);
+    return () => {
+      socket.off("message:new", onMessage);
+    };
+  }, []);
   const { user } = useUser();
-  const messages: any[] = [];
   return (
     <div className="flex-grow overflow-auto h-full flex flex-col gap-2 p-2">
       <div className="flex-grow" />
@@ -23,20 +45,20 @@ function MessagesList({ chat }: { chat: Chat }) {
           key={message.id}
           className={cn(
             "flex items-start gap-2 p-2 hover:bg-accent/20 rounded-md justify-start",
-            message.sender.id === user?.id
+            message.user.id === user?.id
               ? "text-right flex-row-reverse"
               : "text-left",
           )}
         >
           <Avatar className="w-8 h-8">
-            <AvatarImage src={message.sender.avatar || undefined} />
+            <AvatarImage src={message.user.avatar || undefined} />
             <AvatarFallback>
-              {getInitials(message.sender.name || message.sender.username)}
+              {getInitials(message.user.name || message.user.username)}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
             <span className="text-sm font-semibold">
-              {message.sender.name || message.sender.username}
+              {message.user.name || message.user.username}
             </span>
             <span className="text-sm text-gray-500">{message.content}</span>
           </div>
@@ -47,30 +69,28 @@ function MessagesList({ chat }: { chat: Chat }) {
 }
 
 function NewMessageForm() {
-  const { user } = useUser();
   const selectedChatId = useChatStore((state) => state.selectedChatId);
-  const { chat } = useChat(selectedChatId);
+  const form = useForm({
+    resolver: zodResolver(CreateMessageSchema),
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const content = formData.get("content") as string;
-    if (!content.trim()) return;
-
-    socket.emit("sendMessage", {
-      chatId: selectedChatId,
-      content,
-    });
-    e.currentTarget.reset();
+  const onSubmit = async (data: CreateMessageSchemaType) => {
+    await createMessage(selectedChatId!, data.content);
+    form.reset();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
-      <Textarea name="content" placeholder="Type your message..." />
-      <button type="submit" className="btn btn-primary">
-        Send
-      </button>
-    </form>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
+        <Textarea
+          placeholder="Type your message..."
+          {...form.register("content")}
+        />
+        <Button className="" type="submit" variant="outline" size="icon">
+          <SendIcon />
+        </Button>
+      </form>
+    </Form>
   );
 }
 

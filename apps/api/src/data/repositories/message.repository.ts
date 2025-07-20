@@ -1,8 +1,14 @@
 import { ChatMessage } from "@repo/types";
-import { IMessageRepository } from "./respository";
+import { IChatMessage, IMessageRepository } from "./respository";
 import { db } from "@/db";
-import { messageTable } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { messageTable, userView } from "@/db/schema";
+import {
+  and,
+  desc,
+  eq,
+  getTableColumns,
+  getViewSelectedFields,
+} from "drizzle-orm";
 
 export class MessageRepository implements IMessageRepository {
   async getMessages(
@@ -11,16 +17,24 @@ export class MessageRepository implements IMessageRepository {
     limit: number = 20,
   ): Promise<ChatMessage[]> {
     const results = await db
-      .select()
+      .select({
+        ...getTableColumns(messageTable),
+        user: getViewSelectedFields(userView),
+      })
       .from(messageTable)
+      .innerJoin(userView, eq(messageTable.userId, userView.id))
       .where(eq(messageTable.chatId, chatId))
-      .limit(limit);
+      .limit(limit)
+      .orderBy(desc(messageTable.createdAt));
     return results;
   }
 
   async getMessageById(messageId: number): Promise<ChatMessage | null> {
     const message = await db
-      .select()
+      .select({
+        ...getTableColumns(messageTable),
+        user: getViewSelectedFields(userView),
+      })
       .from(messageTable)
       .where(eq(messageTable.id, messageId))
       .limit(1);
@@ -34,7 +48,7 @@ export class MessageRepository implements IMessageRepository {
     chatId: number,
     userId: number,
     content: string,
-  ): Promise<ChatMessage> {
+  ): Promise<IChatMessage> {
     const result = await db
       .insert(messageTable)
       .values({

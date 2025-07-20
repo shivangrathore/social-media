@@ -200,7 +200,7 @@ export interface IMessageRepository {
     chatId: number,
     userId: number,
     content: string,
-  ): Promise<ChatMessage>;
+  ): Promise<IChatMessage>;
   getMessages(
     chatId: number,
     cursor?: number,
@@ -208,4 +208,14 @@ export interface IMessageRepository {
   ): Promise<ChatMessage[]>;
   deleteMessage(messageId: number, userId: number): Promise<void>;
   getMessageById(messageId: number): Promise<ChatMessage | null>;
+}
+
+export interface IChatMessage {
+  id: number;
+  chatId: number;
+  userId: number;
+  content: string;
+  createdAt: Date;
+  user?: User;
+  isRequest: boolean;
 }

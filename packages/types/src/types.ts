@@ -118,4 +118,5 @@ export interface ChatMessage {
   content: string;
   createdAt: Date;
   isRequest: boolean;
+  user: User;
 }

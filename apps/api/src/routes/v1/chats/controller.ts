@@ -1,4 +1,9 @@
-import { chatRepository, messageRepository } from "@/data/repositories";
+import {
+  chatRepository,
+  messageRepository,
+  userRepository,
+} from "@/data/repositories";
+import { emitNewMessage } from "@/socket/services/chat";
 import { CreateChatSchema, CreateMessageSchema } from "@repo/types";
 import { Request, Response } from "express";
 
@@ -51,5 +56,20 @@ export async function createMessage(req: Request, res: Response) {
     userId,
     content,
   );
+  const user = await userRepository.getById(userId);
+  emitNewMessage(chatId, {
+    ...message,
+    user: user!,
+  });
   res.status(201).json(message);
+}
+
+export async function getMessages(req: Request, res: Response) {
+  const chatId = parseInt(req.params.chatId, 10);
+  if (isNaN(chatId)) {
+    res.status(400).json({ error: "Invalid chat ID" });
+    return;
+  }
+  const messages = await messageRepository.getMessages(chatId);
+  res.status(200).json(messages);
 }
