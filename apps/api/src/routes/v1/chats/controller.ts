@@ -1,5 +1,5 @@
-import { chatRepository } from "@/data/repositories";
-import { CreateChatSchema } from "@repo/types";
+import { chatRepository, messageRepository } from "@/data/repositories";
+import { CreateChatSchema, CreateMessageSchema } from "@repo/types";
 import { Request, Response } from "express";
 
 export async function getChats(req: Request, res: Response) {
@@ -35,4 +35,21 @@ export async function getChat(req: Request, res: Response) {
     return;
   }
   res.status(200).json(chat);
+}
+
+export async function createMessage(req: Request, res: Response) {
+  const chatId = parseInt(req.params.chatId, 10);
+  if (isNaN(chatId)) {
+    res.status(400).json({ error: "Invalid chat ID" });
+    return;
+  }
+  const userId = res.locals["userId"];
+  const { content } = await CreateMessageSchema.parseAsync(req.body);
+
+  const message = await messageRepository.createMessage(
+    chatId,
+    userId,
+    content,
+  );
+  res.status(201).json(message);
 }

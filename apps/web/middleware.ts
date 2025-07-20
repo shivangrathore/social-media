@@ -5,8 +5,7 @@ export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
   const token = request.cookies.get("token");
 
-  // Handle API routes: inject Authorization header if token is present
-  if (pathname.startsWith("/api/")) {
+  if (pathname.startsWith("/api/") || pathname.startsWith("/socket.io")) {
     const response = NextResponse.next();
     if (token) {
       response.headers.set("Authorization", `Bearer ${token.value}`);
@@ -14,7 +13,6 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // Authenticated route handling
   try {
     await apiClient.get("/users/@me", {
       headers: {
@@ -22,7 +20,6 @@ export async function middleware(request: NextRequest) {
       },
     });
 
-    // Redirect logged-in users away from auth pages
     if (pathname === "/login" || pathname === "/register") {
       const next = searchParams.get("next") || "/";
       return NextResponse.redirect(new URL(next, request.url));
@@ -30,12 +27,10 @@ export async function middleware(request: NextRequest) {
 
     return NextResponse.next();
   } catch {
-    // Allow unauthenticated access to the login page
     if (pathname === "/login" || pathname === "/register") {
       return NextResponse.next();
     }
 
-    // Redirect unauthenticated users to login
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);
 
@@ -45,5 +40,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|static|socket.io).*)"],
+  matcher: ["/((?!_next|static).*)"],
 };

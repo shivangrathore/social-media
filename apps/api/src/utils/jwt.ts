@@ -1,9 +1,9 @@
-import jose from "jose";
+import { jwtVerify, SignJWT } from "jose";
 import config from "../config";
 
 export async function signJWT(userId: number) {
   const secret = new TextEncoder().encode(config.JWT_SECRET);
-  return await new jose.SignJWT()
+  return await new SignJWT()
     .setSubject(userId.toString())
     .setIssuedAt()
     .setIssuer("social-media")
@@ -13,5 +13,5 @@ export async function signJWT(userId: number) {
 
 export async function verifyJWT(jwt: string) {
   const secret = new TextEncoder().encode(config.JWT_SECRET);
-  return await jose.jwtVerify(jwt, secret);
+  return await jwtVerify(jwt, secret);
 }

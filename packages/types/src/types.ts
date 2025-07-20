@@ -110,3 +110,12 @@ export interface Chat {
 }
 
 export type ChatType = "group" | "private";
+
+export interface ChatMessage {
+  id: number;
+  chatId: number;
+  userId: number;
+  content: string;
+  createdAt: Date;
+  isRequest: boolean;
+}

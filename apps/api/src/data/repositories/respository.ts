@@ -7,6 +7,7 @@ import {
   Hashtag,
   Chat,
   ChatType,
+  ChatMessage,
 } from "@repo/types";
 import { Attachment, Comment, User } from "@repo/types";
 import { PostType } from "@repo/types";
@@ -192,4 +193,19 @@ export interface IChatRepository {
   ): Promise<Chat>;
   getChats(userId: number, cursor?: number, limit?: number): Promise<Chat[]>;
   getChatById(chatId: number): Promise<Chat | null>;
+}
+
+export interface IMessageRepository {
+  createMessage(
+    chatId: number,
+    userId: number,
+    content: string,
+  ): Promise<ChatMessage>;
+  getMessages(
+    chatId: number,
+    cursor?: number,
+    limit?: number,
+  ): Promise<ChatMessage[]>;
+  deleteMessage(messageId: number, userId: number): Promise<void>;
+  getMessageById(messageId: number): Promise<ChatMessage | null>;
 }

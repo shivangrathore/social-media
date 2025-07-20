@@ -324,7 +324,6 @@ export const messageTable = pgTable("message", {
     .notNull()
     .references(() => userTable.id),
   content: text("content").notNull(),
-  is_request: boolean("is_request").notNull().default(false),
+  isRequest: boolean("is_request").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

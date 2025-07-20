@@ -12,11 +12,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 function MessagesList({ chat }: { chat: Chat }) {
-  console.log("MessagesList rendered", chat);
-  useEffect(() => {
-    socket.emit("joinChat", chat.id);
-    return () => {};
-  }, []);
+  useEffect(() => {}, []);
   const { user } = useUser();
   const messages: any[] = [];
   return (
@@ -47,6 +43,34 @@ function MessagesList({ chat }: { chat: Chat }) {
         </div>
       ))}
     </div>
+  );
+}
+
+function NewMessageForm() {
+  const { user } = useUser();
+  const selectedChatId = useChatStore((state) => state.selectedChatId);
+  const { chat } = useChat(selectedChatId);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const content = formData.get("content") as string;
+    if (!content.trim()) return;
+
+    socket.emit("sendMessage", {
+      chatId: selectedChatId,
+      content,
+    });
+    e.currentTarget.reset();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex gap-2">
+      <Textarea name="content" placeholder="Type your message..." />
+      <button type="submit" className="btn btn-primary">
+        Send
+      </button>
+    </form>
   );
 }
 
@@ -81,7 +105,7 @@ function MessagesPage({ chat }: { chat: Chat }) {
         <MessagesList chat={chat} />
       </div>
       <div className="p-2 border-t">
-        <Textarea placeholder="Type your message..." />
+        <NewMessageForm />
       </div>
     </div>
   );
