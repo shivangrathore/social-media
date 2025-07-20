@@ -11,31 +11,18 @@ import socket from "@/lib/socket";
 import { cn, getInitials } from "@/lib/utils";
 import { useUser } from "@/store/auth";
 import { useChatStore } from "@/store/chat-store";
-import { useMessagesStore } from "@/store/messages-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Chat,
-  ChatMessage,
   CreateMessageSchema,
   CreateMessageSchemaType,
 } from "@repo/types";
 import { SendIcon } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 function MessagesList({ chat }: { chat: Chat }) {
   const { messages } = useMessages(chat.id);
-  const addMessage = useMessagesStore((state) => state.addMessage);
-  useEffect(() => {
-    function onMessage(message: ChatMessage) {
-      addMessage(chat.id, message);
-    }
-    socket.on("message:new", onMessage);
-    return () => {
-      socket.off("message:new", onMessage);
-    };
-  }, []);
   const { user } = useUser();
   return (
     <div className="flex-grow overflow-auto h-full flex flex-col gap-2 p-2">

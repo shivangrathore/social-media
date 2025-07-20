@@ -1,5 +1,6 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,16 +8,32 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { createChat } from "@/features/chat/api";
 import { useChats } from "@/features/chat/hooks/use-chats";
 import { useUserSearch } from "@/features/user/hooks/use-user-search";
+import socket from "@/lib/socket";
 import { cn, getInitials } from "@/lib/utils";
 import { useUser } from "@/store/auth";
 import { useChatStore } from "@/store/chat-store";
+import { useMessagesStore } from "@/store/messages-store";
+import { ChatMessage } from "@repo/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 
-function UserSearch() {
+function StartNewChat() {
   const [search, setSearch] = React.useState("");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
+  const queryClient = useQueryClient();
+  const [open, setOpen] = React.useState(false);
+  const { mutateAsync } = useMutation({
+    mutationFn: createChat,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["chats"],
+      });
+      setOpen(false);
+    },
+  });
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -30,6 +47,7 @@ function UserSearch() {
     shouldSearch ? debouncedSearch : "",
     {
       searchWhenEmpty: false,
+      ignoreMe: true,
     },
   );
 
@@ -51,7 +69,7 @@ function UserSearch() {
           <div
             key={user.id}
             className="mb-2 flex gap-4 items-center hover:bg-accent p-2 rounded-md cursor-pointer"
-            onClick={() => {}}
+            onClick={() => mutateAsync(user.id)}
           >
             <Avatar>
               <AvatarImage src={user.avatar || undefined} />
@@ -71,11 +89,11 @@ function UserSearch() {
     );
   }
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="w-full p-2 bg-primary text-white hover:bg-primary/90 transition-colors rounded-full cursor-pointer">
+        <Button className="w-full p-2 bg-primary text-white hover:bg-primary/90 transition-colors rounded-full cursor-pointer">
           Start New Chat
-        </button>
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogTitle>Start a new chat</DialogTitle>
@@ -99,7 +117,7 @@ function ChatList() {
   const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
   return (
     <div className="p-4 w-64 border-r border-border">
-      <UserSearch />
+      <StartNewChat />
       <hr className="mt-4 mb-2" />
       <h2 className="text-sm font-medium text-muted-foreground mb-2">Chats</h2>
       {chats.length > 0 ? (
@@ -114,7 +132,7 @@ function ChatList() {
                 key={chat.id}
                 className={cn(
                   "mb-2 flex gap-2 items-center hover:bg-accent p-2 rounded-md cursor-pointer",
-                  selectedChatId && "bg-accent",
+                  selectedChatId == chat.id && "bg-accent",
                 )}
                 onClick={() => setSelectedChatId(chat.id)}
               >
@@ -146,6 +164,16 @@ export default function MessagesLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const addMessage = useMessagesStore((state) => state.addMessage);
+  useEffect(() => {
+    function onMessage(message: ChatMessage) {
+      addMessage(message.chatId, message);
+    }
+    socket.on("message:new", onMessage);
+    return () => {
+      socket.off("message:new", onMessage);
+    };
+  }, []);
   return (
     <div className="flex w-[calc(100vw-var(--nav-width))] h-screen">
       <ChatList />

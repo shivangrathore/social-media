@@ -3,6 +3,7 @@ import { searchUsers } from "../api";
 
 type UserSearchOptions = {
   searchWhenEmpty?: boolean;
+  ignoreMe?: boolean;
 };
 export function useUserSearch(query: string, options: UserSearchOptions = {}) {
   const {
@@ -11,7 +12,7 @@ export function useUserSearch(query: string, options: UserSearchOptions = {}) {
     isRefetching,
   } = useQuery({
     queryKey: ["userSearch", query],
-    queryFn: () => searchUsers(query),
+    queryFn: () => searchUsers(query, options.ignoreMe),
     enabled: options.searchWhenEmpty || query.length > 0,
     retry: false,
   });

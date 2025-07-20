@@ -111,7 +111,11 @@ export interface IUserRepository {
   getById(userId: number): Promise<IUser | null>;
   suggestUsers(userId: number): Promise<IUser[]>;
   getByUsername(username: string): Promise<IUser | null>;
-  searchUsers(userId: number, query: string): Promise<IUser[]>;
+  searchUsers(
+    userId: number,
+    query: string,
+    ignoreMe?: boolean,
+  ): Promise<IUser[]>;
 }
 
 export interface IFeedPost {

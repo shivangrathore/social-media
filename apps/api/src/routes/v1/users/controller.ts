@@ -79,11 +79,12 @@ export const searchUsers = async (
   res: Response<User[]>,
 ): Promise<void> => {
   const userId = res.locals["userId"];
-  const { query } = req.query;
-  if (!query || typeof query !== "string") {
-    throw ServiceError.BadRequest("Query parameter is required");
-  }
-  const users = await userRepository.searchUsers(userId, query);
+  const schema = z.object({
+    query: z.string(),
+    ignoreMe: z.coerce.boolean().optional(),
+  });
+  const { query, ignoreMe } = await schema.parseAsync(req.query);
+  const users = await userRepository.searchUsers(userId, query, ignoreMe);
   res.json(users);
 };
 

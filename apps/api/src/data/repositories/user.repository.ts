@@ -69,11 +69,20 @@ export class UserRepository implements IUserRepository {
     return this.mapToUser(result[0]);
   }
 
-  async searchUsers(userId: number, query: string): Promise<User[]> {
+  async searchUsers(
+    userId: number,
+    query: string,
+    ignoreMe?: boolean,
+  ): Promise<User[]> {
     const result = await db
       .select()
       .from(userView)
-      .where(and(sql`lower(${userView.username}) like lower(${`%${query}%`})`))
+      .where(
+        and(
+          sql`lower(${userView.username}) like lower(${`%${query}%`})`,
+          ignoreMe ? ne(userView.id, userId) : undefined,
+        ),
+      )
       .limit(10);
 
     return result.map(this.mapToUser);

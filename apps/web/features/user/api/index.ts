@@ -11,9 +11,9 @@ export async function getUserComments(id: number) {
   return res.data;
 }
 
-export async function searchUsers(query: string) {
+export async function searchUsers(query: string, ignoreMe: boolean = false) {
   const res = await apiClient.get<User[]>(`/users/search`, {
-    params: { query },
+    params: { query, ignoreMe: ignoreMe || undefined },
   });
 
   return res.data;
