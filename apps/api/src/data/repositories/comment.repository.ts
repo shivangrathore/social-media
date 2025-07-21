@@ -1,8 +1,8 @@
 import { db } from "@/db";
 import { ICommentsRepository } from "./respository";
-import { commentTable, postTable } from "@/db/schema";
-import { and, desc, eq, gt, sql } from "drizzle-orm";
-import { Comment } from "@repo/types";
+import { commentTable, postTable, userView } from "@/db/schema";
+import { and, desc, eq, getViewSelectedFields, gt, lt, sql } from "drizzle-orm";
+import { Comment, CommentWithAuthor } from "@repo/types";
 import { ServiceError } from "@/utils/errors";
 
 export class CommentRepository implements ICommentsRepository {
@@ -68,5 +68,31 @@ export class CommentRepository implements ICommentsRepository {
       .limit(limit)
       .orderBy(desc(commentTable.id));
     return comments;
+  }
+
+  async getByPostId(
+    postId: number,
+    cursor: number | null = null,
+    limit: number = 10,
+  ): Promise<CommentWithAuthor[]> {
+    const comments = await db
+      .select({
+        comment: commentTable,
+        user: getViewSelectedFields(userView),
+      })
+      .from(commentTable)
+      .where(
+        and(
+          eq(commentTable.postId, postId),
+          cursor ? lt(commentTable.id, cursor) : undefined,
+        ),
+      )
+      .limit(limit)
+      .innerJoin(userView, eq(userView.id, commentTable.userId))
+      .orderBy(desc(commentTable.id));
+    return comments.map((c) => ({
+      ...c.comment,
+      user: c.user,
+    }));
   }
 }

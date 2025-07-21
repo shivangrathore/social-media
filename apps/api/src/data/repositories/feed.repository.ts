@@ -158,4 +158,26 @@ export class FeedRepository implements IFeedRepository {
       .orderBy(desc(postTable.publishedAt))
       .limit(limit + 1);
   }
+
+  async getFeedPost(id: number): Promise<IFeedPost | null> {
+    const [post] = await db
+      .select({
+        post: postTable,
+        user: getViewSelectedFields(userView),
+        bookmarkedByMe: sql<boolean>`user_bookmark.id IS NOT NULL`.as(
+          "bookmarked",
+        ),
+      })
+      .from(postTable)
+      .innerJoin(userView, eq(userView.id, postTable.userId))
+      .leftJoin(
+        userBookmarkTable,
+        and(
+          eq(userBookmarkTable.targetId, postTable.id),
+          eq(userBookmarkTable.type, "post"),
+        ),
+      )
+      .where(eq(postTable.id, id));
+    return post || null;
+  }
 }

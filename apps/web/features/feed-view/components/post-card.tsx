@@ -10,7 +10,7 @@ import { useLikes } from "../hooks/use-likes";
 import { cn, pluralize } from "@/lib/utils";
 import { CommentDialog } from "./comment-dialog";
 import Link from "next/link";
-import { useComments } from "../hooks/use-comments";
+import { useCreateCommentWithCounter } from "../hooks/use-create-comment-counter";
 import { useBookmarked } from "../hooks/use-bookmarked";
 import { useLikeStore } from "@/store/like-store";
 import { useCommentStore } from "@/store/comment-store";
@@ -127,7 +127,7 @@ export function PostCard({ post }: { post: FeedPost }) {
   const ref = useRef<HTMLDivElement>(null);
   const author = post.author;
   const { logView, isLogged } = useLogView(post.id);
-  const { addComment } = useComments(post.id);
+  const { addComment } = useCreateCommentWithCounter(post.id);
   useEffect(() => {
     if (isLogged) return;
     const observer = new IntersectionObserver(

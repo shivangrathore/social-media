@@ -1,11 +1,20 @@
 import {
   attachmentRepository,
+  commentRepository,
   feedRepository,
   postRepository,
+  userRepository,
 } from "@/data/repositories";
 import { IFeedPost, IPost } from "@/data/repositories/respository";
 import { postTable } from "@/db/schema";
-import { FeedPost, GetFeedResponse, User } from "@repo/types";
+import { ServiceError } from "@/utils/errors";
+import {
+  Comment,
+  FeedPost,
+  GetFeedResponse,
+  GetPostCommentsResponse,
+  User,
+} from "@repo/types";
 import { InferSelectModel } from "drizzle-orm";
 import { Request, Response } from "express";
 import { z } from "zod";
@@ -151,4 +160,59 @@ export const getUserPosts = async (
   const records = await feedRepository.getUserPosts(userId, cursor, limit);
   const data = await prepareFeedPosts(userId, records, limit);
   res.status(200).json(data);
+};
+
+export const getFeedPost = async (req: Request, res: Response<FeedPost>) => {
+  const postId = parseInt(req.params.postId, 10);
+  const post = await feedRepository.getFeedPost(postId);
+  if (!post) {
+    throw ServiceError.NotFound("Post not found");
+  }
+  let feedPost: FeedPost;
+  if (post.post.postType == "poll") {
+    feedPost = await buildPollEntry(
+      post.post,
+      post.user,
+      res.locals["userId"],
+      post.bookmarkedByMe,
+    );
+  } else {
+    feedPost = await buildRegularEntry(
+      post.post,
+      post.user,
+      res.locals["userId"],
+      post.bookmarkedByMe,
+    );
+  }
+  res.status(200).json(feedPost);
+};
+
+const GetPostCommentsQuerySchema = z.object({
+  cursor: z.coerce.number().optional(),
+  limit: z.coerce.number().default(10),
+});
+
+export const getPostComments = async (
+  req: Request,
+  res: Response<GetPostCommentsResponse>,
+) => {
+  const postId = parseInt(req.params.postId, 10);
+  if (isNaN(postId)) {
+    throw ServiceError.BadRequest("Invalid post ID");
+  }
+
+  const { cursor, limit } = await GetPostCommentsQuerySchema.parseAsync(
+    req.query,
+  );
+
+  const data = await commentRepository.getByPostId(postId, cursor, limit + 1);
+
+  const comments = data.slice(0, limit);
+
+  let nextCursor: number | null = null;
+
+  if (data.length > limit) {
+    nextCursor = data[limit - 1].id;
+  }
+  res.status(200).json({ data: comments, nextCursor });
 };

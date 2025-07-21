@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { useCreateComment } from "@/features/comments/hooks/use-create-comment";
 import { useCommentStore } from "@/store/comment-store";
 
-export function useComments(postId: number) {
+export function useCreateCommentWithCounter(postId: number) {
   const { create } = useCreateComment({ postId });
   const commentCount = useCommentStore(
     (state) => state.commentCount[postId] || 0,

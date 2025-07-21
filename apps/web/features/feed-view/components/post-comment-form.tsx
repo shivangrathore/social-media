@@ -1,5 +1,6 @@
 "use client";
 import AutoHeightTextarea from "@/components/auto-height-textarea";
+import { RichTextArea } from "@/components/rich-text-area";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback } from "react";
@@ -29,7 +30,7 @@ export function PostCommentForm({
       className="flex flex-col w-full mt-1"
       onSubmit={form.handleSubmit(onSubmit)}
     >
-      <AutoHeightTextarea
+      <RichTextArea
         className="w-full resize-none overflow-hidden"
         content=""
         rows={1}

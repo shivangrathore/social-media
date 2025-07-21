@@ -1,6 +1,6 @@
 "use client";
 import { useMutation } from "@tanstack/react-query";
-import { createComment } from "../api/create-comment";
+import { createComment } from "../api";
 
 export function useCreateComment({ postId }: { postId: number }) {
   const { mutateAsync } = useMutation({

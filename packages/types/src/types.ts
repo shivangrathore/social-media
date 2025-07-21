@@ -120,3 +120,7 @@ export interface ChatMessage {
   isRequest: boolean;
   user: User;
 }
+
+export interface CommentWithAuthor extends Comment {
+  user: User;
+}
