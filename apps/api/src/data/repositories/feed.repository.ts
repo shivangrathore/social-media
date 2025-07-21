@@ -41,7 +41,7 @@ export class FeedRepository implements IFeedRepository {
           cursor ? gt(postTable.id, cursor) : undefined,
           isNotNull(postTable.publishedAt),
         ),
-      )
+      ) // TODO: Fix cursor logic
       .orderBy(desc(postTable.publishedAt))
       .innerJoin(userView, eq(userView.id, postTable.userId))
       .leftJoin(

@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadMoreContent } from "@/components/load-more-content";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -7,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { createMessage } from "@/features/chat/api";
 import { useChat } from "@/features/chat/hooks/use-chat";
 import { useMessages } from "@/features/chat/hooks/use-messages";
-import socket from "@/lib/socket";
 import { cn, getInitials } from "@/lib/utils";
 import { useUser } from "@/store/auth";
 import { useChatStore } from "@/store/chat-store";
@@ -19,14 +19,41 @@ import {
 } from "@repo/types";
 import { SendIcon } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 function MessagesList({ chat }: { chat: Chat }) {
-  const { messages } = useMessages(chat.id);
+  const { messages, fetchNextPage, isLoading } = useMessages(chat.id);
   const { user } = useUser();
+  const scrollTarget = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+      setShouldAutoScroll(scrollTop + clientHeight >= scrollHeight - 50);
+    };
+    containerRef.current?.addEventListener("scroll", handleScroll);
+    return () => {
+      containerRef.current?.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (shouldAutoScroll) {
+      scrollTarget.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, shouldAutoScroll]);
+
   return (
-    <div className="flex-grow overflow-auto h-full flex flex-col gap-2 p-2">
+    <div
+      className="flex-grow overflow-auto h-full flex flex-col gap-2 p-2"
+      ref={containerRef}
+    >
       <div className="flex-grow" />
+      <LoadMoreContent isLoading={isLoading} loadMore={fetchNextPage} />
       {messages.map((message) => (
         <div
           key={message.id}
@@ -51,6 +78,7 @@ function MessagesList({ chat }: { chat: Chat }) {
           </div>
         </div>
       ))}
+      <div ref={scrollTarget} />
     </div>
   );
 }

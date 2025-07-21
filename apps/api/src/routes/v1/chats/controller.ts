@@ -4,9 +4,11 @@ import {
   userRepository,
 } from "@/data/repositories";
 import { emitNewChat, emitNewMessage, joinChat } from "@/socket/services/chat";
+import { ServiceError } from "@/utils/errors";
 import {
   CreateChatSchema,
   CreateMessageSchema,
+  GetChatMessagesResponse,
   GetChatsResponse,
 } from "@repo/types";
 import { Request, Response } from "express";
@@ -84,12 +86,34 @@ export async function createMessage(req: Request, res: Response) {
   res.status(201).json(message);
 }
 
-export async function getMessages(req: Request, res: Response) {
+const GetMessagesQuerySchema = z.object({
+  cursor: z.coerce.number().optional(),
+  limit: z.coerce.number().default(20),
+});
+
+export async function getMessages(
+  req: Request,
+  res: Response<GetChatMessagesResponse>,
+) {
   const chatId = parseInt(req.params.chatId, 10);
   if (isNaN(chatId)) {
-    res.status(400).json({ error: "Invalid chat ID" });
-    return;
+    throw ServiceError.BadRequest("Invalid chat ID");
   }
-  const messages = await messageRepository.getMessages(chatId);
-  res.status(200).json(messages);
+  const { cursor, limit } = await GetMessagesQuerySchema.parseAsync(req.query);
+  const data = await messageRepository.getMessages(chatId, cursor, limit + 1);
+  const messages = data.slice(0, limit);
+  let nextCursor: number | null = null;
+  if (data.length > limit) {
+    nextCursor = data[limit].id;
+  }
+
+  console.log(
+    `Filter ${cursor} limit ${limit} NextCursor: ${nextCursor}: `,
+    data,
+  );
+
+  res.status(200).json({
+    data: messages,
+    nextCursor: nextCursor,
+  });
 }

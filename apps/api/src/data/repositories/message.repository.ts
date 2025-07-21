@@ -8,6 +8,7 @@ import {
   eq,
   getTableColumns,
   getViewSelectedFields,
+  lt,
 } from "drizzle-orm";
 
 export class MessageRepository implements IMessageRepository {
@@ -23,9 +24,14 @@ export class MessageRepository implements IMessageRepository {
       })
       .from(messageTable)
       .innerJoin(userView, eq(messageTable.userId, userView.id))
-      .where(eq(messageTable.chatId, chatId))
+      .where(
+        and(
+          eq(messageTable.chatId, chatId),
+          cursor ? lt(messageTable.id, cursor) : undefined,
+        ),
+      )
       .limit(limit)
-      .orderBy(desc(messageTable.createdAt));
+      .orderBy(desc(messageTable.id));
     return results;
   }
 

@@ -1,5 +1,10 @@
 import { apiClient } from "@/lib/apiClient";
-import { Chat, ChatMessage, GetChatsResponse } from "@repo/types";
+import {
+  Chat,
+  ChatMessage,
+  GetChatMessagesResponse,
+  GetChatsResponse,
+} from "@repo/types";
 
 export async function getChats(cursor: number | null = null) {
   const res = await apiClient.get<GetChatsResponse>("/chats", {
@@ -32,7 +37,18 @@ export async function createMessage(chatId: number, content: string) {
   return res.data;
 }
 
-export async function getMessages(chatId: number) {
-  const res = await apiClient.get<ChatMessage[]>(`/chats/${chatId}/messages`);
+export async function getMessages(
+  chatId: number,
+  cursor: number | null = null,
+) {
+  const res = await apiClient.get<GetChatMessagesResponse>(
+    `/chats/${chatId}/messages`,
+    {
+      params: {
+        cursor: cursor || undefined,
+        limit: 10,
+      },
+    },
+  );
   return res.data;
 }

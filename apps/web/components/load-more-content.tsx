@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function LoadMoreContent({
   isLoading,
@@ -9,22 +9,32 @@ export function LoadMoreContent({
   loadMore(): void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [isIntersecting, setIsIntersecting] = useState(false);
+
   useEffect(() => {
-    if (isLoading) return;
+    if (isIntersecting && !isLoading) {
+      loadMore();
+    }
+  }, [isIntersecting, loadMore, isLoading]);
+
+  useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          loadMore();
-          observer.disconnect();
-        }
+        setIsIntersecting(entry.isIntersecting);
       },
       { threshold: 1 },
     );
-    if (ref.current) {
-      observer.observe(ref.current);
+
+    const node = ref.current;
+    if (node) {
+      observer.observe(node);
     }
-    return () => observer.disconnect();
-  }, [isLoading, loadMore]);
+
+    return () => {
+      if (node) observer.unobserve(node);
+      observer.disconnect();
+    };
+  }, [isLoading, setIsIntersecting]);
 
   return <div ref={ref} />;
 }

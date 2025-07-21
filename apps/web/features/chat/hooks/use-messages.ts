@@ -1,8 +1,8 @@
 "use client";
 import { useMessagesStore } from "@/store/messages-store";
-import { useQuery } from "@tanstack/react-query";
+import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 import { getMessages } from "../api";
-import { ChatMessage } from "@repo/types";
+import { GetChatMessagesResponse } from "@repo/types";
 import { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
 
@@ -14,15 +14,27 @@ export function useMessages(chatId: number) {
   const clearMessages = useMessagesStore((state) => state.clearMessages);
   const hydrateMessages = useMessagesStore((state) => state.hydrateMessages);
 
-  const { data } = useQuery<ChatMessage[]>({
-    queryKey: ["messages", chatId],
-    queryFn: () => getMessages(chatId),
-    enabled: !!chatId,
-  });
+  const { data, fetchNextPage, isLoading, isFetchingNextPage } =
+    useInfiniteQuery<
+      GetChatMessagesResponse,
+      Error,
+      InfiniteData<GetChatMessagesResponse>,
+      any[],
+      number | null
+    >({
+      queryKey: ["messages", chatId],
+      queryFn: ({ pageParam }) => getMessages(chatId, pageParam),
+      initialPageParam: null,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      enabled: !!chatId,
+    });
 
   useEffect(() => {
     if (data) {
-      hydrateMessages(chatId, data);
+      hydrateMessages(
+        chatId,
+        data.pages.flatMap((page) => page.data),
+      );
     }
   }, [data, chatId, hydrateMessages]);
 
@@ -30,5 +42,7 @@ export function useMessages(chatId: number) {
     messages,
     addMessage,
     clearMessages,
+    isLoading: isLoading || isFetchingNextPage,
+    fetchNextPage,
   };
 }

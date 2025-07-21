@@ -8,8 +8,8 @@ import {
   desc,
   eq,
   getViewSelectedFields,
-  gt,
   inArray,
+  lt,
 } from "drizzle-orm";
 
 export class ChatRepository implements IChatRepository {
@@ -26,7 +26,7 @@ export class ChatRepository implements IChatRepository {
       .innerJoin(chatTable, eq(chatUserTable.chatId, chatTable.id))
       .where(
         and(
-          cursor ? gt(chatTable.id, cursor) : undefined,
+          cursor ? lt(chatTable.id, cursor) : undefined,
           eq(chatUserTable.userId, userId),
         ),
       )
