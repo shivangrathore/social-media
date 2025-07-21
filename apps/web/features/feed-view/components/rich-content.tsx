@@ -1,6 +1,6 @@
 import React from "react";
 
-export function RichPostContent({
+export function RichContent({
   content,
   className,
 }: {
@@ -11,7 +11,7 @@ export function RichPostContent({
   const parts = content.split(regex);
 
   return (
-    <div className={className}>
+    <span className={className}>
       {parts.map((part, index) => {
         if (part.startsWith("#")) {
           return (
@@ -36,6 +36,6 @@ export function RichPostContent({
         }
         return <span key={index}>{part}</span>;
       })}
-    </div>
+    </span>
   );
 }

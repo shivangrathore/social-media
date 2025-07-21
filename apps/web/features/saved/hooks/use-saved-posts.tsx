@@ -1,17 +1,26 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 import { getSavedPosts } from "../api";
+import { GetFeedResponse } from "@repo/types";
 
 export function useSavedPosts() {
-  const { isLoading, data } = useQuery({
+  const { isLoading, data, fetchNextPage } = useInfiniteQuery<
+    GetFeedResponse,
+    Error,
+    InfiniteData<GetFeedResponse>,
+    string[],
+    number | null
+  >({
     queryKey: ["feed:saved"],
-    queryFn: getSavedPosts,
-    refetchOnWindowFocus: false,
+    queryFn: ({ pageParam }) => getSavedPosts(pageParam),
+    initialPageParam: null,
+    getNextPageParam: (lastPage, allPages) => lastPage.nextCursor,
   });
 
   return {
     isLoading,
-    savedPosts: data ? data.data : [],
+    savedPosts: data?.pages.flatMap((page) => page.data) || [],
+    fetchNextPage,
   };
 }

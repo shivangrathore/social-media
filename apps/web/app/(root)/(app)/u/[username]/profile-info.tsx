@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadMoreContent } from "@/components/load-more-content";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PostCard } from "@/features/feed-view/components/post-card";
 import { PostSkeleton } from "@/features/feed-view/components/post-skeleton";
@@ -7,14 +8,15 @@ import { useUserComments } from "@/features/user/hooks/use-user-comments";
 import { useUserPosts } from "@/features/user/hooks/use-user-posts";
 
 function UserPosts({ id }: { id: number }) {
-  const { posts, isLoading } = useUserPosts(id);
+  const { posts, isLoading, fetchNextPage } = useUserPosts(id);
   return (
     <div className="p-4">
       {isLoading &&
         new Array(5).fill(0).map((_, index) => <PostSkeleton key={index} />)}
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} query={`user:posts:${id}`} />
+        <PostCard key={post.id} post={post} />
       ))}
+      <LoadMoreContent isLoading={isLoading} loadMore={fetchNextPage} />
     </div>
   );
 }

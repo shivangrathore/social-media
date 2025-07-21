@@ -4,7 +4,7 @@ import { castVote } from "../api";
 import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { FeedPost, GetFeedResponse } from "@repo/types";
-import { RichPostContent } from "./rich-post-content";
+import { RichContent } from "./rich-content";
 
 type Poll = Extract<FeedPost, { postType: "poll" }>;
 
@@ -61,7 +61,7 @@ export function PollDisplay({ poll }: { poll: Poll }) {
 
   return (
     <div className="py-4">
-      <RichPostContent content={poll.content || ""} className="mb-2 text-sm" />
+      <RichContent content={poll.content || ""} className="mb-2 text-sm" />
       <p className="text-sm text-gray-500 mt-1">
         {pluralize(totalVotes, "vote")}
       </p>

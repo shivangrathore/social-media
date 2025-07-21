@@ -1,12 +1,13 @@
 "use client";
 
+import { LoadMoreContent } from "@/components/load-more-content";
 import { SuggestionPanel } from "@/components/suggestion-panel";
 import { PostCard } from "@/features/feed-view/components/post-card";
 import { PostSkeleton } from "@/features/feed-view/components/post-skeleton";
 import { useSavedPosts } from "@/features/saved/hooks/use-saved-posts";
 
 export default function SavedPage() {
-  const { isLoading, savedPosts } = useSavedPosts();
+  const { isLoading, savedPosts, fetchNextPage } = useSavedPosts();
 
   return (
     <div className="flex gap-36">
@@ -18,9 +19,12 @@ export default function SavedPage() {
         {isLoading ? (
           <PostSkeleton />
         ) : (
-          savedPosts.map((post) => (
-            <PostCard post={post} key={post.id} query="feed:saved" />
-          ))
+          <>
+            {savedPosts.map((post) => (
+              <PostCard post={post} key={post.id} />
+            ))}
+            <LoadMoreContent isLoading={isLoading} loadMore={fetchNextPage} />
+          </>
         )}
       </div>
       <SuggestionPanel />

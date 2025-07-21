@@ -11,6 +11,7 @@ import { User } from "@repo/types";
 import { MessageCircle } from "lucide-react";
 import { PostCommentForm } from "./post-comment-form";
 import React, { useCallback } from "react";
+import { RichContent } from "./rich-content";
 
 export function CommentDialog({
   author,
@@ -54,7 +55,9 @@ export function CommentDialog({
             </div>
           </div>
           <div className="relative -mt-6 min-h-[3rem]">
-            <p className="text-sm pl-14">{content}</p>
+            <p className="text-sm pl-14">
+              <RichContent content={content || ""} />
+            </p>
             <div className="w-0.5 bg-gray-400 h-[calc(100%-1.5rem)] top-0 left-6 absolute mt-6" />
           </div>
           <div className="flex gap-2">

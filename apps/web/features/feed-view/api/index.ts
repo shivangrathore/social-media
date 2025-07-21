@@ -1,7 +1,12 @@
 import { apiClient } from "@/lib/apiClient";
 
-export const fetchFeed = async () => {
-  const res = await apiClient.get("/feed", {});
+export const fetchFeed = async (cursor: number | null = null) => {
+  const res = await apiClient.get("/feed", {
+    params: {
+      cursor,
+      limit: 5,
+    },
+  });
   return res.data;
 };
 
