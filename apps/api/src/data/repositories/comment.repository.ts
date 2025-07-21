@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { ICommentsRepository } from "./respository";
 import { commentTable, postTable } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { and, desc, eq, gt, sql } from "drizzle-orm";
 import { Comment } from "@repo/types";
 import { ServiceError } from "@/utils/errors";
 
@@ -53,15 +53,20 @@ export class CommentRepository implements ICommentsRepository {
 
   async getByUserId(
     userId: number,
-    limit: number = 20,
-    offset: number = 0,
+    cursor: number | null = null,
+    limit: number = 10,
   ): Promise<Comment[]> {
     const comments = await db
       .select()
       .from(commentTable)
-      .where(eq(commentTable.userId, userId))
+      .where(
+        and(
+          eq(commentTable.userId, userId),
+          cursor ? gt(commentTable.id, cursor) : undefined,
+        ),
+      )
       .limit(limit)
-      .offset(offset);
+      .orderBy(desc(commentTable.id));
     return comments;
   }
 }

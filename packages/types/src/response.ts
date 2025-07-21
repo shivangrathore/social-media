@@ -1,4 +1,4 @@
-import { FeedPost, User } from "./types";
+import { Comment, FeedPost, User } from "./types";
 
 export type LoginResponse = {
   message: string;
@@ -20,5 +20,10 @@ export type GetSignatureResponse = {
 
 export type GetFeedResponse = {
   data: FeedPost[];
+  nextCursor: number | null;
+};
+
+export type GetUserCommentsResponse = {
+  data: Comment[];
   nextCursor: number | null;
 };

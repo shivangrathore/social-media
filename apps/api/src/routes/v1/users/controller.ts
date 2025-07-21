@@ -6,7 +6,7 @@ import {
   commentRepository,
 } from "@/data/repositories";
 import { ServiceError } from "@/utils/errors";
-import { Comment, Post, User } from "@repo/types";
+import { Comment, GetUserCommentsResponse, Post, User } from "@repo/types";
 import { z } from "zod";
 
 export const getCurrentUser = async (
@@ -88,11 +88,17 @@ export const searchUsers = async (
   res.json(users);
 };
 
+const UserCommentQuerySchema = z.object({
+  cursor: z.coerce.number().optional(),
+  limit: z.coerce.number().min(1).max(100).default(10),
+});
+
 export const getUserComments = async (
   req: Request,
-  res: Response<Comment[]>,
+  res: Response<GetUserCommentsResponse>,
 ): Promise<void> => {
   const id = z.coerce.number().parse(req.params.id);
+  const { cursor, limit } = await UserCommentQuerySchema.parseAsync(req.query);
   const user = await userRepository.getById(id);
   if (!user) {
     throw ServiceError.NotFound("User not found");
@@ -100,6 +106,15 @@ export const getUserComments = async (
   if (!user.isProfilePublic) {
     throw ServiceError.Forbidden("User profile is private");
   }
-  const comments = await commentRepository.getByUserId(user.id);
-  res.json(comments);
+  const data = await commentRepository.getByUserId(user.id, cursor, limit + 1);
+  const comments = data.slice(0, limit);
+  let nextCursor: number | null = null;
+  if (comments.length < data.length) {
+    nextCursor = comments[comments.length - 1].id;
+  }
+
+  res.json({
+    data,
+    nextCursor,
+  });
 };
