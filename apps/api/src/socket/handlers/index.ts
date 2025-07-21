@@ -6,6 +6,8 @@ export async function registerHandlers(io: Server, socket: Socket) {
     console.log(`User disconnected: ${socket.data.userId}`);
   });
 
+  socket.join(`user:${socket.data.userId}`);
+
   const chats = await chatRepository.getChats(socket.data.userId);
   chats.forEach((chat) => {
     socket.join(`chat:${chat.id}`);

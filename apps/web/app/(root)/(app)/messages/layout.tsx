@@ -1,4 +1,5 @@
 "use client";
+import { LoadMoreContent } from "@/components/load-more-content";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,20 +18,16 @@ import { useUser } from "@/store/auth";
 import { useChatStore } from "@/store/chat-store";
 import { useMessagesStore } from "@/store/messages-store";
 import { ChatMessage } from "@repo/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 
 function StartNewChat() {
   const [search, setSearch] = React.useState("");
   const [debouncedSearch, setDebouncedSearch] = React.useState("");
-  const queryClient = useQueryClient();
   const [open, setOpen] = React.useState(false);
   const { mutateAsync } = useMutation({
     mutationFn: createChat,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["chats"],
-      });
       setOpen(false);
     },
   });
@@ -111,7 +108,7 @@ function StartNewChat() {
 }
 
 function ChatList() {
-  const { chats } = useChats();
+  const { chats, isLoading, fetchNextPage } = useChats();
   const { user: currentUser } = useUser();
   const selectedChatId = useChatStore((state) => state.selectedChatId);
   const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
@@ -151,6 +148,7 @@ function ChatList() {
               </li>
             );
           })}
+          <LoadMoreContent isLoading={isLoading} loadMore={fetchNextPage} />
         </ul>
       ) : (
         <p className="text-sm text-muted-foreground">No chats available</p>

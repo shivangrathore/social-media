@@ -3,14 +3,34 @@ import {
   messageRepository,
   userRepository,
 } from "@/data/repositories";
-import { emitNewMessage } from "@/socket/services/chat";
-import { CreateChatSchema, CreateMessageSchema } from "@repo/types";
+import { emitNewChat, emitNewMessage, joinChat } from "@/socket/services/chat";
+import {
+  CreateChatSchema,
+  CreateMessageSchema,
+  GetChatsResponse,
+} from "@repo/types";
 import { Request, Response } from "express";
+import { z } from "zod";
 
-export async function getChats(req: Request, res: Response) {
+const GetChatsQuerySchema = z.object({
+  cursor: z.number().optional(),
+  limit: z.coerce.number().default(10),
+});
+
+export async function getChats(req: Request, res: Response<GetChatsResponse>) {
+  const { cursor, limit } = await GetChatsQuerySchema.parseAsync(req.query);
   const userId = res.locals["userId"];
-  const chats = await chatRepository.getChats(userId, undefined, 10);
-  res.status(200).json(chats);
+  const data = await chatRepository.getChats(userId, cursor, limit + 1);
+  const chats = data.slice(0, limit);
+  let nextCursor: number | null = null;
+  if (data.length > limit) {
+    nextCursor = data[limit].id;
+  }
+
+  res.status(200).json({
+    data: chats,
+    nextCursor: nextCursor,
+  });
 }
 
 export async function createChat(req: Request, res: Response) {
@@ -21,10 +41,10 @@ export async function createChat(req: Request, res: Response) {
     res.status(200).json(chat);
     return;
   }
-  const newChat = await chatRepository.createChat(
-    [userId, currentUserId],
-    "private",
-  );
+  const userIds = [userId, currentUserId];
+  const newChat = await chatRepository.createChat(userIds, "private");
+  emitNewChat(newChat, ...userIds);
+  await joinChat(newChat.id, ...userIds);
   res.status(201).json(newChat);
 }
 

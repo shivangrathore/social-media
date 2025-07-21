@@ -105,7 +105,7 @@ export interface TrendingTag {
 
 export interface Chat {
   id: number;
-  users?: User[];
+  users: User[];
   createdAt: Date;
 }
 

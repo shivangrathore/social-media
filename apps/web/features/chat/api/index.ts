@@ -1,8 +1,12 @@
 import { apiClient } from "@/lib/apiClient";
-import { Chat, ChatMessage } from "@repo/types";
+import { Chat, ChatMessage, GetChatsResponse } from "@repo/types";
 
-export async function getChats() {
-  const res = await apiClient.get<Chat[]>("/chats");
+export async function getChats(cursor: number | null = null) {
+  const res = await apiClient.get<GetChatsResponse>("/chats", {
+    params: {
+      cursor: cursor || undefined,
+    },
+  });
   return res.data;
 }
 
