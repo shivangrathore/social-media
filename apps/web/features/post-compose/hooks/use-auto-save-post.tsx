@@ -10,7 +10,6 @@ export function useAutosavePost(
   create: (content: string | undefined) => Promise<Post>,
 ) {
   const { mutateAsync, isPending: isSaving } = useMutation({
-    mutationKey: ["saveDraftPost"],
     mutationFn: saveDraftPost,
   });
 
@@ -25,6 +24,7 @@ export function useAutosavePost(
     if (!isDirty) return;
     const timeout = setTimeout(async () => {
       await save();
+      console.log("Saving post with content", content.trim());
     }, 1000);
 
     return () => clearTimeout(timeout);

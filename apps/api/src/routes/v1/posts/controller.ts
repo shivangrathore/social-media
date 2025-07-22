@@ -21,7 +21,7 @@ import { CreateDraftSchema, PostTypeSchema } from "@repo/types";
 import { redis } from "@/db/redis";
 import { extractHashtags } from "@/utils";
 import { z } from "zod";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import config from "@/config";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import s3 from "@/lib/s3";
@@ -36,17 +36,6 @@ export async function getPresignedAttachment(
   userId: number,
   postId: number,
 ) {
-  // const command = new PutObjectCommand({
-  //   Bucket: config.MINIO_BUCKET,
-  //   Key: key,
-  //   ContentType: type,
-  //   Metadata: {
-  //     uploader: userId.toString(),
-  //     postId: postId.toString(),
-  //   },
-  // });
-
-  // const url = await getSignedUrl(s3, command, { expiresIn: 300 });
   const post = await createPresignedPost(s3, {
     Bucket: config.MINIO_BUCKET,
     Key: key,
@@ -62,6 +51,19 @@ export async function getPresignedAttachment(
     url: post.url,
     fields: post.fields,
   };
+}
+
+export async function objectExists(assetId: string) {
+  const command = new GetObjectCommand({
+    Bucket: config.MINIO_BUCKET,
+    Key: assetId,
+  });
+  try {
+    await s3.send(command);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export const getDraft = async (req: Request, res: Response<IPost>) => {
@@ -123,6 +125,9 @@ export const updateDraftContent = async (
       "You do not have permission to edit this post",
     );
   }
+  if (post.publishedAt) {
+    throw ServiceError.BadRequest("Cannot update a published post");
+  }
   const updatedPost = await postRepository.updateContent(postId, content);
   res.status(200).json(updatedPost);
 };
@@ -140,6 +145,9 @@ export const publishDraft = async (req: Request, res: Response<IPost>) => {
       "You do not have permission to publish this post",
     );
   }
+  if (post.publishedAt) {
+    throw ServiceError.BadRequest("Post is already published");
+  }
 
   const publishedPost = await postRepository.publish(postId);
   if (!publishedPost) {
@@ -150,6 +158,16 @@ export const publishDraft = async (req: Request, res: Response<IPost>) => {
     const htag = await hashtagRepository.upsert(hashtag);
     await hashtagRepository.linkHashtagToPost(htag.id, publishedPost.id);
     await redis.zincrby("trending_hashtags", 1, htag.name);
+  }
+
+  const attachments = await attachmentRepository.getAttachmentsByPostId(postId);
+  for (const attachment of attachments) {
+    // Delete attachments that do not exist in the storage
+    const assetId = attachment.assetId;
+    const exsists = await objectExists(assetId);
+    if (!exsists) {
+      await attachmentRepository.deleteAttachment(attachment.id, postId);
+    }
   }
   res.status(200).json(publishedPost!);
 };

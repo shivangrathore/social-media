@@ -72,11 +72,12 @@ export function PostComposeView() {
   const { forceSave } = useAutosavePost(isDirty, draft?.id, content, create);
   const onSubmit = async (data: PostComposeSchema) => {
     if (!draft) return;
-    await forceSave({ id: draft.id, content: data.content.trim() });
+    console.log("Force savign post with content:", data.content.trim());
+    await forceSave({ id: draft.id, content: data.content });
     await publishPost(draft.id);
+    refetchDraft();
     resetFiles();
     form.reset();
-    refetchDraft();
   };
   const inputId = useId();
   const onEmojiSelect = (emoji: string) => {

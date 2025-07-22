@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
-import { Attachment, Post, CreateDraftSchemaType } from "@repo/types";
+import { Post, CreateDraftSchemaType } from "@repo/types";
 
 // TODO: Handle errors and loading states properly
 export async function getDraftPost() {
@@ -15,7 +15,7 @@ export async function createDraftPost(content: string | undefined) {
 
 export async function saveDraftPost(post: {
   id: number;
-  content?: string | null;
+  content: string | null;
 }) {
   const res = await apiClient.patch<Post>(`/posts/${post.id}`, {
     content: post.content || "",

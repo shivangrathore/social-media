@@ -7,6 +7,7 @@ import {
   sql,
   getViewSelectedFields,
   gt,
+  lt,
 } from "drizzle-orm";
 import { db } from "@/db";
 import {
@@ -38,10 +39,10 @@ export class FeedRepository implements IFeedRepository {
       .limit(limit + 1)
       .where(
         and(
-          cursor ? gt(postTable.id, cursor) : undefined,
+          cursor ? lt(postTable.id, cursor) : undefined,
           isNotNull(postTable.publishedAt),
         ),
-      ) // TODO: Fix cursor logic
+      )
       .orderBy(desc(postTable.publishedAt))
       .innerJoin(userView, eq(userView.id, postTable.userId))
       .leftJoin(
