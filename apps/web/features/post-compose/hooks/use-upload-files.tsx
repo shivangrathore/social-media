@@ -34,14 +34,16 @@ export function useUploadFiles() {
     await Promise.all(
       files.map(async (file) => {
         const attach = await addAttachment(file.file.type, postId);
-        await axios.put(attach.uploadUrl, file.file, {
+        const formData = new FormData();
+        Object.entries(attach.fields).forEach(([key, value]) => {
+          formData.append(key, value);
+        });
+        formData.append("file", file.file);
+        await axios.post(attach.uploadUrl, formData, {
           headers: {
-            "Content-Type": "image/webp",
-            "Content-Length": file.file.size,
+            "Content-Type": "multipart/form-data",
           },
           adapter: "xhr",
-          maxBodyLength: Infinity,
-          maxContentLength: Infinity,
           onUploadProgress: (progressEvent: AxiosProgressEvent) => {
             const progress = Math.round(
               (progressEvent.loaded * 100) / (progressEvent.total || 1),

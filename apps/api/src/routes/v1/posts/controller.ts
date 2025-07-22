@@ -23,31 +23,45 @@ import { extractHashtags } from "@/utils";
 import { z } from "zod";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import config from "@/config";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import s3 from "@/lib/s3";
 
 const CreateAttachmentSchema = z.object({
   type: z.string().min(1, "Type is required"),
 });
 
-export async function getPresignedAttachmentUploadUrl(
+export async function getPresignedAttachment(
   key: string,
   type: string,
   userId: number,
   postId: number,
 ) {
-  const command = new PutObjectCommand({
+  // const command = new PutObjectCommand({
+  //   Bucket: config.MINIO_BUCKET,
+  //   Key: key,
+  //   ContentType: type,
+  //   Metadata: {
+  //     uploader: userId.toString(),
+  //     postId: postId.toString(),
+  //   },
+  // });
+
+  // const url = await getSignedUrl(s3, command, { expiresIn: 300 });
+  const post = await createPresignedPost(s3, {
     Bucket: config.MINIO_BUCKET,
     Key: key,
-    ContentType: type,
-    Metadata: {
-      uploader: userId.toString(),
-      postId: postId.toString(),
+    Conditions: [["content-length-range", 0, 10 * 1024 * 1024]],
+    Fields: {
+      "Content-Type": type,
+      "x-amz-meta-uploader": userId.toString(),
+      "x-amz-meta-postId": postId.toString(),
     },
+    Expires: Math.floor(Date.now() / 1000) + 300,
   });
-
-  const url = await getSignedUrl(s3, command, { expiresIn: 300 });
-  return url;
+  return {
+    url: post.url,
+    fields: post.fields,
+  };
 }
 
 export const getDraft = async (req: Request, res: Response<IPost>) => {
@@ -227,7 +241,7 @@ export async function addAttachment(
   const { type } = await CreateAttachmentSchema.parseAsync(req.body);
   const key = "attachments/" + crypto.randomUUID();
 
-  const presignedUrl = await getPresignedAttachmentUploadUrl(
+  const presignedAttachment = await getPresignedAttachment(
     key,
     type,
     userId,
@@ -242,7 +256,8 @@ export async function addAttachment(
 
   res.json({
     id: attachment.id,
-    uploadUrl: presignedUrl,
+    uploadUrl: presignedAttachment.url,
+    fields: presignedAttachment.fields,
   });
 }
 export const addLike = async (req: Request, res: Response<Like>) => {

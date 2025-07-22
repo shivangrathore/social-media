@@ -52,5 +52,6 @@ export type GetPostCommentsResponse = {
 
 export type CreateAttachmentResponse = {
   uploadUrl: string;
+  fields: Record<string, string>;
   id: number;
 };
