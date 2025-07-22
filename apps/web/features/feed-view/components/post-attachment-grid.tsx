@@ -21,15 +21,21 @@ export default function PostAttachmentGrid({
                 : "col-span-1",
             )}
           >
-            {attachment.type === "image" ? (
+            {attachment.type.startsWith("image") ? (
               <img
-                src={attachment.url}
+                src={
+                  "https://minio.shivang.tech/social-connect/" +
+                  attachment.assetId
+                }
                 alt=""
                 className="w-full h-full object-cover"
               />
             ) : (
               <video
-                src={attachment.url}
+                src={
+                  "https://minio.shivang.tech/social-connect/" +
+                  attachment.assetId
+                }
                 controls
                 className="w-full h-auto object-cover"
               />

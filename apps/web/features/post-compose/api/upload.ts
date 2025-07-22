@@ -1,30 +1,13 @@
 import { apiClient } from "@/lib/apiClient";
-import {
-  GetSignatureResponse,
-  AddAttachmentSchemaType,
-  Attachment,
-} from "@repo/types";
+import { Attachment, CreateAttachmentResponse } from "@repo/types";
 
-export async function getUploadSignature(postId: number) {
-  const res = await apiClient.post<GetSignatureResponse>("/uploads/signature", {
-    postId: postId,
-  });
-
-  return res.data;
-}
-
-export async function attachAttachmentToPost(postId: number, file: any) {
-  const body: AddAttachmentSchemaType = {
-    url: file.url,
-    assetId: file.asset_id,
-    publicId: file.public_id,
-    type: file.resource_type,
-  };
-  const res = await apiClient.post<Attachment>(
+export async function addAttachment(type: string, postId: number) {
+  const res = await apiClient.post<CreateAttachmentResponse>(
     `/posts/${postId}/attachments`,
-    body,
+    {
+      type,
+    },
   );
-
   return res.data;
 }
 

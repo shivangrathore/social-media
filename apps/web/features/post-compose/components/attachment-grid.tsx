@@ -60,15 +60,19 @@ type AttachmentItemProps = {
 function AttachmentItem({ attachment, onRemove }: AttachmentItemProps) {
   return (
     <Container onRemove={onRemove}>
-      {attachment.type === "image" ? (
+      {attachment.type.startsWith("image") ? (
         <img
-          src={attachment.url || "/placeholder.svg"}
+          src={
+            "https://minio.shivang.tech/social-connect/" + attachment.assetId
+          }
           alt=""
           className="object-cover h-full w-full"
         />
       ) : (
         <video
-          src={attachment.url}
+          src={
+            "https://minio.shivang.tech/social-connect/" + attachment.assetId
+          }
           controls
           className="w-full h-full object-cover"
         />

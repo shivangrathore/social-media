@@ -12,7 +12,6 @@ import { ImageIcon } from "lucide-react";
 import EmojiPicker from "./emoji-picker";
 import { useUploadFiles } from "../hooks/use-upload-files";
 import { deleteAttachment } from "../api/upload";
-import { Attachment } from "@repo/types";
 import { AttachmentGrid } from "./attachment-grid";
 import { Button } from "@/components/ui/button";
 import { publishPost } from "../api/posts";
@@ -22,11 +21,8 @@ import { RichTextArea } from "@/components/rich-text-area";
 const AttachmentSchema = z.object({
   id: z.number(),
   postId: z.number(),
-  userId: z.number(),
-  url: z.string().url("Invalid URL"),
   assetId: z.string(),
-  publicId: z.string(),
-  type: z.enum(["image", "video"]),
+  type: z.string().min(1),
 });
 
 const PostComposeSchema = z.object({
@@ -51,18 +47,14 @@ export function PostComposeView() {
     defaultValues: { content: "" },
   });
   const content = useWatch({ control: form.control, name: "content" });
-  const { draftAttachments, addAttachment, refetchAttachments } =
-    useAttachments(draft?.id);
+  const { draftAttachments, refetchAttachments } = useAttachments(draft?.id);
   const {
     files: uploadingFiles,
     addFiles,
     isUploading,
     reset: resetFiles,
     remove: removeUploadingFile,
-  } = useUploadFiles({
-    onAttachmentUploaded: addAttachment,
-  });
-  const attachments = form.watch("attachments", []) as Attachment[];
+  } = useUploadFiles();
   async function handleFileSelect(files: FileList | null) {
     if (!files) return;
     let post = draft;
@@ -73,7 +65,10 @@ export function PostComposeView() {
     addFiles(post.id, ...filesArray);
   }
   const isValid = form.formState.isValid;
-  const isDirty = form.formState.isDirty;
+  const isDirty =
+    form.formState.isDirty ||
+    uploadingFiles.length > 0 ||
+    draftAttachments.length > 0;
   const { forceSave } = useAutosavePost(isDirty, draft?.id, content, create);
   const onSubmit = async (data: PostComposeSchema) => {
     if (!draft) return;
@@ -107,13 +102,6 @@ export function PostComposeView() {
       });
     }
   }, [draft]);
-  useEffect(() => {
-    form.setValue("attachments", draftAttachments, {
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: true,
-    });
-  }, [draftAttachments]);
   const handleDeleteAttachment = async (attachmentId: number) => {
     await deleteAttachment(attachmentId);
     const currentAttachments = form.getValues("attachments") || [];
@@ -148,7 +136,7 @@ export function PostComposeView() {
           }}
         />
         <AttachmentGrid
-          attachments={attachments}
+          attachments={draftAttachments}
           uploadingFiles={uploadingFiles}
           removeUploadingFile={removeUploadingFile}
           removeAttachment={handleDeleteAttachment}

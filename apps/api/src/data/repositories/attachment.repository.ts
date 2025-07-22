@@ -13,17 +13,14 @@ export class AttachmentRepository implements IAttachmentRepository {
     return {
       id: attachment.id,
       postId: attachment.postId,
-      userId: attachment.userId,
-      url: attachment.url,
       assetId: attachment.assetId,
-      publicId: attachment.publicId,
       type: attachment.type,
       createdAt: attachment.createdAt,
     };
   }
   async addAttachment(
     payload: AddAttachmentSchemaType,
-    userId: number,
+    assetId: string,
     postId: number,
   ): Promise<Attachment> {
     const attachment = await db.transaction(async (tx) => {
@@ -31,10 +28,7 @@ export class AttachmentRepository implements IAttachmentRepository {
         .insert(attachmentTable)
         .values({
           postId,
-          userId,
-          url: payload.url,
-          assetId: payload.assetId,
-          publicId: payload.publicId,
+          assetId,
           type: payload.type,
         })
         .returning();

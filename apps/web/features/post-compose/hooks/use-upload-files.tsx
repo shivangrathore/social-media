@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { getUploadSignature } from "../api/upload";
-import { apiClient } from "@/lib/apiClient";
-import { AxiosProgressEvent } from "axios";
-import { AttachmentFile } from "@repo/api-types";
+import { addAttachment } from "../api/upload";
+import axios, { AxiosProgressEvent } from "axios";
+import { CreateAttachmentResponse } from "@repo/types";
 
 type UploadFile = {
   id: string;
@@ -12,13 +11,10 @@ type UploadFile = {
   progress: number;
   url: string;
   uploaded: boolean;
-  attachment?: AttachmentFile;
+  attachment?: CreateAttachmentResponse;
 };
 
-type UploadFilesHookProps = {
-  onAttachmentUploaded?: (file: any) => Promise<AttachmentFile | undefined>;
-};
-export function useUploadFiles({ onAttachmentUploaded }: UploadFilesHookProps) {
+export function useUploadFiles() {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const updateFile = (file: UploadFile) => {
@@ -37,18 +33,15 @@ export function useUploadFiles({ onAttachmentUploaded }: UploadFilesHookProps) {
     setIsUploading(true);
     await Promise.all(
       files.map(async (file) => {
-        const { signature, apiKey, folder, timestamp, context, uploadUrl } =
-          await getUploadSignature(postId);
-        const formData = new FormData();
-        formData.append("file", file.file);
-        formData.append("signature", signature);
-        formData.append("api_key", apiKey);
-        formData.append("folder", folder);
-        formData.append("timestamp", timestamp);
-        formData.append("context", context);
-
-        const response = await apiClient.post(uploadUrl, formData, {
+        const attach = await addAttachment(file.file.type, postId);
+        await axios.put(attach.uploadUrl, file.file, {
+          headers: {
+            "Content-Type": "image/webp",
+            "Content-Length": file.file.size,
+          },
           adapter: "xhr",
+          maxBodyLength: Infinity,
+          maxContentLength: Infinity,
           onUploadProgress: (progressEvent: AxiosProgressEvent) => {
             const progress = Math.round(
               (progressEvent.loaded * 100) / (progressEvent.total || 1),
@@ -60,13 +53,10 @@ export function useUploadFiles({ onAttachmentUploaded }: UploadFilesHookProps) {
           },
         });
 
-        const data = await response.data;
-
-        const attachment = await onAttachmentUploaded?.(data);
         updateFile({
           ...file,
           uploaded: true,
-          attachment: attachment,
+          attachment: attach,
         });
       }),
     );

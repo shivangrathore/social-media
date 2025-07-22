@@ -1,12 +1,12 @@
 "use client";
 
 import { Attachment } from "@repo/types";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { attachAttachmentToPost, getAttachments } from "../api/upload";
+import { useQuery } from "@tanstack/react-query";
+import { getAttachments } from "../api/upload";
 
 export function useAttachments(postId: number | undefined) {
   const {
-    data: draftAttachments,
+    data = [],
     isLoading,
     refetch,
   } = useQuery<Attachment[]>({
@@ -16,19 +16,9 @@ export function useAttachments(postId: number | undefined) {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
-  const { mutateAsync: addAttachment } = useMutation({
-    mutationKey: ["addAttachment", postId],
-    mutationFn: async (data: any) => {
-      if (!postId) {
-        throw new Error("Post ID is required to attach an attachment");
-      }
-      return attachAttachmentToPost(postId, data);
-    },
-  });
   return {
-    draftAttachments,
+    draftAttachments: data,
     isLoading,
-    addAttachment,
     refetchAttachments: refetch,
   };
 }

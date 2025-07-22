@@ -17,10 +17,7 @@ export const LoginUserSchema = z.object({
 });
 
 export const AddAttachmentSchema = z.object({
-  url: z.string().url(),
-  assetId: z.string(),
-  publicId: z.string(),
-  type: z.enum(["image", "video"]),
+  type: z.string().min(1, { message: "Type is required" }),
 });
 
 export const PostTypeSchema = z.enum(["regular", "poll"]);

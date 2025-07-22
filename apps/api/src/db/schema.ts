@@ -153,20 +153,15 @@ export const commentTable = pgTable(
 );
 
 export const attachmentTable = pgTable("attachment", {
-  // TODO: remove userId from attachment table
   id: bigserial("id", { mode: "number" }).primaryKey(),
   postId: bigint("post_id", { mode: "number" })
     .notNull()
     .references(() => postTable.id),
-  url: text("url").notNull(),
-  assetId: text("asset_id").notNull(),
-  publicId: text("public_id").notNull(),
-  userId: bigint("user_id", { mode: "number" })
-    .notNull()
-    .references(() => userTable.id),
-  type: attachmentTypeEnum("type").notNull().default("image"),
+  assetId: varchar("assetId", { length: 255 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
 export const pollTable = pgTable("poll", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
   postId: bigint("post_id", { mode: "number" })

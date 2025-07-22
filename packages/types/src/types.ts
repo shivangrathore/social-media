@@ -12,11 +12,8 @@ export interface User {
 }
 export interface Attachment {
   id: number;
-  url: string;
   assetId: string;
-  publicId: string;
-  type: "image" | "video";
-  userId: number;
+  type: string;
   postId: number;
   createdAt: Date;
 }

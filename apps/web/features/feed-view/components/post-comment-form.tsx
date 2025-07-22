@@ -1,5 +1,4 @@
 "use client";
-import AutoHeightTextarea from "@/components/auto-height-textarea";
 import { RichTextArea } from "@/components/rich-text-area";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";

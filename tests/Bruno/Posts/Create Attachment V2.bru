@@ -1,0 +1,17 @@
+meta {
+  name: Create Attachment V2
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:5000/api/v1/posts/1/attachments
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "type": "image/webp"
+  }
+}

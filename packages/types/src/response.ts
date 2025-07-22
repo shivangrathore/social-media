@@ -49,3 +49,8 @@ export type GetPostCommentsResponse = {
   data: CommentWithAuthor[];
   nextCursor: number | null;
 };
+
+export type CreateAttachmentResponse = {
+  uploadUrl: string;
+  id: number;
+};

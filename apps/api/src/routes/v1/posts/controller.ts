@@ -13,17 +13,42 @@ import {
   Attachment,
   CastVoteSchema,
   Comment,
+  CreateAttachmentResponse,
   Like,
   PollMeta,
-  Post,
 } from "@repo/types";
-import {
-  AddAttachmentSchema,
-  CreateDraftSchema,
-  PostTypeSchema,
-} from "@repo/types";
+import { CreateDraftSchema, PostTypeSchema } from "@repo/types";
 import { redis } from "@/db/redis";
 import { extractHashtags } from "@/utils";
+import { z } from "zod";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import config from "@/config";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import s3 from "@/lib/s3";
+
+const CreateAttachmentSchema = z.object({
+  type: z.string().min(1, "Type is required"),
+});
+
+export async function getPresignedAttachmentUploadUrl(
+  key: string,
+  type: string,
+  userId: number,
+  postId: number,
+) {
+  const command = new PutObjectCommand({
+    Bucket: config.MINIO_BUCKET,
+    Key: key,
+    ContentType: type,
+    Metadata: {
+      uploader: userId.toString(),
+      postId: postId.toString(),
+    },
+  });
+
+  const url = await getSignedUrl(s3, command, { expiresIn: 300 });
+  return url;
+}
 
 export const getDraft = async (req: Request, res: Response<IPost>) => {
   const userId = res.locals["userId"];
@@ -175,31 +200,51 @@ export const addComment = async (req: Request, res: Response<Comment>) => {
   res.status(201).json(comment);
 };
 
-export const addAttachment = async (
+export async function addAttachment(
   req: Request,
-  res: Response<Attachment>,
-) => {
+  res: Response<CreateAttachmentResponse>,
+) {
   const userId = res.locals["userId"];
   const postId = parseInt(req.params.postId, 10);
+
+  if (isNaN(postId) || postId <= 0) {
+    throw ServiceError.BadRequest("Invalid post ID");
+  }
+
   const post = await postRepository.getById(postId);
-  if (!post || post.publishedAt) {
-    throw ServiceError.NotFound("Post not found or already published");
+  if (!post) {
+    throw ServiceError.NotFound("Post not found");
+  }
+  if (post.publishedAt) {
+    throw ServiceError.BadRequest("Cannot add attachments to a published post");
   }
   if (post.userId !== userId) {
     throw ServiceError.Forbidden(
       "You do not have permission to add attachments to this post",
     );
   }
-  const body = await AddAttachmentSchema.parseAsync(req.body);
-  const attachment = await attachmentRepository.addAttachment(
-    body,
+
+  const { type } = await CreateAttachmentSchema.parseAsync(req.body);
+  const key = "attachments/" + crypto.randomUUID();
+
+  const presignedUrl = await getPresignedAttachmentUploadUrl(
+    key,
+    type,
     userId,
     postId,
   );
 
-  res.json(attachment);
-};
+  const attachment = await attachmentRepository.addAttachment(
+    { type },
+    key,
+    postId,
+  );
 
+  res.json({
+    id: attachment.id,
+    uploadUrl: presignedUrl,
+  });
+}
 export const addLike = async (req: Request, res: Response<Like>) => {
   const userId = res.locals["userId"];
   const postId = parseInt(req.params.postId, 10);

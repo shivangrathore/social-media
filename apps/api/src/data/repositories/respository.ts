@@ -53,7 +53,7 @@ export interface IAuthRepository {
 export interface IAttachmentRepository {
   addAttachment(
     payload: AddAttachmentSchemaType,
-    userId: number,
+    assetId: string,
     postId: number,
   ): Promise<IAttachment>;
   deleteAttachment(
