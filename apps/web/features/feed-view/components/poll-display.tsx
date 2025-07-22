@@ -1,62 +1,70 @@
 "use client";
 import { cn, pluralize } from "@/lib/utils";
 import { castVote } from "../api";
-import { useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { FeedPost, GetFeedResponse } from "@repo/types";
+import { useCallback, useEffect, useState } from "react";
+import { FeedPost } from "@repo/types";
 import { RichContent } from "./rich-content";
+import { usePollVoteStore } from "@/store/poll-votes-store";
 
 type Poll = Extract<FeedPost, { postType: "poll" }>;
 
 export function PollDisplay({ poll }: { poll: Poll }) {
-  const query = "feed";
-  const selectedOption = poll.selectedOption;
-  const options = poll.options;
-  const totalVotes = options.reduce((acc, option) => acc + option.voteCount, 0);
-  const queryClient = useQueryClient();
-  const changeSelectedVote = useCallback(
-    (optionId: number) => {
-      queryClient.setQueryData([query], (old: GetFeedResponse) => {
-        if (!old) return old;
-        return {
-          ...old,
-          data: old.data.map((entry) => {
-            if (entry.id === poll.id && entry.postType === "poll") {
-              return {
-                ...entry,
-                selectedOption: optionId,
-                options: entry.options.map((option) => {
-                  if (option.id === optionId) {
-                    return { ...option, voteCount: option.voteCount + 1 };
-                  }
-                  if (option.id === selectedOption) {
-                    return { ...option, voteCount: option.voteCount - 1 };
-                  }
-                  return option;
-                }),
-              };
-            }
-            return entry;
-          }),
-        };
-      });
-    },
-    [queryClient, poll.id, selectedOption],
-  );
+  const setMyVote = usePollVoteStore((state) => state.setMyVote);
+  const setPollVote = usePollVoteStore((state) => state.setPollVote);
+  const setPollVotes = usePollVoteStore((state) => state.setPollVotes);
+  const votes = usePollVoteStore((state) => state.pollVotes[poll.id]);
+  const selectedOption = usePollVoteStore((state) => state.myVotes[poll.id]);
+  const [isCasting, setIsCasting] = useState(false);
+
+  useEffect(() => {
+    if (!votes) {
+      const initialVotes = poll.options.reduce(
+        (acc, option) => {
+          acc[option.id] = option.voteCount;
+          return acc;
+        },
+        {} as Record<number, number>,
+      );
+      setPollVotes(poll.id, initialVotes);
+    }
+  }, [poll.id, poll.options, votes, setPollVotes]);
+
+  useEffect(() => {
+    if (!selectedOption) {
+      const selected = poll.selectedOption;
+      if (selected) {
+        setMyVote(poll.id, selected);
+      }
+    }
+  }, [selectedOption, poll.selectedOption, setMyVote]);
+
+  const totalVotes = Object.values(votes ?? {}).reduce((a, b) => a + b, 0);
+
   const castVoteHandler = useCallback(
     async (optionId: number) => {
-      if (selectedOption === optionId) {
-        return;
+      if (selectedOption === optionId) return;
+      setIsCasting(true);
+
+      const previousOption = selectedOption;
+      setMyVote(poll.id, optionId);
+      if (selectedOption) {
+        setPollVote(poll.id, selectedOption, (votes[selectedOption] ?? 0) - 1);
       }
-      const oldData = queryClient.getQueryData<GetFeedResponse>([query]);
-      changeSelectedVote(optionId);
+
+      setPollVote(poll.id, optionId, (votes[optionId] ?? 0) + 1);
+
       try {
         await castVote(poll.id, optionId);
       } catch (e) {
-        queryClient.setQueryData([query], oldData);
+        setMyVote(poll.id, previousOption ?? null);
+        if (previousOption) {
+          setPollVote(poll.id, previousOption, votes[previousOption] + 1);
+        }
+      } finally {
+        setIsCasting(false);
       }
     },
-    [poll.id, poll.selectedOption, poll.options, selectedOption],
+    [poll.id, selectedOption, setMyVote],
   );
 
   return (
@@ -66,39 +74,38 @@ export function PollDisplay({ poll }: { poll: Poll }) {
         {pluralize(totalVotes, "vote")}
       </p>
       <ul className="mt-2 flex flex-col gap-2">
-        {options.map((option) => (
-          <li key={option.id}>
-            <button
-              className={cn(
-                "flex justify-between w-full p-2 border border-border rounded-md cursor-pointer text-sm isolate relative overflow-hidden",
-                option.id == selectedOption
-                  ? "border-primary"
-                  : "hover:bg-primary/5",
-              )}
-              onClick={() => castVoteHandler(option.id)}
-            >
-              <span
+        {poll.options.map((option) => {
+          const optionVotes = votes?.[option.id] ?? 0;
+          const width = totalVotes === 0 ? 0 : (optionVotes / totalVotes) * 100;
+
+          return (
+            <li key={option.id}>
+              <button
+                disabled={isCasting}
                 className={cn(
-                  "absolute inset-0 -z-10 transition-[width] duration-500",
-                  {
-                    "bg-gray-400/20": option.id != selectedOption,
-                    "bg-primary/20": option.id == selectedOption,
-                  },
+                  "flex justify-between w-full p-2 border border-border rounded-md cursor-pointer text-sm isolate relative overflow-hidden",
+                  option.id === selectedOption
+                    ? "border-primary"
+                    : "hover:bg-primary/5",
                 )}
-                style={{
-                  width:
-                    totalVotes == 0
-                      ? 0
-                      : `${(option.voteCount / totalVotes) * 100}%`,
-                }}
-              />
-              <span>{option.text}</span>
-              <span>
-                {option.voteCount > 0 && pluralize(option.voteCount, "vote")}
-              </span>
-            </button>
-          </li>
-        ))}
+                onClick={() => castVoteHandler(option.id)}
+              >
+                <span
+                  className={cn(
+                    "absolute inset-0 -z-10 transition-[width] duration-500",
+                    {
+                      "bg-gray-400/20": option.id !== selectedOption,
+                      "bg-primary/20": option.id === selectedOption,
+                    },
+                  )}
+                  style={{ width: `${width}%` }}
+                />
+                <span>{option.text}</span>
+                <span>{optionVotes > 0 && pluralize(optionVotes, "vote")}</span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
