@@ -25,6 +25,11 @@ function UserComments({ id }: { id: number }) {
   const { comments, isLoading } = useUserComments(id);
   return (
     <div className="flex gap-2 flex-col">
+      {!isLoading && comments.length === 0 && (
+        <p className="text-sm text-shadow-muted-foreground p-4">
+          This user has no comments
+        </p>
+      )}
       {comments.map((comment) => (
         <div key={comment.id} className="border-b p-4">
           <p className="text-sm text-foreground">{comment.content}</p>

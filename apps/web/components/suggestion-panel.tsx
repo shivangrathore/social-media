@@ -2,46 +2,23 @@
 import { useUser } from "@/store/auth";
 import { Input } from "./ui/input";
 import { UserProfile, UserProfileSkeleton } from "./user-profile";
-import { Button } from "./ui/button";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/apiClient";
 import { User } from "@repo/types";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { Skeleton } from "./ui/skeleton";
-import { followUser, unfollowUser } from "@/lib/api";
 import { getTrendingTags } from "@/features/explore/api";
+import FollowButton from "./users/follow-button";
 
 export function UserSuggestionEntry({ user }: { user: User }) {
-  const [isFollowing, setIsFollowing] = useState(user.isFollowing);
-  const handleUnfollow = async () => {
-    setIsFollowing(false);
-    await unfollowUser(user.username);
-  };
-  const handleFollow = async () => {
-    setIsFollowing(true);
-    await followUser(user.username);
-  };
   return (
     <div className="flex gap-2 items-center justify-between">
       <UserProfile user={user} />
-      {isFollowing ? (
-        <Button
-          variant="outline"
-          className="rounded-full"
-          onClick={handleUnfollow}
-        >
-          Unfollow
-        </Button>
-      ) : (
-        <Button
-          className="rounded-full"
-          variant="outline"
-          onClick={handleFollow}
-        >
-          Follow
-        </Button>
-      )}
+      <FollowButton
+        username={user.username}
+        isFollowing={user.isFollowing || false}
+      />
     </div>
   );
 }
