@@ -266,6 +266,13 @@ export async function addAttachment(
     postId,
   );
 
+  const attachments = await attachmentRepository.getAttachmentsByPostId(postId);
+  if (attachments.length >= 4) {
+    throw ServiceError.BadRequest(
+      "Cannot add more than 4 attachments to a post",
+    );
+  }
+
   const attachment = await attachmentRepository.addAttachment(
     { type },
     key,
