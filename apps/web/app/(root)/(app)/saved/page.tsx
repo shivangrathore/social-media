@@ -26,6 +26,11 @@ export default function SavedPage() {
             <LoadMoreContent isLoading={isLoading} loadMore={fetchNextPage} />
           </>
         )}
+        {!isLoading && savedPosts.length === 0 && (
+          <p className="text-gray-500 py-4">
+            You have not saved any posts yet.
+          </p>
+        )}
       </div>
       <SuggestionPanel />
     </div>
