@@ -2,7 +2,7 @@
 // TODO: create new field name or displayname
 // TODO: remove Table suffix from table names (maybe?)
 // TODO: Seperate types with different files
-import { eq, relations, sql } from "drizzle-orm";
+import { eq, ne, relations, sql } from "drizzle-orm";
 import {
   integer,
   varchar,
@@ -16,6 +16,7 @@ import {
   unique,
   pgEnum,
   pgView,
+  check,
 } from "drizzle-orm/pg-core";
 
 export const likeTargetEnum = pgEnum("like_target", ["post", "comment"]);
@@ -280,7 +281,10 @@ export const followerTable = pgTable(
       .references(() => userTable.id),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (t) => [unique().on(t.followerId, t.followingId)],
+  (t) => [
+    unique().on(t.followerId, t.followingId),
+    check("followerId_followingId_check", ne(t.followerId, t.followingId)),
+  ],
 );
 
 export const chatTable = pgTable("chat", {
