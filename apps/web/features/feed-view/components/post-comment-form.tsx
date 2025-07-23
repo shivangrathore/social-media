@@ -30,7 +30,7 @@ export function PostCommentForm({
       onSubmit={form.handleSubmit(onSubmit)}
     >
       <RichTextArea
-        className="w-full resize-none overflow-hidden"
+        className="p-4 rounded-lg border border-border w-full resize-none overflow-hidden text-base"
         content=""
         rows={1}
         {...form.register("content")}
