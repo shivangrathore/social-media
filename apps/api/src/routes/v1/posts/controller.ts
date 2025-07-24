@@ -344,7 +344,12 @@ export const logPostView = async (req: Request, res: Response) => {
   if (!post.publishedAt) {
     throw ServiceError.BadRequest("Cannot log view for an unpublished post");
   }
-
+  const exists = await redis.get(`post:${postId}:viewed:${userId}`);
+  if (exists) {
+    return res.status(204).send();
+  }
+  await redis.set(`post:${postId}:viewed:${userId}`, "true");
+  await redis.expire(`post:${postId}:viewed:${userId}`, 60 * 60 * 4); // 4 hours
   await postRepository.logView(postId, userId);
   for (const hashtag of extractHashtags(post.content)) {
     await redis.zincrby("trending_hashtags", 0.01, hashtag);
