@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useId } from "react";
+import React, { useEffect, useId, useRef } from "react";
 import { useAutosavePost } from "../hooks/use-auto-save-post";
 import { z } from "zod";
 import { useForm, useWatch } from "react-hook-form";
@@ -47,7 +47,8 @@ export function PostComposeView() {
     defaultValues: { content: "" },
   });
   const content = useWatch({ control: form.control, name: "content" });
-  const { draftAttachments, refetchAttachments } = useAttachments(draft?.id);
+  const { draftAttachments, refetchAttachments, resetAttachments } =
+    useAttachments(draft?.id);
   const {
     files: uploadingFiles,
     addFiles,
@@ -72,11 +73,11 @@ export function PostComposeView() {
   const { forceSave } = useAutosavePost(isDirty, draft?.id, content, create);
   const onSubmit = async (data: PostComposeSchema) => {
     if (!draft) return;
-    console.log("Force savign post with content:", data.content.trim());
     await forceSave({ id: draft.id, content: data.content });
     await publishPost(draft.id);
     refetchDraft();
     resetFiles();
+    resetAttachments();
     form.reset();
   };
   const inputId = useId();

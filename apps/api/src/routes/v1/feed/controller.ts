@@ -153,10 +153,11 @@ export const getUserPosts = async (
   req: Request,
   res: Response<GetFeedResponse>,
 ) => {
+  // FIXME: Check if current user has permission to view this user's posts
   const feedQuery = await feedQuerySchema.parseAsync(req.query);
   const cursor = feedQuery.cursor;
   const limit = feedQuery.limit;
-  const userId = res.locals["userId"];
+  const userId = parseInt(req.params.userId, 10);
   const records = await feedRepository.getUserPosts(userId, cursor, limit);
   const data = await prepareFeedPosts(userId, records, limit);
   res.status(200).json(data);

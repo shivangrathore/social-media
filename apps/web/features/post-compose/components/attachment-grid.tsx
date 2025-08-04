@@ -33,7 +33,9 @@ export function AttachmentGrid({
   };
 
   return (
-    <div className={"grid grid-cols-2 gap-2 mt-2 h-fit"}>
+    <div
+      className={"grid grid-cols-2 gap-2 mt-2 max-h-[400px] overflow-hidden"}
+    >
       {attachments.map((attachment) => (
         <AttachmentItem
           key={attachment.id}
@@ -59,14 +61,14 @@ type AttachmentItemProps = {
 
 function AttachmentItem({ attachment, onRemove }: AttachmentItemProps) {
   return (
-    <Container onRemove={onRemove}>
+    <Container onRemove={onRemove} data={"attachment"}>
       {attachment.type.startsWith("image") ? (
         <img
           src={
             "https://minio.shivang.tech/social-connect/" + attachment.assetId
           }
           alt=""
-          className="object-cover h-full w-full"
+          className="object-cover"
         />
       ) : (
         <video
@@ -90,7 +92,7 @@ function UploadingFileItem({ file, onRemove }: UploadingFileItemProps) {
   const isImage = file.file.type.startsWith("image/");
 
   return (
-    <Container onRemove={onRemove}>
+    <Container onRemove={onRemove} data={"uploading-file"}>
       {isImage ? (
         <img
           src={file.url || "/placeholder.svg"}
@@ -117,12 +119,17 @@ function UploadingFileItem({ file, onRemove }: UploadingFileItemProps) {
 function Container({
   children,
   onRemove,
+  data,
 }: {
   children: React.ReactNode;
   onRemove?: () => void;
+  data: string;
 }) {
   return (
-    <div className="relative h-full w-full rounded-lg last:odd:col-span-2 overflow-hidden">
+    <div
+      className="relative  rounded-lg last:odd:col-span-2 overflow-hidden"
+      data-type={data}
+    >
       <div className="absolute top-2 right-2 z-10">
         <Button
           onClick={onRemove}

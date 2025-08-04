@@ -7,7 +7,7 @@ export function useAutosavePost(
   isDirty: boolean,
   postId: number | undefined,
   content: string,
-  create: (content: string | undefined) => Promise<Post>,
+  create: (content: string) => Promise<Post>,
 ) {
   const { mutateAsync, isPending: isSaving } = useMutation({
     mutationFn: saveDraftPost,

@@ -3,18 +3,22 @@ import { PollComposeView } from "./poll-compose-view";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { BarChart3, FileTextIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import { PostComposeView } from "./post-compose-view";
 import { useComposeMode } from "../hooks/use-compose-mode";
+import { useUser } from "@/store/auth";
 
 export function ComposePost() {
+  const { user } = useUser();
   const { mode, setMode } = useComposeMode();
   return (
     <div className="my-6 pb-4 bg-background  border-b">
       <div className="flex gap-4">
         <Avatar className="size-10">
-          <AvatarImage />
-          <AvatarFallback>SR</AvatarFallback>
+          <AvatarImage src={user?.avatar ?? undefined} />
+          <AvatarFallback>
+            {getInitials(user?.name ?? user?.username ?? "")}
+          </AvatarFallback>
         </Avatar>
         <div className="flex border-b border-border flex-grow">
           <button

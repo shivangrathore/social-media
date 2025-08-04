@@ -1,5 +1,6 @@
 "use client";
 
+import AutoHeightTextarea from "@/components/auto-height-textarea";
 import { LoadMoreContent } from "@/components/load-more-content";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -94,14 +95,31 @@ function NewMessageForm() {
     form.reset();
   };
 
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
-        <Textarea
+        <AutoHeightTextarea
           placeholder="Type your message..."
           {...form.register("content")}
+          rows={1}
+          className="min-h-[50px] flex-grow resize-none"
+          onKeyDown={(e) => {
+            if (e.key == "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              console.log("Submitting message");
+              buttonRef.current?.click();
+            }
+          }}
         />
-        <Button className="" type="submit" variant="outline" size="icon">
+        <Button
+          className=""
+          type="submit"
+          variant="outline"
+          size="icon"
+          ref={buttonRef}
+        >
           <SendIcon />
         </Button>
       </form>

@@ -1,6 +1,7 @@
 "use client";
 
 import { LoadMoreContent } from "@/components/load-more-content";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PostCard } from "@/features/feed-view/components/post-card";
 import { PostSkeleton } from "@/features/feed-view/components/post-skeleton";
@@ -10,12 +11,17 @@ import { useUserPosts } from "@/features/user/hooks/use-user-posts";
 function UserPosts({ id }: { id: number }) {
   const { posts, isLoading, fetchNextPage } = useUserPosts(id);
   return (
-    <div className="p-4">
+    <div className="flex gap-2 flex-col mb-20">
       {isLoading &&
         new Array(5).fill(0).map((_, index) => <PostSkeleton key={index} />)}
       {posts.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}
+      {!isLoading && posts.length === 0 && (
+        <p className="text-sm text-shadow-muted-foreground p-4">
+          This user has no posts
+        </p>
+      )}
       <LoadMoreContent isLoading={isLoading} loadMore={fetchNextPage} />
     </div>
   );
@@ -24,12 +30,18 @@ function UserPosts({ id }: { id: number }) {
 function UserComments({ id }: { id: number }) {
   const { comments, isLoading } = useUserComments(id);
   return (
-    <div className="flex gap-2 flex-col">
+    <div className="flex gap-2 flex-col mb-20">
       {!isLoading && comments.length === 0 && (
         <p className="text-sm text-shadow-muted-foreground p-4">
           This user has no comments
         </p>
       )}
+      {isLoading &&
+        new Array(5).fill(0).map((_, index) => (
+          <div key={index} className="border-b p-4">
+            <Skeleton className="w-full h-20" />
+          </div>
+        ))}
       {comments.map((comment) => (
         <div key={comment.id} className="border-b p-4">
           <p className="text-sm text-foreground">{comment.content}</p>

@@ -3,6 +3,7 @@
 import { Attachment } from "@repo/types";
 import { useQuery } from "@tanstack/react-query";
 import { getAttachments } from "../api/upload";
+import { useEffect, useRef, useState } from "react";
 
 export function useAttachments(postId: number | undefined) {
   const {
@@ -16,9 +17,22 @@ export function useAttachments(postId: number | undefined) {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
+
+  const [attachments, setAttachments] = useState<Attachment[]>(data);
+  const firstLoad = useRef(true);
+
+  useEffect(() => {
+    if (firstLoad.current) {
+      firstLoad.current = false;
+      setAttachments(data);
+    }
+  }, [data]);
+
   return {
-    draftAttachments: data,
+    draftAttachments: attachments,
     isLoading,
     refetchAttachments: refetch,
+
+    resetAttachments: () => setAttachments([]),
   };
 }
