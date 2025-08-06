@@ -14,6 +14,7 @@
       "dependsOn": ["^check-types"]
     },
     "dev": {
+      "dependsOn": ["@repo/types#build"],
       "cache": false,
       "persistent": true
     },

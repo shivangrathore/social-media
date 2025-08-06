@@ -47,8 +47,6 @@ export function PostComposeView() {
     defaultValues: { content: "" },
   });
   const content = useWatch({ control: form.control, name: "content" });
-  const { draftAttachments, refetchAttachments, resetAttachments } =
-    useAttachments(draft?.id);
   const {
     files: uploadingFiles,
     addFiles,
@@ -65,19 +63,20 @@ export function PostComposeView() {
     const filesArray = Array.from(files);
     addFiles(post.id, ...filesArray);
   }
-  const isValid = form.formState.isValid;
-  const isDirty =
+  const isDirty = Boolean(
     form.formState.isDirty ||
-    uploadingFiles.length > 0 ||
-    draftAttachments.length > 0;
+      uploadingFiles.length > 0 ||
+      draft?.attachments?.length,
+  );
+  const isValid = form.formState.isValid;
   const { forceSave } = useAutosavePost(isDirty, draft?.id, content, create);
+  console.log("Draft:", draft);
   const onSubmit = async (data: PostComposeSchema) => {
     if (!draft) return;
     await forceSave({ id: draft.id, content: data.content });
     await publishPost(draft.id);
     refetchDraft();
     resetFiles();
-    resetAttachments();
     form.reset();
   };
   const inputId = useId();
@@ -96,7 +95,6 @@ export function PostComposeView() {
   };
   useEffect(() => {
     if (draft) {
-      refetchAttachments();
       form.setValue("content", draft.content || "", {
         shouldDirty: true,
         shouldTouch: true,
@@ -138,7 +136,7 @@ export function PostComposeView() {
           }}
         />
         <AttachmentGrid
-          attachments={draftAttachments}
+          attachments={draft?.attachments || []}
           uploadingFiles={uploadingFiles}
           removeUploadingFile={removeUploadingFile}
           removeAttachment={handleDeleteAttachment}
