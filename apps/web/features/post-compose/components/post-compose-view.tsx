@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useId, useRef } from "react";
+import React, { useEffect, useId } from "react";
 import { useAutosavePost } from "../hooks/use-auto-save-post";
 import { z } from "zod";
 import { useForm, useWatch } from "react-hook-form";
@@ -15,7 +15,6 @@ import { deleteAttachment } from "../api/upload";
 import { AttachmentGrid } from "./attachment-grid";
 import { Button } from "@/components/ui/button";
 import { publishPost } from "../api/posts";
-import { useAttachments } from "../hooks/use-attachments";
 import { RichTextArea } from "@/components/rich-text-area";
 
 const AttachmentSchema = z.object({

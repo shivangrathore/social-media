@@ -26,7 +26,6 @@ export function PollDisplay({ poll }: { poll: Poll }) {
         {} as Record<number, number>,
       );
       setPollVotes(poll.id, initialVotes);
-      console.log("Setting initial votes for poll", poll.id, initialVotes);
     }
   }, [poll.id, poll.options, votes, setPollVotes]);
 

@@ -3,7 +3,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createDraftPost, getDraftPost } from "../api/posts";
 import { useEffect, useState } from "react";
 import { Attachment, Post } from "@repo/types";
-import { AxiosError } from "axios";
 
 type PostWithAttachments = {
   attachments: Attachment[];
